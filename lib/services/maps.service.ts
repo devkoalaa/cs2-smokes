@@ -30,8 +30,6 @@ export class MapsService {
 
     const result = await response.json()
 
-    console.log('response maps', result);
-
     return result;
   }
 
