@@ -2,12 +2,16 @@ import { Header } from "@/components/header"
 import { MapGrid } from "@/components/map-grid"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { MapsService } from "@/lib/services/maps.service"
 import { BookOpen, Target, Users } from "lucide-react"
 
-export default function HomePage() {
+export default async function HomePage() {
+  const mapsService = MapsService.getInstance()
+  const maps = await mapsService.getAllMaps()
+
   const stats = [
-    { label: "Mapas Disponíveis", value: "6", icon: Target },
-    { label: "Smokes Totais", value: "57", icon: BookOpen },
+    { label: "Mapas Disponíveis", value: maps.length.toString(), icon: Target },
+    { label: "Smokes Totais", value: "0", icon: BookOpen },
     { label: "Usuários Ativos", value: "1.2k+", icon: Users },
   ]
 
@@ -51,7 +55,7 @@ export default function HomePage() {
               <p className="text-muted-foreground">Selecione um mapa para começar a aprender</p>
             </div>
             <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
-              6 Mapas
+              {maps.length} Mapas
             </Badge>
           </div>
           <MapGrid />

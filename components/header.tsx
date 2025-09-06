@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Map, Menu, Target, Github } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { SteamLoginButton } from "@/components/auth/SteamLoginButton"
 
 export function Header() {
   const router = useRouter()
@@ -55,6 +56,7 @@ export function Header() {
               <Github className="w-5 h-5" />
               <span className="sr-only">GitHub</span>
             </Button>
+            <SteamLoginButton />
           </nav>
 
           {/* Mobile Navigation */}
@@ -93,6 +95,9 @@ export function Header() {
                     <Github className="w-4 h-4 mr-2" />
                     GitHub
                   </Button>
+                  <div className="pt-4">
+                    <SteamLoginButton />
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>

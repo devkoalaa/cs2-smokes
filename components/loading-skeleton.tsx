@@ -118,6 +118,10 @@ export function MapViewerSkeleton() {
   )
 }
 
+export function LoadingSkeleton() {
+  return <MapViewerSkeleton />
+}
+
 export function HomePageSkeleton() {
   return (
     <div className="min-h-screen bg-background">

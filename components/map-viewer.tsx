@@ -7,39 +7,49 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, Play, X, Search, ZoomIn, ZoomOut, RotateCcw, Star, Clock, Target, Filter } from "lucide-react"
+import { ArrowLeft, Play, X, Search, Clock, Target, ThumbsUp, ThumbsDown, Flag, Plus, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useSmokes } from "@/hooks/useSmokes"
+import { useRatings } from "@/hooks/useRatings"
+import { useReports } from "@/hooks/useReports"
+import { useMap } from "@/hooks/useMaps"
+import { useAuth } from "@/contexts/AuthContext"
+import { Smoke } from "@/lib/services/smokes.service"
+import { LoadingSkeleton } from "@/components/loading-skeleton"
+import dynamic from "next/dynamic"
 
-interface Smoke {
-  id: number
-  name: string
-  position: { x: number; y: number }
-  videoUrl: string
-  description: string
-  difficulty?: "Fácil" | "Médio" | "Difícil"
-  category?: string
-  duration?: string
-}
-
-interface Map {
-  name: string
-  description: string
-  image: string
-  smokes: Smoke[]
-}
+// Importar o componente unificado dinamicamente para evitar problemas de SSR
+const UnifiedMap = dynamic(() => import('./unified-map'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-96 bg-muted/20 rounded-lg border border-border">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+        <p className="text-muted-foreground">Carregando mapa...</p>
+      </div>
+    </div>
+  )
+})
 
 interface MapViewerProps {
-  map: Map
+  mapId: number
 }
 
-export function MapViewer({ map }: MapViewerProps) {
+export function MapViewer({ mapId }: MapViewerProps) {
   const [selectedSmoke, setSelectedSmoke] = useState<Smoke | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterDifficulty, setFilterDifficulty] = useState("all")
-  const [zoom, setZoom] = useState(1)
   const [showAllMarkers, setShowAllMarkers] = useState(true)
+  const [showAddSmoke, setShowAddSmoke] = useState(false)
+  const [reportReason, setReportReason] = useState("")
   const mapRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+
+  const { smokes, loading, error, refetch } = useSmokes(mapId)
+  const { map, loading: mapLoading, error: mapError } = useMap(mapId)
+  const { upvoteSmoke, downvoteSmoke, loading: ratingLoading } = useRatings()
+  const { reportSmoke, loading: reportLoading } = useReports()
+  const { isAuthenticated, user } = useAuth()
 
   const handleSmokeClick = (smoke: Smoke) => {
     setSelectedSmoke(smoke)
@@ -49,36 +59,63 @@ export function MapViewer({ map }: MapViewerProps) {
     setSelectedSmoke(null)
   }
 
-  const resetZoom = () => {
-    setZoom(1)
+
+  const handleUpvote = async (smokeId: number) => {
+    try {
+      await upvoteSmoke(smokeId)
+      refetch()
+    } catch (error) {
+      console.error('Failed to upvote:', error)
+    }
   }
 
-  const zoomIn = () => {
-    setZoom(prev => Math.min(prev + 0.2, 2))
+  const handleDownvote = async (smokeId: number) => {
+    try {
+      await downvoteSmoke(smokeId)
+      refetch()
+    } catch (error) {
+      console.error('Failed to downvote:', error)
+    }
   }
 
-  const zoomOut = () => {
-    setZoom(prev => Math.max(prev - 0.2, 0.5))
+  const handleReport = async (smokeId: number) => {
+    if (!reportReason.trim()) return
+    
+    try {
+      await reportSmoke(smokeId, { reason: reportReason })
+      setReportReason("")
+      setSelectedSmoke(null)
+    } catch (error) {
+      console.error('Failed to report:', error)
+    }
   }
 
-  const filteredSmokes = map.smokes.filter(smoke => {
-    const matchesSearch = smoke.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         smoke.description.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesDifficulty = filterDifficulty === "all" || smoke.difficulty === filterDifficulty
-    return matchesSearch && matchesDifficulty
+  const filteredSmokes = smokes.filter(smoke => {
+    const matchesSearch = smoke.title.toLowerCase().includes(searchTerm.toLowerCase())
+    return matchesSearch
   })
 
-  const getDifficultyColor = (difficulty?: string) => {
-    switch (difficulty) {
-      case "Fácil":
-        return "bg-green-500/20 text-green-400 border-green-500/30"
-      case "Médio":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"
-      case "Difícil":
-        return "bg-red-500/20 text-red-400 border-red-500/30"
-      default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30"
-    }
+  if (loading || mapLoading) {
+    return <LoadingSkeleton />
+  }
+
+  if (error || mapError) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-500">Erro ao carregar dados: {error || mapError}</p>
+        <Button onClick={() => refetch()} className="mt-4">
+          Tentar novamente
+        </Button>
+      </div>
+    )
+  }
+
+  if (!map) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-500">Mapa não encontrado</p>
+      </div>
+    )
   }
 
   return (
@@ -91,12 +128,18 @@ export function MapViewer({ map }: MapViewerProps) {
         </Button>
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
-            {map.smokes.length} smokes disponíveis
+            {smokes.length} smokes disponíveis
           </Badge>
           <Badge variant="outline" className="border-border">
             {filteredSmokes.length} filtrados
           </Badge>
         </div>
+        {isAuthenticated && (
+          <Button onClick={() => setShowAddSmoke(true)} className="ml-auto">
+            <Plus className="w-4 h-4 mr-2" />
+            Adicionar Smoke
+          </Button>
+        )}
       </div>
 
       {/* Map Controls */}
@@ -107,72 +150,27 @@ export function MapViewer({ map }: MapViewerProps) {
             <div className="flex-1">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-card-foreground">
-                  Mapa Tático - {map.name}
+                  {map.name} - Mapa Tático
                 </h3>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={zoomOut}
-                    disabled={zoom <= 0.5}
-                    className="border-border hover:bg-accent"
-                  >
-                    <ZoomOut className="w-4 h-4" />
-                  </Button>
-                  <span className="text-sm text-muted-foreground min-w-[3rem] text-center">
-                    {Math.round(zoom * 100)}%
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={zoomIn}
-                    disabled={zoom >= 2}
-                    className="border-border hover:bg-accent"
-                  >
-                    <ZoomIn className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={resetZoom}
-                    className="border-border hover:bg-accent"
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                  </Button>
-                </div>
               </div>
               
-              <div 
-                ref={mapRef}
-                className="relative overflow-hidden rounded-lg border border-border bg-muted/20"
-                style={{ transform: `scale(${zoom})`, transformOrigin: 'center' }}
-              >
-                <img
-                  src={map.image || "/placeholder.svg"}
-                  alt={`Mapa ${map.name}`}
-                  className="w-full h-auto"
+              {/* Usar componente unificado para todos os mapas */}
+              {map.radar ? (
+                <UnifiedMap
+                  radarImagePath={map.radar}
+                  smokes={filteredSmokes}
+                  onSmokeClick={handleSmokeClick}
+                  height="600px"
+                  className="rounded-lg border border-border"
                 />
-
-                {/* Smoke markers */}
-                {showAllMarkers && filteredSmokes.map((smoke) => (
-                  <button
-                    key={smoke.id}
-                    onClick={() => handleSmokeClick(smoke)}
-                    className="absolute w-8 h-8 bg-primary hover:bg-primary/80 rounded-full border-2 border-primary-foreground shadow-lg transition-all duration-200 hover:scale-110 flex items-center justify-center group"
-                    style={{
-                      left: `${smoke.position.x}%`,
-                      top: `${smoke.position.y}%`,
-                      transform: "translate(-50%, -50%)",
-                    }}
-                    title={smoke.name}
-                  >
-                    <Play className="w-4 h-4 text-primary-foreground" />
-                    <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-popover text-popover-foreground px-2 py-1 rounded text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
-                      {smoke.name}
-                    </div>
-                  </button>
-                ))}
-              </div>
+              ) : (
+                <div className="flex items-center justify-center h-96 bg-muted/20 rounded-lg border border-border">
+                  <div className="text-center">
+                    <p className="text-muted-foreground">Radar não disponível para este mapa</p>
+                    <p className="text-sm text-muted-foreground mt-2">Usando fallback...</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Controls Panel */}
@@ -210,33 +208,64 @@ export function MapViewer({ map }: MapViewerProps) {
 
                   <div className="space-y-2 max-h-96 overflow-y-auto">
                     {filteredSmokes.map((smoke) => (
-                      <Button
-                        key={smoke.id}
-                        variant="outline"
-                        onClick={() => handleSmokeClick(smoke)}
-                        className="w-full justify-start h-auto p-3 border-border hover:bg-accent group"
-                      >
-                        <Play className="w-4 h-4 mr-3 text-primary group-hover:scale-110 transition-transform" />
-                        <div className="text-left flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <div className="font-medium">{smoke.name}</div>
-                            {smoke.difficulty && (
-                              <Badge className={`${getDifficultyColor(smoke.difficulty)} text-xs border`}>
-                                {smoke.difficulty}
+                      <div key={smoke.id} className="border border-border rounded-lg p-3 hover:bg-accent transition-colors">
+                        <div className="flex items-start gap-3">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleSmokeClick(smoke)}
+                            className="p-1 h-auto"
+                          >
+                            <Play className="w-4 h-4 text-primary" />
+                          </Button>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <div className="font-medium truncate">{smoke.title}</div>
+                              <Badge variant="outline" className="text-xs">
+                                Score: {smoke.score}
                               </Badge>
-                            )}
-                          </div>
-                          <div className="text-sm text-muted-foreground line-clamp-2">
-                            {smoke.description}
-                          </div>
-                          {smoke.duration && (
-                            <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-                              <Clock className="w-3 h-3" />
-                              {smoke.duration}
                             </div>
-                          )}
+                            <div className="text-sm text-muted-foreground mb-2">
+                              Por {smoke.author.displayName}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleUpvote(smoke.id)}
+                                disabled={ratingLoading}
+                                className="h-8 px-2"
+                              >
+                                <ThumbsUp className="w-3 h-3 mr-1" />
+                                Upvote
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDownvote(smoke.id)}
+                                disabled={ratingLoading}
+                                className="h-8 px-2"
+                              >
+                                <ThumbsDown className="w-3 h-3 mr-1" />
+                                Downvote
+                              </Button>
+                              {isAuthenticated && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedSmoke(smoke)
+                                    setReportReason("")
+                                  }}
+                                  className="h-8 px-2"
+                                >
+                                  <Flag className="w-3 h-3" />
+                                </Button>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      </Button>
+                      </div>
                     ))}
                   </div>
 
@@ -285,7 +314,7 @@ export function MapViewer({ map }: MapViewerProps) {
             <div className="flex items-center justify-between">
               <DialogTitle className="text-popover-foreground flex items-center gap-2">
                 <Play className="w-5 h-5 text-primary" />
-                {selectedSmoke?.name}
+                {selectedSmoke?.title}
               </DialogTitle>
               <Button variant="ghost" size="sm" onClick={closeModal} className="hover:bg-accent">
                 <X className="w-4 h-4" />
@@ -295,31 +324,89 @@ export function MapViewer({ map }: MapViewerProps) {
           {selectedSmoke && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-4">
-                {selectedSmoke.difficulty && (
-                  <Badge className={`${getDifficultyColor(selectedSmoke.difficulty)} border`}>
-                    {selectedSmoke.difficulty}
-                  </Badge>
-                )}
-                {selectedSmoke.duration && (
-                  <Badge variant="outline" className="border-border">
-                    <Clock className="w-3 h-3 mr-1" />
-                    {selectedSmoke.duration}
-                  </Badge>
-                )}
+                <Badge variant="outline" className="border-border">
+                  Score: {selectedSmoke.score}
+                </Badge>
+                <Badge variant="outline" className="border-border">
+                  Por {selectedSmoke.author.displayName}
+                </Badge>
+                <Badge variant="outline" className="border-border">
+                  <Clock className="w-3 h-3 mr-1" />
+                  {selectedSmoke.timestamp}s
+                </Badge>
               </div>
               
               <div className="aspect-video">
                 <iframe
                   src={selectedSmoke.videoUrl}
-                  title={selectedSmoke.name}
+                  title={selectedSmoke.title}
                   className="w-full h-full rounded-lg"
                   allowFullScreen
                 />
               </div>
               
-              <div className="space-y-2">
-                <h4 className="font-semibold text-popover-foreground">Descrição:</h4>
-                <p className="text-popover-foreground">{selectedSmoke.description}</p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleUpvote(selectedSmoke.id)}
+                    disabled={ratingLoading}
+                  >
+                    <ThumbsUp className="w-4 h-4 mr-2" />
+                    Upvote
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleDownvote(selectedSmoke.id)}
+                    disabled={ratingLoading}
+                  >
+                    <ThumbsDown className="w-4 h-4 mr-2" />
+                    Downvote
+                  </Button>
+                  {isAuthenticated && user?.id === selectedSmoke.author.id && (
+                    <Button
+                      variant="destructive"
+                      onClick={() => {
+                        // TODO: Implement delete functionality
+                        console.log('Delete smoke:', selectedSmoke.id)
+                      }}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Deletar
+                    </Button>
+                  )}
+                  {isAuthenticated && user?.id !== selectedSmoke.author.id && (
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setReportReason("")
+                      }}
+                    >
+                      <Flag className="w-4 h-4 mr-2" />
+                      Reportar
+                    </Button>
+                  )}
+                </div>
+                
+                {isAuthenticated && (
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Motivo do reporte:</label>
+                    <Input
+                      value={reportReason}
+                      onChange={(e) => setReportReason(e.target.value)}
+                      placeholder="Descreva o motivo do reporte..."
+                      className="border-border"
+                    />
+                    <Button
+                      onClick={() => handleReport(selectedSmoke.id)}
+                      disabled={!reportReason.trim() || reportLoading}
+                      variant="destructive"
+                      size="sm"
+                    >
+                      {reportLoading ? "Enviando..." : "Enviar Reporte"}
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           )}
