@@ -120,9 +120,6 @@ function MapGridContent() {
                   <h3 className="text-xl font-bold text-card-foreground group-hover:text-primary transition-colors">
                     {map.displayName || map.name}
                   </h3>
-                  <Badge variant="outline" className="text-xs border-border">
-                    {map.name}
-                  </Badge>
                 </div>
                 <p className="text-muted-foreground mb-4 text-pretty line-clamp-2">
                   {map.description || 'Mapa do Counter-Strike 2'}

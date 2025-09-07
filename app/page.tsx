@@ -27,12 +27,11 @@ export default async function HomePage() {
       <main className="container mx-auto px-4 py-8">
         {/* Hero Section */}
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold text-balance mb-6 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
-            CS2 Smokes
+          <h1 className="text-4xl md:text-6xl font-bold text-balance mb-6 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent" style={{ fontFamily: 'var(--font-new-amsterdam)' }}>
+            CS2 Smokes Hub
           </h1>
           <p className="text-xl text-muted-foreground text-pretty max-w-3xl mx-auto mb-8">
-            Domine as smokes do Counter Strike 2 com tutoriais interativos.
-            Aprenda as melhores posições táticas e eleve seu jogo para o próximo nível.
+            O arsenal de smokes definitivo, alimentado e validado pela comunidade.
           </p>
         </div>
 

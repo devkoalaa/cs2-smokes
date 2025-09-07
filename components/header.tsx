@@ -1,15 +1,18 @@
 "use client"
 
+import { SteamLoginButton } from "@/components/auth/SteamLoginButton"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Map, Menu, Target, Github } from "lucide-react"
+import { useAuth } from "@/contexts/AuthContext"
+import { Github, LogOut, Map, Menu, Target } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { SteamLoginButton } from "@/components/auth/SteamLoginButton"
 
 export function Header() {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
+  const { user, isAuthenticated, logout } = useAuth()
 
   const navigation = [
     { name: "Mapas", href: "/", icon: Map },
@@ -20,13 +23,13 @@ export function Header() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => router.push('/') }>
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => router.push('/')}>
             <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-lg transition-transform duration-150 group-hover:scale-105">
               <Target className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-card-foreground">CS2 Smokes Hub</h1>
-              <p className="text-sm text-muted-foreground">Em busca da perfeitinha</p>
+              <h1 className="text-3xl font-bold text-card-foreground" style={{ fontFamily: 'var(--font-new-amsterdam)' }}>CS2 Smokes Hub</h1>
+              <p className="text-sm text-muted-foreground">Arsenal Comunitário</p>
             </div>
           </div>
 
@@ -67,8 +70,23 @@ export function Header() {
                   <span className="sr-only">Toggle menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <div className="flex flex-col space-y-4 mt-8">
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]" showCloseButton={false}>
+                <div className="flex flex-col space-y-6 mt-8">
+                  <div className="flex items-center justify-between gap-4 px-9">
+                    {isAuthenticated && (
+                      <div className="text-xl font-semibold text-card-foreground">{user?.username}</div>
+                    )}
+                    <Avatar className="h-16 w-16">
+                      {isAuthenticated && user?.avatarUrl ? (
+                        <AvatarImage src={user.avatarUrl} alt={user.username} />
+                      ) : (
+                        <AvatarFallback>?</AvatarFallback>
+                      )}
+                    </Avatar>
+                  </div>
+
+                  <div className="border-t border-border mx-4"></div>
+
                   {navigation.map((item) => (
                     <Button
                       key={item.name}
@@ -77,7 +95,7 @@ export function Header() {
                         router.push(item.href)
                         setIsOpen(false)
                       }}
-                      className="justify-start text-card-foreground hover:text-primary-foreground hover:bg-primary transition-transform duration-150 hover:scale-105"
+                      className="justify-center w-full text-card-foreground hover:text-primary-foreground hover:bg-primary transition-transform duration-150 hover:scale-105"
                     >
                       <item.icon className="w-4 h-4 mr-2" />
                       {item.name}
@@ -89,13 +107,27 @@ export function Header() {
                       window.open('https://github.com/devkoalaa', '_blank')
                       setIsOpen(false)
                     }}
-                    className="justify-start text-card-foreground hover:text-primary-foreground hover:bg-primary"
+                    className="justify-center w-full text-card-foreground hover:text-primary-foreground hover:bg-primary"
                   >
                     <Github className="w-4 h-4 mr-2" />
                     GitHub
                   </Button>
-                  <div className="pt-4">
-                    <SteamLoginButton />
+                  <div className="pt-2 w-full flex justify-center">
+                    {isAuthenticated ? (
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          logout();
+                          setIsOpen(false);
+                        }}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full"
+                      >
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Sair
+                      </Button>
+                    ) : (
+                      <SteamLoginButton />
+                    )}
                   </div>
                 </div>
               </SheetContent>

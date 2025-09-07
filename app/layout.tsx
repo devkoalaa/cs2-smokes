@@ -6,6 +6,12 @@ import { AuthProvider } from '@/contexts/AuthContext'
 import { AuthLoading } from '@/components/auth/AuthLoading'
 import './globals.css'
 
+// Custom font configuration
+const newAmsterdamFont = {
+  variable: '--font-new-amsterdam',
+  className: 'font-new-amsterdam'
+}
+
 export const metadata: Metadata = {
   title: 'CS2 Smoke Tutorials | Domine as Smokes do Counter Strike 2',
   description: 'Aprenda as melhores posições de smoke no Counter Strike 2. Tutoriais interativos para todos os mapas oficiais do CS2.',
@@ -33,7 +39,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${newAmsterdamFont.variable}`}>
         <AuthProvider>
           {children}
           <AuthLoading />

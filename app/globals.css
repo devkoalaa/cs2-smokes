@@ -3,6 +3,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Custom font - NewAmsterdam */
+@font-face {
+  font-family: 'NewAmsterdam';
+  src: url('/fonts/NewAmsterdam-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   /* Updated color tokens for CS2 gaming theme with dark tactical colors */
   --background: oklch(0.145 0 0); /* Dark background for gaming vibe */
@@ -79,6 +88,7 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-new-amsterdam: 'NewAmsterdam', sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

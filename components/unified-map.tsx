@@ -167,6 +167,11 @@ export default function UnifiedMap({
       </MapContainer>
 
       <style jsx global>{`
+        .unified-map-container {
+          position: relative;
+          z-index: 0;
+        }
+
         .smoke-marker {
           background: #3b82f6;
           border: 2px solid #ffffff;
