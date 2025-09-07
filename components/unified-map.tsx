@@ -3,7 +3,7 @@
 import { Smoke } from '@/lib/services/smokes.service';
 import { CRS, Icon, LatLngBounds } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { ImageOverlay, MapContainer, Marker, Popup } from 'react-leaflet';
+import { ImageOverlay, MapContainer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import MapPopup from './map-popup';
 
 // Fix para ícones do Leaflet no Next.js
@@ -30,6 +30,8 @@ interface UnifiedMapProps {
   className?: string;
   height?: string;
   width?: string;
+  onMapClick?: (x_percent: number, y_percent: number) => void;
+  tempPoint?: { x_coord: number; y_coord: number };
 }
 
 export default function UnifiedMap({
@@ -38,7 +40,9 @@ export default function UnifiedMap({
   onSmokeClick,
   className = '',
   height = '600px',
-  width = '100%'
+  width = '100%',
+  onMapClick,
+  tempPoint
 }: UnifiedMapProps) {
   // Dimensões padrão da imagem (assumindo imagens quadradas de alta resolução)
   const imageSize = 1024;
@@ -56,6 +60,27 @@ export default function UnifiedMap({
       (xPercent / 100) * imageSize
     ];
   };
+
+  // Converter coordenadas do mapa para percentuais (0-100)
+  const convertToPercentCoords = (lat: number, lng: number): [number, number] => {
+    const xPercent = (lng / imageSize) * 100;
+    const yPercent = (lat / imageSize) * 100;
+    return [xPercent, yPercent];
+  };
+
+  function MapClickHandler() {
+    useMapEvents({
+      click: (e) => {
+        if (!onMapClick) return;
+        const { lat, lng } = e.latlng;
+        const [xPercent, yPercent] = convertToPercentCoords(lat, lng);
+        // Clamp values between 0 and 100
+        const clamp = (v: number) => Math.max(0, Math.min(100, v));
+        onMapClick(Number(clamp(xPercent).toFixed(2)), Number(clamp(yPercent).toFixed(2)));
+      },
+    });
+    return null;
+  }
 
   return (
     <div className={`unified-map-container ${className}`} style={{ height, width }}>
@@ -80,6 +105,9 @@ export default function UnifiedMap({
           opacity={1}
         />
 
+        {/* Captura de cliques no mapa para seleção de coordenadas */}
+        {onMapClick ? <MapClickHandler /> : null}
+
         {/* Marcadores para smokes */}
         {smokes.map((smoke) => {
           const position = convertToMapCoords(smoke.x_coord, smoke.y_coord);
@@ -101,6 +129,15 @@ export default function UnifiedMap({
             </Marker>
           );
         })}
+
+        {/* Marcador temporário para ponto selecionado */}
+        {tempPoint ? (
+          <Marker
+            key="temp-point"
+            position={convertToMapCoords(tempPoint.x_coord, tempPoint.y_coord)}
+            icon={smokeIcon}
+          />
+        ) : null}
       </MapContainer>
 
       <style jsx global>{`

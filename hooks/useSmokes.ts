@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { SmokesService, Smoke, CreateSmokeData } from '@/lib/services/smokes.service';
 import { useAuth } from '@/contexts/AuthContext';
+import { AuthService } from '@/lib/auth';
 
 export function useSmokes(mapId: number) {
   const [smokes, setSmokes] = useState<Smoke[]>([]);
@@ -39,14 +40,13 @@ export function useSmokeActions() {
   const smokesService = SmokesService.getInstance();
 
   const createSmoke = async (data: CreateSmokeData) => {
-    if (!user?.token) {
-      throw new Error('User not authenticated');
-    }
+    const token = AuthService.getInstance().getToken();
+    if (!token) throw new Error('User not authenticated');
 
     try {
       setLoading(true);
       setError(null);
-      const result = await smokesService.createSmoke(data, user.token);
+      const result = await smokesService.createSmoke(data, token);
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create smoke';
@@ -58,14 +58,13 @@ export function useSmokeActions() {
   };
 
   const deleteSmoke = async (smokeId: number) => {
-    if (!user?.token) {
-      throw new Error('User not authenticated');
-    }
+    const token = AuthService.getInstance().getToken();
+    if (!token) throw new Error('User not authenticated');
 
     try {
       setLoading(true);
       setError(null);
-      await smokesService.deleteSmoke(smokeId, user.token);
+      await smokesService.deleteSmoke(smokeId, token);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete smoke';
       setError(errorMessage);
