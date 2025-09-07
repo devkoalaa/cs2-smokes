@@ -1,11 +1,10 @@
 'use client';
 
-import { MapContainer, ImageOverlay, Marker, Popup } from 'react-leaflet';
-import { LatLngBounds, CRS } from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { Icon } from 'leaflet';
-import { Play } from 'lucide-react';
 import { Smoke } from '@/lib/services/smokes.service';
+import { CRS, Icon, LatLngBounds } from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { ImageOverlay, MapContainer, Marker, Popup } from 'react-leaflet';
+import MapPopup from './map-popup';
 
 // Fix para ícones do Leaflet no Next.js
 delete (Icon.Default.prototype as any)._getIconUrl;
@@ -33,17 +32,17 @@ interface UnifiedMapProps {
   width?: string;
 }
 
-export default function UnifiedMap({ 
-  radarImagePath, 
-  smokes, 
+export default function UnifiedMap({
+  radarImagePath,
+  smokes,
   onSmokeClick,
-  className = '', 
-  height = '600px', 
-  width = '100%' 
+  className = '',
+  height = '600px',
+  width = '100%'
 }: UnifiedMapProps) {
   // Dimensões padrão da imagem (assumindo imagens quadradas de alta resolução)
   const imageSize = 1024;
-  
+
   // Bounds da imagem usando sistema de coordenadas simples
   const bounds = new LatLngBounds(
     [0, 0], // Southwest corner
@@ -61,10 +60,9 @@ export default function UnifiedMap({
   return (
     <div className={`unified-map-container ${className}`} style={{ height, width }}>
       <MapContainer
-        center={[imageSize / 2, imageSize / 2]} // Centro do mapa
-        zoom={0}
+        center={[imageSize / 2, imageSize / 2]}
         style={{ height: '100%', width: '100%' }}
-        crs={CRS.Simple} // Usar sistema de coordenadas simples
+        crs={CRS.Simple}
         bounds={bounds}
         maxBounds={bounds}
         minZoom={-2}
@@ -81,40 +79,30 @@ export default function UnifiedMap({
           bounds={bounds}
           opacity={1}
         />
-        
+
         {/* Marcadores para smokes */}
         {smokes.map((smoke) => {
           const position = convertToMapCoords(smoke.x_coord, smoke.y_coord);
-          
+
           return (
-            <Marker 
-              key={smoke.id} 
+            <Marker
+              key={smoke.id}
               position={position}
               icon={smokeIcon}
             >
               <Popup>
-                <div className="p-2 min-w-[200px]">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Play className="w-4 h-4 text-primary" />
-                    <h3 className="font-bold text-lg">{smoke.title}</h3>
-                  </div>
-                  <div className="space-y-1 text-sm">
-                    <p className="text-gray-600">Score: {smoke.score}</p>
-                    <p className="text-gray-600">Por: {smoke.author.displayName}</p>
-                    <button
-                      onClick={() => onSmokeClick(smoke)}
-                      className="w-full bg-primary text-primary-foreground px-3 py-1 rounded text-sm hover:bg-primary/90 transition-colors"
-                    >
-                      Ver Detalhes
-                    </button>
-                  </div>
-                </div>
+                <MapPopup
+                  title={smoke.title}
+                  author={smoke.author.displayName}
+                  videoUrl={smoke.videoUrl}
+                  onDetails={() => onSmokeClick(smoke)}
+                />
               </Popup>
             </Marker>
           );
         })}
       </MapContainer>
-      
+
       <style jsx global>{`
         .smoke-marker {
           background: #3b82f6;
@@ -136,11 +124,20 @@ export default function UnifiedMap({
         
         .leaflet-popup-content-wrapper {
           border-radius: 8px;
+          background: var(--color-popover);
+          color: var(--color-popover-foreground);
+          border: 1px solid var(--color-border);
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         
+        .leaflet-popup-content {
+          margin: 0 !important;
+          box-shadow: none;
+        }
+        
         .leaflet-popup-tip {
-          background: white;
+          background: var(--color-popover);
+          border: 1px solid var(--color-border);
         }
       `}</style>
     </div>

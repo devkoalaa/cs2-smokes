@@ -35,6 +35,44 @@ interface MapViewerProps {
   mapId: number
 }
 
+function buildEmbeddableVideoUrl(originalUrl: string, startSeconds?: number): string {
+  try {
+    const url = new URL(originalUrl)
+    const hostname = url.hostname.replace(/^www\./, "")
+
+    // Handle YouTube and youtu.be URLs
+    if (hostname === "youtube.com" || hostname === "m.youtube.com" || hostname === "youtube-nocookie.com" || hostname === "youtu.be") {
+      let videoId: string | null = null
+
+      if (hostname === "youtu.be") {
+        videoId = url.pathname.split("/").filter(Boolean)[0] || null
+      } else if (url.pathname.startsWith("/watch")) {
+        videoId = url.searchParams.get("v")
+      } else if (url.pathname.startsWith("/shorts/")) {
+        videoId = url.pathname.split("/")[2] || null
+      } else if (url.pathname.startsWith("/embed/")) {
+        videoId = url.pathname.split("/")[2] || null
+      }
+
+      if (videoId) {
+        const base = `https://www.youtube-nocookie.com/embed/${videoId}`
+        const params = new URLSearchParams()
+        const start = Number(startSeconds)
+        if (!Number.isNaN(start) && start > 0) {
+          params.set("start", String(start))
+        }
+        const query = params.toString()
+        return query ? `${base}?${query}` : base
+      }
+    }
+
+    // Any other URL: return as-is
+    return originalUrl
+  } catch {
+    return originalUrl
+  }
+}
+
 export function MapViewer({ mapId }: MapViewerProps) {
   const [selectedSmoke, setSelectedSmoke] = useState<Smoke | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
@@ -338,9 +376,12 @@ export function MapViewer({ mapId }: MapViewerProps) {
               
               <div className="aspect-video">
                 <iframe
-                  src={selectedSmoke.videoUrl}
+                  src={buildEmbeddableVideoUrl(selectedSmoke.videoUrl, selectedSmoke.timestamp)}
                   title={selectedSmoke.title}
                   className="w-full h-full rounded-lg"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  loading="lazy"
                   allowFullScreen
                 />
               </div>
