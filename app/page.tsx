@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { Header } from "@/components/header"
 import { MapGrid } from "@/components/map-grid"
 import { Badge } from "@/components/ui/badge"

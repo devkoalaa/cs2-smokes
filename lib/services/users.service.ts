@@ -11,7 +11,7 @@ export class UsersService {
   }
 
   async getUsersCount(): Promise<number> {
-    const response = await fetch(`${config.apiUrl}/users/count`);
+    const response = await fetch(`${config.apiUrl}/users/count`, { cache: 'no-store' });
     if (!response.ok) {
       throw new Error(`Failed to fetch users count: ${response.status}`);
     }

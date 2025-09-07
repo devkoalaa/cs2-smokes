@@ -56,7 +56,7 @@ export class SmokesService {
   }
 
   async getSmokesByMapId(mapId: number): Promise<Smoke[]> {
-    const response = await fetch(`${config.apiUrl}/maps/${mapId}/smokes`);
+    const response = await fetch(`${config.apiUrl}/maps/${mapId}/smokes`, { cache: 'no-store' });
     
     if (!response.ok) {
       throw new Error(`Failed to fetch smokes for map ${mapId}: ${response.status}`);

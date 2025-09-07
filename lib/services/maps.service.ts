@@ -23,7 +23,7 @@ export class MapsService {
   }
 
   async getAllMaps(): Promise<Map[]> {
-    const response = await fetch(`${config.apiUrl}/maps`);
+    const response = await fetch(`${config.apiUrl}/maps`, { cache: 'no-store' });
 
     if (!response.ok) {
       throw new Error(`Failed to fetch maps: ${response.status}`);
@@ -35,7 +35,7 @@ export class MapsService {
   }
 
   async getMapById(id: number): Promise<Map> {
-    const response = await fetch(`${config.apiUrl}/maps/${id}`);
+    const response = await fetch(`${config.apiUrl}/maps/${id}`, { cache: 'no-store' });
 
     if (!response.ok) {
       throw new Error(`Failed to fetch map: ${response.status}`);
