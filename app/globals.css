@@ -132,18 +132,19 @@
 }
 
 .leaflet-popup-content-wrapper {
-  background: hsl(var(--popover)) !important;
-  color: hsl(var(--popover-foreground)) !important;
-  border: 1px solid hsl(var(--border)) !important;
+  background: var(--color-popover) !important;
+  color: var(--color-popover-foreground) !important;
+  border: 1px solid var(--color-border) !important;
   border-radius: calc(var(--radius) - 2px) !important;
 }
 
 .leaflet-popup-tip {
-  background: hsl(var(--popover)) !important;
+  background: var(--color-popover) !important;
+  border: 1px solid var(--color-border) !important;
 }
 
 .leaflet-popup-close-button {
-  color: hsl(var(--popover-foreground)) !important;
+  color: var(--color-popover-foreground) !important;
 }
 
 .leaflet-control-zoom a {
@@ -159,4 +160,36 @@
 
 .leaflet-marker-icon {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+/* Custom scrollbar for smokes list */
+.scrollbar-smokes {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: var(--color-primary) transparent; /* Firefox */
+}
+.scrollbar-smokes::-webkit-scrollbar {
+  width: 8px; /* Chrome/Safari/Edge */
+}
+.scrollbar-smokes::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-smokes::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.scrollbar-smokes:hover::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary);
+}
+
+/* Hide number input arrows when desired */
+input[type="number"].hide-number-input-arrows::-webkit-outer-spin-button,
+input[type="number"].hide-number-input-arrows::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"].hide-number-input-arrows {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }

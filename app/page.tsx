@@ -3,16 +3,21 @@ import { MapGrid } from "@/components/map-grid"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { MapsService } from "@/lib/services/maps.service"
+import { UsersService } from "@/lib/services/users.service"
 import { BookOpen, Target, Users } from "lucide-react"
 
 export default async function HomePage() {
   const mapsService = MapsService.getInstance()
+  const usersService = UsersService.getInstance()
   const maps = await mapsService.getAllMaps()
+  const usersCount = await usersService.getUsersCount()
+
+  const totalSmokes = maps.reduce((sum, m) => sum + (m.smokesCount ?? 0), 0)
 
   const stats = [
     { label: "Mapas Disponíveis", value: maps.length.toString(), icon: Target },
-    { label: "Smokes Totais", value: "0", icon: BookOpen },
-    { label: "Usuários Ativos", value: "1.2k+", icon: Users },
+    { label: "Smokes Totais", value: totalSmokes.toString(), icon: BookOpen },
+    { label: "Usuários Ativos", value: usersCount.toString(), icon: Users },
   ]
 
   return (

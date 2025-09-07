@@ -85,6 +85,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
   const [newTimestamp, setNewTimestamp] = useState<string>("")
   const [selectedCoords, setSelectedCoords] = useState<{ x_coord: number; y_coord: number } | null>(null)
   const [selectingOnMap, setSelectingOnMap] = useState(false)
+  const [hoveredSmokeId, setHoveredSmokeId] = useState<number | null>(null)
   const [reportReason, setReportReason] = useState("")
   const mapRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
@@ -215,6 +216,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
                   onSmokeClick={handleSmokeClick}
                   onMapClick={selectingOnMap ? ((x, y) => setSelectedCoords({ x_coord: x, y_coord: y })) : undefined}
                   tempPoint={selectingOnMap ? (selectedCoords || undefined) : undefined}
+                  highlightedSmokeId={hoveredSmokeId}
                   height="600px"
                   className="rounded-lg border border-border"
                 />
@@ -229,14 +231,14 @@ export function MapViewer({ mapId }: MapViewerProps) {
             </div>
 
             {/* Controls Panel */}
-            <div className="w-full lg:w-80 space-y-4">
-              <Tabs defaultValue="smokes" className="w-full">
+            <div className="w-full lg:w-80 h-[600px] flex flex-col space-y-4 min-h-0">
+              <Tabs defaultValue="smokes" className="w-full flex-1 flex flex-col min-h-0">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="smokes">Smokes</TabsTrigger>
                   <TabsTrigger value="filters">Filtros</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="smokes" className="space-y-4">
+                <TabsContent value="smokes" className="flex-1 flex flex-col min-h-0 space-y-4">
                   <div className="space-y-3">
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
@@ -244,7 +246,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
                         placeholder="Buscar smokes..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 border-border focus:ring-primary"
+                        className="pl-10 focus:ring-primary"
                       />
                     </div>
 
@@ -261,12 +263,14 @@ export function MapViewer({ mapId }: MapViewerProps) {
                     </div>
                   </div>
 
-                  <div className="space-y-2 max-h-96 overflow-y-auto">
+                  <div className="space-y-2 flex-1 overflow-y-auto scrollbar-smokes pr-1 min-h-0">
                     {filteredSmokes.map((smoke) => (
                       <div
                         key={smoke.id}
                         className="border border-border rounded-lg p-3 hover:bg-accent transition-colors group cursor-pointer"
                         onClick={() => handleSmokeClick(smoke)}
+                        onMouseEnter={() => setHoveredSmokeId(smoke.id)}
+                        onMouseLeave={() => setHoveredSmokeId((prev) => (prev === smoke.id ? null : prev))}
                       >
                         <div className="flex items-start gap-3">
                           <Button
@@ -277,6 +281,8 @@ export function MapViewer({ mapId }: MapViewerProps) {
                               handleSmokeClick(smoke)
                             }}
                             className="p-1 h-auto"
+                            onMouseEnter={() => setHoveredSmokeId(smoke.id)}
+                            onMouseLeave={() => setHoveredSmokeId((prev) => (prev === smoke.id ? null : prev))}
                           >
                             <Play className="w-4 h-4 text-primary group-hover:text-accent-foreground transition-colors" />
                           </Button>
@@ -422,7 +428,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
                       value={reportReason}
                       onChange={(e) => setReportReason(e.target.value)}
                       placeholder="Descreva o motivo do reporte..."
-                      className="border-border"
+                      className=""
                     />
                     <Button
                       onClick={() => handleReport(selectedSmoke.id)}
@@ -457,15 +463,15 @@ export function MapViewer({ mapId }: MapViewerProps) {
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Título</label>
-              <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Ex: CT Smoke from T Spawn" className="border-border" />
+              <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Ex: CT Smoke from T Spawn" className="" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">URL do Vídeo</label>
-              <Input value={newVideoUrl} onChange={(e) => setNewVideoUrl(e.target.value)} placeholder="https://youtu.be/..." className="border-border" />
+              <Input value={newVideoUrl} onChange={(e) => setNewVideoUrl(e.target.value)} placeholder="https://youtu.be/..." className="" />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Timestamp (segundos)</label>
-              <Input type="number" min={0} step={1} value={newTimestamp} onChange={(e) => setNewTimestamp(e.target.value)} placeholder="Ex: 42" className="border-border" />
+              <label className="text-sm font-medium">Timestamp do momento da smoke (segundos)</label>
+              <Input type="number" min={0} step={1} value={newTimestamp} onChange={(e) => setNewTimestamp(e.target.value)} placeholder="Ex: 42" className="hide-number-input-arrows" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Coordenadas</label>
@@ -481,6 +487,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
                   variant={selectingOnMap ? "default" : "outline"}
                   type="button"
                   onClick={() => {
+                    setSelectedCoords(null)
                     setSelectingOnMap(true)
                     setShowAddSmoke(false)
                   }}

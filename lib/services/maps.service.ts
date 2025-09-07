@@ -7,6 +7,7 @@ export interface Map {
   description?: string;
   thumbnail?: string;
   radar?: string;
+  smokesCount?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }

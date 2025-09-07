@@ -32,7 +32,7 @@ export function SteamLoginButton() {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+          <Button variant="ghost" className="relative h-10 w-10 rounded-full cursor-pointer transition-transform duration-150 hover:scale-105">
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.avatarUrl} alt={user.username} />
               <AvatarFallback>
@@ -45,9 +45,6 @@ export function SteamLoginButton() {
           <div className="flex items-center justify-start gap-2 p-2">
             <div className="flex flex-col space-y-1 leading-none">
               <p className="font-medium">{user.username}</p>
-              <p className="w-[200px] truncate text-sm text-muted-foreground">
-                Steam ID: {user.steamId}
-              </p>
             </div>
           </div>
           <DropdownMenuSeparator />

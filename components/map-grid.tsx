@@ -36,7 +36,7 @@ function MapGridContent() {
         case "name":
           return aName.localeCompare(bName)
         case "smokes":
-          return 0 // TODO: Add smoke count when available
+          return (b.smokesCount ?? 0) - (a.smokesCount ?? 0)
         case "difficulty":
           return 0 // TODO: Add difficulty when available
         case "popularity":
@@ -111,7 +111,7 @@ function MapGridContent() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
               <div className="absolute top-3 right-3 flex gap-2">
                 <Badge className="bg-primary text-primary-foreground px-2 py-1 rounded-md text-sm font-medium shadow-lg">
-                  0 smokes
+                  {(map.smokesCount ?? 0)} smoke{(map.smokesCount ?? 0) !== 1 ? 's' : ''}
                 </Badge>
               </div>
             </div>
