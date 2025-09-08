@@ -6,7 +6,7 @@ import { SteamLoginButton } from "@/components/auth/SteamLoginButton"
 import { useAuth } from "@/contexts/AuthContext"
 import { Github, LogOut, Map, X, Cloudy } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 
 interface MobileSidebarProps {
@@ -17,10 +17,6 @@ interface MobileSidebarProps {
 export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
   const router = useRouter()
   const { user, isAuthenticated, logout, isLoading } = useAuth()
-  const sidebarRef = useRef<HTMLDivElement>(null)
-  const [startX, setStartX] = useState(0)
-  const [currentX, setCurrentX] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   const navigation = [
@@ -36,15 +32,21 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
-      document.body.style.overflowX = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      document.body.style.height = '100%'
     } else {
-      document.body.style.overflow = 'unset'
-      document.body.style.overflowX = 'unset'
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.height = ''
     }
 
     return () => {
-      document.body.style.overflow = 'unset'
-      document.body.style.overflowX = 'unset'
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.height = ''
     }
   }, [isOpen])
 
@@ -70,126 +72,35 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
     onClose()
   }
 
-  // Touch gesture handlers
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setStartX(e.touches[0].clientX)
-    setCurrentX(e.touches[0].clientX)
-    setIsDragging(true)
-  }
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return
-    
-    const touchX = e.touches[0].clientX
-    const deltaX = touchX - startX
-    
-    // Only allow right swipe (closing gesture)
-    if (deltaX > 0) {
-      setCurrentX(touchX)
-    }
-  }
-
-  const handleTouchEnd = () => {
-    if (!isDragging) return
-    
-    const deltaX = currentX - startX
-    const threshold = 100 // Minimum swipe distance to close
-    
-    if (deltaX > threshold) {
-      // Add a small delay for visual feedback
-      setTimeout(() => {
-        onClose()
-      }, 50)
-    }
-    
-    setIsDragging(false)
-    setStartX(0)
-    setCurrentX(0)
-  }
-
-  // Mouse drag handlers for desktop testing
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setStartX(e.clientX)
-    setCurrentX(e.clientX)
-    setIsDragging(true)
-  }
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return
-    
-    const mouseX = e.clientX
-    const deltaX = mouseX - startX
-    
-    if (deltaX > 0) {
-      setCurrentX(mouseX)
-    }
-  }
-
-  const handleMouseUp = () => {
-    if (!isDragging) return
-    
-    const deltaX = currentX - startX
-    const threshold = 100
-    
-    if (deltaX > threshold) {
-      // Add a small delay for visual feedback
-      setTimeout(() => {
-        onClose()
-      }, 50)
-    }
-    
-    setIsDragging(false)
-    setStartX(0)
-    setCurrentX(0)
-  }
-
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className={cn(
-          "fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300",
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        )}
-        onClick={onClose}
-        aria-hidden="true"
-      />
+       {/* Backdrop */}
+       <div
+         className={cn(
+           "fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] transition-opacity duration-300",
+           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+         )}
+         onClick={onClose}
+         aria-hidden="true"
+       />
 
        {/* Sidebar */}
        <div
-         ref={sidebarRef}
          className={cn(
-           "fixed top-0 right-0 h-screen w-80 max-w-[85vw] border-l border-border z-50 transition-transform duration-300 ease-in-out flex flex-col"
+           "fixed top-0 right-0 w-80 max-w-[85vw] border-l border-border z-[70] transition-transform duration-300 ease-in-out flex flex-col",
+           isOpen ? "translate-x-0" : "translate-x-full"
          )}
          style={{
            backgroundColor: 'hsl(var(--sidebar))',
            color: 'hsl(var(--sidebar-foreground))',
-           transform: isDragging 
-             ? `translateX(${Math.max(0, currentX - startX)}px)` 
-             : isOpen ? "translateX(0)" : "translateX(100%)"
+           height: '100vh',
+           minHeight: '100vh'
          }}
-         onTouchStart={handleTouchStart}
-         onTouchMove={handleTouchMove}
-         onTouchEnd={handleTouchEnd}
-         onMouseDown={handleMouseDown}
-         onMouseMove={handleMouseMove}
-         onMouseUp={handleMouseUp}
-         onMouseLeave={handleMouseUp}
          role="dialog"
          aria-modal="true"
          aria-label="Menu de navegação"
        >
-        {/* Swipe Indicator */}
-        <div className="flex justify-center pt-2 pb-1">
-          <div 
-            className={cn(
-              "h-1 rounded-full transition-all duration-200",
-              isDragging ? "w-12 bg-primary/60" : "w-8 bg-muted-foreground/30"
-            )}
-          />
-        </div>
-
-        {/* Header */}
+         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border bg-sidebar">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-lg">
@@ -283,7 +194,7 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
            </nav>
 
            {/* Footer Actions */}
-           <div className="p-4 border-t border-border bg-sidebar flex-shrink-0">
+           <div className="p-4 border-t border-border bg-sidebar flex-shrink-0 pb-24">
              {!mounted || isLoading ? (
                <div className="space-y-3">
                  <div className="h-4 bg-muted animate-pulse rounded mb-3"></div>

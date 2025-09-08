@@ -3,7 +3,9 @@ import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { MobileSidebarProvider } from '@/contexts/MobileSidebarContext'
 import { AuthLoading } from '@/components/auth/AuthLoading'
+import { GlobalMobileSidebar } from '@/components/global-mobile-sidebar'
 import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
@@ -43,10 +45,13 @@ export default function RootLayout({
     <html lang="pt-BR">
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${newAmsterdamFont.variable}`}>
         <AuthProvider>
-          {children}
-          <AuthLoading />
-          <Toaster />
-          <Analytics />
+          <MobileSidebarProvider>
+            {children}
+            <AuthLoading />
+            <GlobalMobileSidebar />
+            <Toaster />
+            <Analytics />
+          </MobileSidebarProvider>
         </AuthProvider>
       </body>
     </html>

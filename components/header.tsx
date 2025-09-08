@@ -1,16 +1,15 @@
 "use client"
 
 import { SteamLoginButton } from "@/components/auth/SteamLoginButton"
-import { MobileSidebar } from "@/components/mobile-sidebar"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/AuthContext"
+import { useMobileSidebar } from "@/contexts/MobileSidebarContext"
 import { Github, Map, Menu, Cloudy } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
 
 export function Header() {
   const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
+  const { toggleSidebar, setIsOpen } = useMobileSidebar()
   const { isAuthenticated } = useAuth()
 
   const navigation = [
@@ -65,7 +64,7 @@ export function Header() {
             <Button 
               variant="ghost" 
               size="icon" 
-              onClick={() => setIsOpen(true)}
+              onClick={toggleSidebar}
               className="text-card-foreground hover:text-primary-foreground hover:bg-primary transition-colors"
             >
               <Menu className="h-5 w-5" />
@@ -74,9 +73,6 @@ export function Header() {
           </div>
         </div>
       </div>
-      
-      {/* Mobile Sidebar */}
-      <MobileSidebar isOpen={isOpen} onClose={() => setIsOpen(false)} />
     </header>
   )
 }
