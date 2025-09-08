@@ -40,7 +40,12 @@ export class AuthService {
   private getUserFromStorage(): User | null {
     if (typeof window === 'undefined') return null;
     const userStr = localStorage.getItem('user');
-    return userStr ? JSON.parse(userStr) : null;
+    const token = localStorage.getItem('auth_token');
+    if (userStr && token) {
+      const user = JSON.parse(userStr);
+      return { ...user, token };
+    }
+    return null;
   }
 
   public isAuthenticated(): boolean {
@@ -55,12 +60,19 @@ export class AuthService {
     return this.user;
   }
 
+  public getUserOrThrow(): User {
+    if (!this.user) {
+      throw new Error('User not authenticated');
+    }
+    return this.user;
+  }
+
   public setAuth(token: string, user: User): void {
     this.token = token;
-    this.user = user;
+    this.user = { ...user, token };
     if (typeof window !== 'undefined') {
       localStorage.setItem('auth_token', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('user', JSON.stringify({ ...user, token }));
     }
   }
 
@@ -90,11 +102,11 @@ export class AuthService {
     }
 
     const user = await response.json();
-    this.user = user;
+    this.user = { ...user, token: this.token };
     if (typeof window !== 'undefined') {
-      localStorage.setItem('user', JSON.stringify(user));
+      localStorage.setItem('user', JSON.stringify({ ...user, token: this.token }));
     }
-    return user;
+    return this.user!;
   }
 
   public getSteamAuthUrl(): string {

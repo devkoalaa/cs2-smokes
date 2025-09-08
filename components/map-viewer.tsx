@@ -14,7 +14,7 @@ import { useRatings } from "@/hooks/useRatings"
 import { useReports } from "@/hooks/useReports"
 import { useSmokeActions, useSmokes } from "@/hooks/useSmokes"
 import { Smoke } from "@/lib/services/smokes.service"
-import { ArrowLeft, Clock, Flag, Play, Plus, Search, Target, ThumbsDown, ThumbsUp, Trash2, X } from "lucide-react"
+import { ArrowDown, ArrowLeft, ArrowUp, Clock, Flag, Play, Plus, Search, Target, ThumbsUp, Trash2, User, X } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
@@ -87,12 +87,14 @@ export function MapViewer({ mapId }: MapViewerProps) {
   const [selectingOnMap, setSelectingOnMap] = useState(false)
   const [hoveredSmokeId, setHoveredSmokeId] = useState<number | null>(null)
   const [reportReason, setReportReason] = useState("")
+  const [showReportDialog, setShowReportDialog] = useState(false)
+  const [localScores, setLocalScores] = useState<Record<number, number>>({})
   const mapRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
   const { smokes, loading, error, refetch } = useSmokes(mapId)
   const { map, loading: mapLoading, error: mapError } = useMap(mapId)
-  const { upvoteSmoke, downvoteSmoke, loading: ratingLoading } = useRatings()
+  const { upvoteSmoke, downvoteSmoke, getUserVote, loading: ratingLoading } = useRatings()
   const { reportSmoke, loading: reportLoading } = useReports()
   const { isAuthenticated, user } = useAuth()
   const { createSmoke, loading: createLoading } = useSmokeActions()
@@ -113,22 +115,93 @@ export function MapViewer({ mapId }: MapViewerProps) {
     setSelectedSmoke(null)
   }
 
+  const getCurrentScore = (smokeId: number, originalScore: number) => {
+    return localScores[smokeId] !== undefined ? localScores[smokeId] : originalScore
+  }
+
+  // Clear local scores when smokes are refetched
+  useEffect(() => {
+    setLocalScores({})
+  }, [smokes])
+
 
   const handleUpvote = async (smokeId: number) => {
     try {
+      const currentVote = getUserVote(smokeId)
+      const originalScore = smokes.find(s => s.id === smokeId)?.score || 0
+      const currentScore = getCurrentScore(smokeId, originalScore)
+
       await upvoteSmoke(smokeId)
-      refetch()
+
+      // Update local score
+      let newScore = currentScore
+      if (currentVote === 1) {
+        // Removing upvote
+        newScore = currentScore - 1
+      } else if (currentVote === -1) {
+        // Changing from downvote to upvote
+        newScore = currentScore + 2
+      } else {
+        // New upvote
+        newScore = currentScore + 1
+      }
+
+      setLocalScores(prev => ({
+        ...prev,
+        [smokeId]: newScore
+      }))
+
+      toast({
+        title: "Voto registrado!",
+        description: "Seu upvote foi registrado com sucesso.",
+      })
     } catch (error) {
       console.error('Failed to upvote:', error)
+      toast({
+        title: "Erro ao votar",
+        description: "Não foi possível registrar seu voto. Tente novamente.",
+        variant: "destructive",
+      })
     }
   }
 
   const handleDownvote = async (smokeId: number) => {
     try {
+      const currentVote = getUserVote(smokeId)
+      const originalScore = smokes.find(s => s.id === smokeId)?.score || 0
+      const currentScore = getCurrentScore(smokeId, originalScore)
+
       await downvoteSmoke(smokeId)
-      refetch()
+
+      // Update local score
+      let newScore = currentScore
+      if (currentVote === -1) {
+        // Removing downvote
+        newScore = currentScore + 1
+      } else if (currentVote === 1) {
+        // Changing from upvote to downvote
+        newScore = currentScore - 2
+      } else {
+        // New downvote
+        newScore = currentScore - 1
+      }
+
+      setLocalScores(prev => ({
+        ...prev,
+        [smokeId]: newScore
+      }))
+
+      toast({
+        title: "Voto registrado!",
+        description: "Seu downvote foi registrado com sucesso.",
+      })
     } catch (error) {
       console.error('Failed to downvote:', error)
+      toast({
+        title: "Erro ao votar",
+        description: "Não foi possível registrar seu voto. Tente novamente.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -138,6 +211,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
     try {
       await reportSmoke(smokeId, { reason: reportReason })
       setReportReason("")
+      setShowReportDialog(false)
       setSelectedSmoke(null)
     } catch (error) {
       console.error('Failed to report:', error)
@@ -290,8 +364,28 @@ export function MapViewer({ mapId }: MapViewerProps) {
                             <div className="flex items-center gap-2 mb-1">
                               <div className="font-medium truncate">{smoke.title}</div>
                             </div>
-                            <div className="text-sm text-muted-foreground mb-2">
-                              Por {smoke.author.displayName}
+                            <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
+                              <div className="flex items-center gap-1 truncate flex-1 mr-2">
+                                <User className="w-3 h-3 flex-shrink-0" />
+                                <span className="truncate">{smoke.author.displayName}</span>
+                              </div>
+                              <div className="flex items-center gap-1 flex-shrink-0">
+                                <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+                                  <ThumbsUp className="w-3 h-3" />
+                                  {(() => {
+                                    const currentScore = getCurrentScore(smoke.id, smoke.score)
+                                    return currentScore > 0 ? `+${currentScore}` : currentScore
+                                  })()}
+                                </Badge>
+                                {getUserVote(smoke.id) && (
+                                  <Badge
+                                    variant={getUserVote(smoke.id) === 1 ? "default" : "destructive"}
+                                    className="text-xs"
+                                  >
+                                    {getUserVote(smoke.id) === 1 ? '↑' : '↓'}
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -355,10 +449,17 @@ export function MapViewer({ mapId }: MapViewerProps) {
             <div className="space-y-4">
               <div className="flex items-center gap-2 mb-4">
                 <Badge variant="outline" className="border-border">
-                  Score: {selectedSmoke.score}
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <ThumbsUp className="w-3 h-3" />
+                    {(() => {
+                      const currentScore = getCurrentScore(selectedSmoke.id, selectedSmoke.score)
+                      return currentScore > 0 ? `+${currentScore}` : currentScore
+                    })()}
+                  </Badge>
                 </Badge>
-                <Badge variant="outline" className="border-border">
-                  Por {selectedSmoke.author.displayName}
+                <Badge variant="outline" className="border-border flex items-center gap-1">
+                  <User className="w-3 h-3" />
+                  {selectedSmoke.author.displayName}
                 </Badge>
                 <Badge variant="outline" className="border-border">
                   <Clock className="w-3 h-3 mr-1" />
@@ -379,51 +480,75 @@ export function MapViewer({ mapId }: MapViewerProps) {
               </div>
 
               <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => handleUpvote(selectedSmoke.id)}
-                    disabled={ratingLoading}
-                  >
-                    <ThumbsUp className="w-4 h-4 mr-2" />
-                    Upvote
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleDownvote(selectedSmoke.id)}
-                    disabled={ratingLoading}
-                  >
-                    <ThumbsDown className="w-4 h-4 mr-2" />
-                    Downvote
-                  </Button>
-                  {isAuthenticated && user?.id === selectedSmoke.author.id && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
                     <Button
-                      variant="destructive"
-                      onClick={() => {
-                        // TODO: Implement delete functionality
-                        console.log('Delete smoke:', selectedSmoke.id)
-                      }}
+                      variant={getUserVote(selectedSmoke.id) === 1 ? "default" : "outline"}
+                      onClick={() => handleUpvote(selectedSmoke.id)}
+                      disabled={ratingLoading}
+                      size="icon"
+                      className={`${getUserVote(selectedSmoke.id) === 1
+                          ? 'bg-green-600 hover:bg-green-700 text-white'
+                          : ''
+                        }`}
                     >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Deletar
+                      <ArrowUp className="w-4 h-4" />
                     </Button>
-                  )}
-                  {isAuthenticated && user?.id !== selectedSmoke.author.id && (
                     <Button
-                      variant="outline"
-                      onClick={() => {
-                        setReportReason("")
-                      }}
+                      variant={getUserVote(selectedSmoke.id) === -1 ? "default" : "outline"}
+                      onClick={() => handleDownvote(selectedSmoke.id)}
+                      disabled={ratingLoading}
+                      size="icon"
+                      className={`${getUserVote(selectedSmoke.id) === -1
+                          ? 'bg-red-600 hover:bg-red-700 text-white'
+                          : ''
+                        }`}
                     >
-                      <Flag className="w-4 h-4 mr-2" />
-                      Reportar
+                      <ArrowDown className="w-4 h-4" />
                     </Button>
-                  )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {isAuthenticated && user?.id === selectedSmoke.author.id && (
+                      <Button
+                        variant="destructive"
+                        onClick={() => {
+                          // TODO: Implement delete functionality
+                          console.log('Delete smoke:', selectedSmoke.id)
+                        }}
+                        size="icon"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    )}
+                    {isAuthenticated && user?.id !== selectedSmoke.author.id && (
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setReportReason("")
+                          setShowReportDialog(true)
+                        }}
+                        size="icon"
+                        className="bg-orange-500 hover:bg-orange-600 text-white border-orange-500"
+                      >
+                        <Flag className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
-                {isAuthenticated && (
+                {isAuthenticated && showReportDialog && (
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Motivo do reporte:</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-sm font-medium">Motivo do reporte:</label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowReportDialog(false)}
+                        className="h-6 w-6 p-0"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
                     <Input
                       value={reportReason}
                       onChange={(e) => setReportReason(e.target.value)}
