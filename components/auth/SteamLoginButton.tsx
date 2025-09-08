@@ -32,7 +32,7 @@ export function SteamLoginButton() {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-10 w-10 rounded-full cursor-pointer transition-transform duration-150 hover:scale-105 hidden md:flex">
+          <Button variant="ghost" className="relative h-10 w-10 rounded-full cursor-pointer hidden md:flex">
             <Avatar className="h-10 w-10">
               <AvatarImage src={user.avatarUrl} alt={user.username} />
               <AvatarFallback>

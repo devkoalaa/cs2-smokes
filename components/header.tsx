@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useAuth } from "@/contexts/AuthContext"
-import { Github, LogOut, Map, Menu, Target } from "lucide-react"
+import { Github, LogOut, Map, Menu, Cloudy } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
@@ -25,7 +25,7 @@ export function Header() {
           {/* Logo */}
           <div className="flex items-center gap-3 cursor-pointer group" onClick={() => router.push('/')}>
             <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-lg transition-transform duration-150 group-hover:scale-105">
-              <Target className="w-6 h-6 text-primary-foreground" />
+              <Cloudy className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-card-foreground" style={{ fontFamily: 'var(--font-new-amsterdam)' }}>CS2 Smokes Hub</h1>
@@ -38,7 +38,7 @@ export function Header() {
             <Button
               variant="ghost"
               onClick={() => window.open('https://github.com/devkoalaa', '_blank')}
-              className="text-card-foreground hover:text-primary-foreground hover:bg-primary transition-transform duration-150 hover:scale-105"
+              className="text-card-foreground hover:text-primary-foreground hover:bg-primary "
               title="GitHub"
             >
               <Github className="w-4 h-4 mr-2" />
@@ -52,7 +52,7 @@ export function Header() {
                   router.push(item.href)
                   setIsOpen(false)
                 }}
-                className="text-card-foreground hover:text-primary-foreground hover:bg-primary transition-transform duration-150 hover:scale-105"
+                className="text-card-foreground hover:text-primary-foreground hover:bg-primary "
               >
                 <item.icon className="w-4 h-4 mr-2" />
                 {item.name}
@@ -95,7 +95,7 @@ export function Header() {
                         router.push(item.href)
                         setIsOpen(false)
                       }}
-                      className="justify-center w-full text-card-foreground hover:text-primary-foreground hover:bg-primary transition-transform duration-150 hover:scale-105"
+                      className="justify-center w-full text-card-foreground hover:text-primary-foreground hover:bg-primary "
                     >
                       <item.icon className="w-4 h-4 mr-2" />
                       {item.name}

@@ -13,23 +13,24 @@ const newAmsterdamFont = {
 }
 
 export const metadata: Metadata = {
-  title: 'CS2 Smoke Tutorials | Domine as Smokes do Counter Strike 2',
-  description: 'Aprenda as melhores posições de smoke no Counter Strike 2. Tutoriais interativos para todos os mapas oficiais do CS2.',
+  title: 'CS2 Smoke Hub | Domine as Smokes do Counter Strike 2',
+  description: 'O arsenal de smokes definitivo, alimentado e validado pela comunidade.',
   keywords: ['CS2', 'Counter Strike 2', 'smoke', 'tutorial', 'tático', 'mapas', 'gaming'],
-  authors: [{ name: 'CS2 Smoke Tutorials' }],
-  creator: 'CS2 Smoke Tutorials',
-  publisher: 'CS2 Smoke Tutorials',
+  authors: [{ name: 'CS2 Smoke Hub' }],
+  creator: 'CS2 Smoke Hub',
+  publisher: 'CS2 Smoke Hub',
   openGraph: {
-    title: 'CS2 Smoke Tutorials',
-    description: 'Domine as smokes do Counter Strike 2 com tutoriais interativos',
+    title: 'CS2 Smoke Hub',
+    description: 'O arsenal de smokes definitivo, alimentado e validado pela comunidade.',
     type: 'website',
     locale: 'pt_BR',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CS2 Smoke Tutorials',
-    description: 'Domine as smokes do Counter Strike 2 com tutoriais interativos',
+    title: 'CS2 Smoke Hub',
+    description: 'O arsenal de smokes definitivo, alimentado e validado pela comunidade.',
   },
+  manifest: '/manifest.webmanifest',
 }
 
 export default function RootLayout({

@@ -131,7 +131,7 @@ function MapGridContent() {
                   </div>
                   <Button
                     onClick={() => handleMapSelect(map.id)}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground group-hover:scale-105 transition-transform"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   >
                     <Play className="w-4 h-4 mr-2" />
                     Ver Smokes

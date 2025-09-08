@@ -14,7 +14,7 @@ import { useRatings } from "@/hooks/useRatings"
 import { useReports } from "@/hooks/useReports"
 import { useSmokeActions, useSmokes } from "@/hooks/useSmokes"
 import { Smoke } from "@/lib/services/smokes.service"
-import { ArrowDown, ArrowLeft, ArrowUp, Clock, Flag, Play, Plus, Search, Target, ThumbsUp, Trash2, User, X } from "lucide-react"
+import { ArrowDown, ArrowLeft, ArrowUp, Check, Clock, Flag, Play, Plus, Search, Target, ThumbsUp, Trash2, User, X } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
@@ -62,6 +62,9 @@ function buildEmbeddableVideoUrl(originalUrl: string, startSeconds?: number): st
         if (!Number.isNaN(start) && start > 0) {
           params.set("start", String(start))
         }
+        params.set("autoplay", "1")
+        params.set("rel", "0")
+        params.set("modestbranding", "1")
         const query = params.toString()
         return query ? `${base}?${query}` : base
       }
@@ -89,6 +92,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
   const [reportReason, setReportReason] = useState("")
   const [showReportDialog, setShowReportDialog] = useState(false)
   const [localScores, setLocalScores] = useState<Record<number, number>>({})
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const mapRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
@@ -97,7 +101,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
   const { upvoteSmoke, downvoteSmoke, getUserVote, loading: ratingLoading } = useRatings()
   const { reportSmoke, loading: reportLoading } = useReports()
   const { isAuthenticated, user } = useAuth()
-  const { createSmoke, loading: createLoading } = useSmokeActions()
+  const { createSmoke, deleteSmoke, loading: createLoading } = useSmokeActions()
   const { toast } = useToast()
 
   useEffect(() => {
@@ -215,6 +219,42 @@ export function MapViewer({ mapId }: MapViewerProps) {
       setSelectedSmoke(null)
     } catch (error) {
       console.error('Failed to report:', error)
+    }
+  }
+
+  const handleDeleteSmoke = async (smokeId: number) => {
+    try {
+      await deleteSmoke(smokeId)
+      toast({
+        title: "Sucesso",
+        description: "Smoke excluída com sucesso!",
+      })
+      refetch()
+      setConfirmingDelete(false)
+      setSelectedSmoke(null)
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir smoke. Tente novamente.",
+        variant: "destructive",
+      })
+      setConfirmingDelete(false)
+    }
+  }
+
+  const handleDeleteClick = () => {
+    if (confirmingDelete) {
+      // Se já está confirmando, executa a exclusão
+      if (selectedSmoke) {
+        handleDeleteSmoke(selectedSmoke.id)
+      }
+    } else {
+      // Primeiro clique: ativa o modo de confirmação
+      setConfirmingDelete(true)
+      // Auto-reset após 3 segundos se não confirmar
+      setTimeout(() => {
+        setConfirmingDelete(false)
+      }, 3000)
     }
   }
 
@@ -510,14 +550,23 @@ export function MapViewer({ mapId }: MapViewerProps) {
                   <div className="flex items-center gap-2">
                     {isAuthenticated && user?.id === selectedSmoke.author.id && (
                       <Button
-                        variant="destructive"
-                        onClick={() => {
-                          // TODO: Implement delete functionality
-                          console.log('Delete smoke:', selectedSmoke.id)
-                        }}
-                        size="icon"
+                        variant={confirmingDelete ? "default" : "destructive"}
+                        onClick={handleDeleteClick}
+                        size={confirmingDelete ? "default" : "icon"}
+                        className={`transition-all duration-300 ${
+                          confirmingDelete 
+                            ? "px-4 py-2 bg-red-600 hover:bg-red-700 text-white" 
+                            : ""
+                        }`}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        {confirmingDelete ? (
+                          <>
+                            <Check className="w-4 h-4 mr-2" />
+                            Apagar?
+                          </>
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
                       </Button>
                     )}
                     {isAuthenticated && user?.id !== selectedSmoke.author.id && (
