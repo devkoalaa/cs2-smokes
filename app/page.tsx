@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { MapsService } from "@/lib/services/maps.service"
 import { UsersService } from "@/lib/services/users.service"
-import { BookOpen, Target, Users } from "lucide-react"
+import { BookOpen, Cloudy, Map, Users } from "lucide-react"
 
 export default async function HomePage() {
   const mapsService = MapsService.getInstance()
@@ -16,8 +16,8 @@ export default async function HomePage() {
   const totalSmokes = maps.reduce((sum, m) => sum + (m.smokesCount ?? 0), 0)
 
   const stats = [
-    { label: "Mapas Disponíveis", value: maps.length.toString(), icon: Target },
-    { label: "Smokes Totais", value: totalSmokes.toString(), icon: BookOpen },
+    { label: "Mapas Disponíveis", value: maps.length.toString(), icon: Map },
+    { label: "Smokes Totais", value: totalSmokes.toString(), icon: Cloudy },
     { label: "Usuários Ativos", value: usersCount.toString(), icon: Users },
   ]
 

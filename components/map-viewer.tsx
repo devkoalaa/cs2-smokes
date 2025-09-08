@@ -93,13 +93,14 @@ export function MapViewer({ mapId }: MapViewerProps) {
   const [showReportDialog, setShowReportDialog] = useState(false)
   const [localScores, setLocalScores] = useState<Record<number, number>>({})
   const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [reportedSmokes, setReportedSmokes] = useState<Set<number>>(new Set())
   const mapRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
   const { smokes, loading, error, refetch } = useSmokes(mapId)
   const { map, loading: mapLoading, error: mapError } = useMap(mapId)
   const { upvoteSmoke, downvoteSmoke, getUserVote, loading: ratingLoading } = useRatings()
-  const { reportSmoke, loading: reportLoading } = useReports()
+  const { getReportsStatusBatch, reportSmoke, loading: reportLoading } = useReports()
   const { isAuthenticated, user } = useAuth()
   const { createSmoke, deleteSmoke, loading: createLoading } = useSmokeActions()
   const { toast } = useToast()
@@ -127,6 +128,38 @@ export function MapViewer({ mapId }: MapViewerProps) {
   useEffect(() => {
     setLocalScores({})
   }, [smokes])
+
+  // Check report status for all smokes when component loads or user changes
+  useEffect(() => {
+    if (isAuthenticated && user?.token && smokes.length > 0) {
+      let isCancelled = false;
+      
+      const checkReportStatuses = async () => {
+        try {
+          const smokeIds = smokes.map(smoke => smoke.id)
+          const statuses = await getReportsStatusBatch(smokeIds)
+          
+          if (!isCancelled) {
+            const newReportedSmokes = new Set<number>()
+            statuses.forEach(status => {
+              if (status.hasReported) {
+                newReportedSmokes.add(status.smokeId)
+              }
+            })
+            setReportedSmokes(newReportedSmokes)
+          }
+        } catch (error) {
+          console.warn('Failed to check report statuses:', error)
+        }
+      }
+      
+      checkReportStatuses()
+      
+      return () => {
+        isCancelled = true;
+      }
+    }
+  }, [isAuthenticated, user?.token, smokes, getReportsStatusBatch])
 
 
   const handleUpvote = async (smokeId: number) => {
@@ -214,11 +247,21 @@ export function MapViewer({ mapId }: MapViewerProps) {
 
     try {
       await reportSmoke(smokeId, { reason: reportReason })
+      setReportedSmokes(prev => new Set([...prev, smokeId]))
       setReportReason("")
       setShowReportDialog(false)
       setSelectedSmoke(null)
+      toast({
+        title: "Reporte enviado!",
+        description: "Seu reporte foi enviado com sucesso.",
+      })
     } catch (error) {
       console.error('Failed to report:', error)
+      toast({
+        title: "Erro ao reportar",
+        description: error instanceof Error ? error.message : "Não foi possível enviar o reporte. Tente novamente.",
+        variant: "destructive",
+      })
     }
   }
 
@@ -569,7 +612,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
                         )}
                       </Button>
                     )}
-                    {isAuthenticated && user?.id !== selectedSmoke.author.id && (
+                    {isAuthenticated && user?.id !== selectedSmoke.author.id && !reportedSmokes.has(selectedSmoke.id) && (
                       <Button
                         variant="outline"
                         onClick={() => {
@@ -578,6 +621,17 @@ export function MapViewer({ mapId }: MapViewerProps) {
                         }}
                         size="icon"
                         className="bg-orange-500 hover:bg-orange-600 text-white border-orange-500"
+                      >
+                        <Flag className="w-4 h-4" />
+                      </Button>
+                    )}
+                    {isAuthenticated && user?.id !== selectedSmoke.author.id && reportedSmokes.has(selectedSmoke.id) && (
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        disabled
+                        className="bg-gray-500 text-white border-gray-500 cursor-not-allowed"
+                        title="Você já reportou esta smoke"
                       >
                         <Flag className="w-4 h-4" />
                       </Button>
@@ -601,12 +655,21 @@ export function MapViewer({ mapId }: MapViewerProps) {
                     <Input
                       value={reportReason}
                       onChange={(e) => setReportReason(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault()
+                          if (selectedSmoke && reportReason.trim()) {
+                            handleReport(selectedSmoke.id)
+                          }
+                        }
+                      }}
                       placeholder="Descreva o motivo do reporte..."
                       className=""
                     />
                     <Button
-                      onClick={() => handleReport(selectedSmoke.id)}
-                      disabled={!reportReason.trim() || reportLoading}
+                      type="button"
+                      onClick={() => selectedSmoke && handleReport(selectedSmoke.id)}
+                      disabled={!reportReason.trim() || reportLoading || !selectedSmoke}
                       variant="destructive"
                       size="sm"
                     >
