@@ -3,6 +3,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Prevent horizontal overflow */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 /* Custom font - NewAmsterdam */
 @font-face {
   font-family: 'NewAmsterdam';

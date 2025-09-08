@@ -1,9 +1,7 @@
 "use client"
 
-import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
-import { LogIn, LogOut, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +9,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useAuth } from '@/contexts/AuthContext';
+import { LogOut } from 'lucide-react';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 export function SteamLoginButton() {
@@ -66,7 +67,13 @@ export function SteamLoginButton() {
 
   return (
     <Button onClick={login} className="bg-[#171a21] hover:bg-[#2a475e] text-white">
-      <User className="mr-2 h-4 w-4" />
+      <Image
+        src="/images/steam-icon.svg"
+        alt="Steam"
+        width={30}
+        height={30}
+        className="mr-2"
+      />
       Entrar com Steam
     </Button>
   );

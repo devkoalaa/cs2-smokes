@@ -1,18 +1,17 @@
 "use client"
 
 import { SteamLoginButton } from "@/components/auth/SteamLoginButton"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { MobileSidebar } from "@/components/mobile-sidebar"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useAuth } from "@/contexts/AuthContext"
-import { Github, LogOut, Map, Menu, Cloudy } from "lucide-react"
+import { Github, Map, Menu, Cloudy } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 export function Header() {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
-  const { user, isAuthenticated, logout } = useAuth()
+  const { isAuthenticated } = useAuth()
 
   const navigation = [
     { name: "Mapas", href: "/", icon: Map },
@@ -63,78 +62,21 @@ export function Header() {
 
           {/* Mobile Navigation */}
           <div className="md:hidden">
-            <Sheet open={isOpen} onOpenChange={setIsOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-card-foreground hover:text-primary-foreground hover:bg-primary">
-                  <Menu className="h-5 w-5" />
-                  <span className="sr-only">Toggle menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]" showCloseButton={false}>
-                <div className="flex flex-col space-y-6 mt-8">
-                  <div className="flex items-center justify-between gap-4 px-9">
-                    {isAuthenticated && (
-                      <div className="text-xl font-semibold text-card-foreground">{user?.username}</div>
-                    )}
-                    <Avatar className="h-16 w-16">
-                      {isAuthenticated && user?.avatarUrl ? (
-                        <AvatarImage src={user.avatarUrl} alt={user.username} />
-                      ) : (
-                        <AvatarFallback>?</AvatarFallback>
-                      )}
-                    </Avatar>
-                  </div>
-
-                  <div className="border-t border-border mx-4"></div>
-
-                  {navigation.map((item) => (
-                    <Button
-                      key={item.name}
-                      variant="ghost"
-                      onClick={() => {
-                        router.push(item.href)
-                        setIsOpen(false)
-                      }}
-                      className="justify-center w-full text-card-foreground hover:text-primary-foreground hover:bg-primary "
-                    >
-                      <item.icon className="w-4 h-4 mr-2" />
-                      {item.name}
-                    </Button>
-                  ))}
-                  <Button
-                    variant="ghost"
-                    onClick={() => {
-                      window.open('https://github.com/devkoalaa', '_blank')
-                      setIsOpen(false)
-                    }}
-                    className="justify-center w-full text-card-foreground hover:text-primary-foreground hover:bg-primary"
-                  >
-                    <Github className="w-4 h-4 mr-2" />
-                    GitHub
-                  </Button>
-                  <div className="pt-2 w-full flex justify-center">
-                    {isAuthenticated ? (
-                      <Button
-                        variant="ghost"
-                        onClick={() => {
-                          logout();
-                          setIsOpen(false);
-                        }}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full"
-                      >
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Sair
-                      </Button>
-                    ) : (
-                      <SteamLoginButton />
-                    )}
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setIsOpen(true)}
+              className="text-card-foreground hover:text-primary-foreground hover:bg-primary transition-colors"
+            >
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">Abrir menu</span>
+            </Button>
           </div>
         </div>
       </div>
+      
+      {/* Mobile Sidebar */}
+      <MobileSidebar isOpen={isOpen} onClose={() => setIsOpen(false)} />
     </header>
   )
 }

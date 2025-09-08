@@ -4,6 +4,7 @@ import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/next'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { AuthLoading } from '@/components/auth/AuthLoading'
+import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
 // Custom font configuration
@@ -44,6 +45,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <AuthLoading />
+          <Toaster />
           <Analytics />
         </AuthProvider>
       </body>

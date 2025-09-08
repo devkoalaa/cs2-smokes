@@ -163,6 +163,16 @@ export function MapViewer({ mapId }: MapViewerProps) {
 
 
   const handleUpvote = async (smokeId: number) => {
+    if (!isAuthenticated) {
+      console.log('User not authenticated, showing toast')
+      toast({
+        title: "Login necessário",
+        description: "Você precisa fazer login para votar em smokes.",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
       const currentVote = getUserVote(smokeId)
       const originalScore = smokes.find(s => s.id === smokeId)?.score || 0
@@ -203,6 +213,15 @@ export function MapViewer({ mapId }: MapViewerProps) {
   }
 
   const handleDownvote = async (smokeId: number) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Login necessário",
+        description: "Você precisa fazer login para votar em smokes.",
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
       const currentVote = getUserVote(smokeId)
       const originalScore = smokes.find(s => s.id === smokeId)?.score || 0
@@ -243,6 +262,15 @@ export function MapViewer({ mapId }: MapViewerProps) {
   }
 
   const handleReport = async (smokeId: number) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Login necessário",
+        description: "Você precisa fazer login para reportar smokes.",
+        variant: "destructive",
+      })
+      return
+    }
+
     if (!reportReason.trim()) return
 
     try {
