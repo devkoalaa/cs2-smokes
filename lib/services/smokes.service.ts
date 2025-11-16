@@ -1,5 +1,4 @@
 import { config } from '@/lib/config';
-import { useAuthenticatedFetch } from '@/hooks/useAuthenticatedFetch';
 
 export interface User {
   id: number;
@@ -22,11 +21,19 @@ export interface Map {
   updatedAt: Date;
 }
 
+export enum SmokeType {
+  SMOKE = 'SMOKE',
+  BANG = 'BANG',
+  MOLOTOV = 'MOLOTOV',
+  STRATEGY = 'STRATEGY',
+}
+
 export interface Smoke {
   id: number;
   title: string;
   videoUrl: string;
   timestamp: number;
+  type: SmokeType;
   x_coord: number;
   y_coord: number;
   score: number;
@@ -40,6 +47,7 @@ export interface CreateSmokeData {
   title: string;
   videoUrl: string;
   timestamp: number;
+  type?: SmokeType;
   x_coord: number;
   y_coord: number;
   mapId: number;
@@ -57,9 +65,21 @@ export class SmokesService {
 
   async getSmokesByMapId(mapId: number): Promise<Smoke[]> {
     const response = await fetch(`${config.apiUrl}/maps/${mapId}/smokes`, { cache: 'no-store' });
-    
+
     if (!response.ok) {
-      throw new Error(`Failed to fetch smokes for map ${mapId}: ${response.status}`);
+      let errorMessage = `Failed to fetch smokes for map ${mapId}: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          const messages = Array.isArray(errorData.message)
+            ? errorData.message
+            : [errorData.message];
+          errorMessage = messages.join(', ');
+        }
+      } catch {
+        // If JSON parsing fails, use the default error message
+      }
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -76,7 +96,19 @@ export class SmokesService {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to create smoke: ${response.status}`);
+      let errorMessage = `Failed to create smoke: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          const messages = Array.isArray(errorData.message)
+            ? errorData.message
+            : [errorData.message];
+          errorMessage = messages.join(', ');
+        }
+      } catch {
+        // If JSON parsing fails, use the default error message
+      }
+      throw new Error(errorMessage);
     }
 
     return response.json();
@@ -91,7 +123,19 @@ export class SmokesService {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to delete smoke: ${response.status}`);
+      let errorMessage = `Failed to delete smoke: ${response.status}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.message) {
+          const messages = Array.isArray(errorData.message)
+            ? errorData.message
+            : [errorData.message];
+          errorMessage = messages.join(', ');
+        }
+      } catch {
+        // If JSON parsing fails, use the default error message
+      }
+      throw new Error(errorMessage);
     }
   }
 }

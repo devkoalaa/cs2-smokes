@@ -1,10 +1,10 @@
 'use client';
 
-import { Smoke } from '@/lib/services/smokes.service';
+import { Smoke, SmokeType } from '@/lib/services/smokes.service';
 import { CRS, Icon, LatLngBounds } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { ImageOverlay, MapContainer, Marker, useMapEvents } from 'react-leaflet';
 import { useMemo } from 'react';
+import { ImageOverlay, MapContainer, Marker, useMapEvents } from 'react-leaflet';
 
 // Fix para ícones do Leaflet no Next.js
 delete (Icon.Default.prototype as any)._getIconUrl;
@@ -14,25 +14,38 @@ Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// Ícone customizado (nuvem de smoke em branco sobre fundo azul via CSS)
-const smokeIcon = new Icon({
-  iconUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="9" cy="13" r="4" fill="white"/><circle cx="13" cy="12" r="5" fill="white"/><circle cx="16" cy="15" r="3.5" fill="white"/></svg>',
-  iconSize: [24, 24],
-  // Account for 2px CSS border around the icon (24px + 2*2px = 28px)
-  iconAnchor: [14, 14],
-  popupAnchor: [0, -14],
-  className: 'smoke-marker'
-});
+// Função para criar ícones baseados no tipo de smoke
+const createSmokeIcon = (type: SmokeType, highlighted: boolean = false) => {
+  const size = highlighted ? 28 : 24;
+  const anchor = highlighted ? 16 : 14;
 
-// Ícone destacado (mesmo desenho, tamanho maior; efeito adicional via CSS)
-const smokeIconHighlighted = new Icon({
-  iconUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="9" cy="13" r="4" fill="white"/><circle cx="13" cy="12" r="5" fill="white"/><circle cx="16" cy="15" r="3.5" fill="white"/></svg>',
-  iconSize: [24, 24],
-  // Same base anchor as default, but popup a bit higher to compensate 1.2x scale
-  iconAnchor: [14, 14],
-  popupAnchor: [0, -17],
-  className: 'smoke-marker smoke-marker--highlighted'
-});
+  let svgContent = '';
+
+  switch (type) {
+    case SmokeType.SMOKE:
+      svgContent = '<circle cx="9" cy="13" r="4" fill="white"/><circle cx="13" cy="12" r="5" fill="white"/><circle cx="16" cy="15" r="3.5" fill="white"/>';
+      break;
+    case SmokeType.BANG:
+      svgContent = '<circle cx="12" cy="12" r="8" fill="white" stroke="orange" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="orange" stroke-width="2"/>';
+      break;
+    case SmokeType.MOLOTOV:
+      svgContent = '<rect x="8" y="14" width="8" height="6" fill="brown"/><rect x="9" y="10" width="6" height="4" fill="orange"/><circle cx="12" cy="12" r="2" fill="red"/>';
+      break;
+    case SmokeType.STRATEGY:
+      svgContent = '<rect x="6" y="6" width="12" height="12" fill="white" stroke="green" stroke-width="2"/><path d="M9 9h6M9 12h6M9 15h4" stroke="green" stroke-width="1.5"/>';
+      break;
+    default:
+      svgContent = '<circle cx="9" cy="13" r="4" fill="white"/><circle cx="13" cy="12" r="5" fill="white"/><circle cx="16" cy="15" r="3.5" fill="white"/>';
+  }
+
+  return new Icon({
+    iconUrl: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24">${svgContent}</svg>`,
+    iconSize: [size, size],
+    iconAnchor: [anchor, anchor],
+    popupAnchor: [0, -anchor],
+    className: `smoke-marker smoke-marker--${type.toLowerCase()}${highlighted ? ' smoke-marker--highlighted' : ''}`
+  });
+};
 
 interface UnifiedMapProps {
   radarImagePath: string;
@@ -128,13 +141,14 @@ export default function UnifiedMap({
         {/* Marcadores para smokes */}
         {smokes.map((smoke) => {
           const position = convertToMapCoords(smoke.x_coord, smoke.y_coord);
+          const isHighlighted = highlightedSmokeId === smoke.id;
 
           return (
             <Marker
               key={smoke.id}
               position={position}
-              icon={highlightedSmokeId === smoke.id ? smokeIconHighlighted : smokeIcon}
-              zIndexOffset={highlightedSmokeId === smoke.id ? 1000 : 0}
+              icon={createSmokeIcon(smoke.type, isHighlighted)}
+              zIndexOffset={isHighlighted ? 1000 : 0}
               eventHandlers={{
                 click: () => onSmokeClick(smoke),
               }}
@@ -161,7 +175,7 @@ export default function UnifiedMap({
           <Marker
             key="temp-point"
             position={convertToMapCoords(tempPoint.x_coord, tempPoint.y_coord)}
-            icon={smokeIcon}
+            icon={createSmokeIcon(SmokeType.SMOKE, false)}
           />
         ) : null}
       </MapContainer>
@@ -186,15 +200,30 @@ export default function UnifiedMap({
           position: relative;
         }
         
-        .smoke-marker:hover {
-          background: var(--color-primary);
-          transform: scale(1.2);
-          box-shadow: 0 4px 14px rgba(var(--color-primary), 0.6);
+        .smoke-marker--smoke {
+          background: #3b82f6; /* Azul para smoke */
         }
-        .smoke-marker--highlighted {
-          background: var(--color-primary);
+        
+        .smoke-marker--bang {
+          background: #f59e0b; /* Laranja para flashbang */
+        }
+        
+        .smoke-marker--molotov {
+          background: #dc2626; /* Vermelho para molotov */
+        }
+        
+        .smoke-marker--strategy {
+          background: #16a34a; /* Verde para estratégia */
+        }
+        
+        .smoke-marker:hover {
           transform: scale(1.2);
-          box-shadow: 0 4px 14px rgba(var(--color-primary), 0.6);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+        }
+        
+        .smoke-marker--highlighted {
+          transform: scale(1.2);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
         }
         
         .leaflet-popup-content-wrapper {
