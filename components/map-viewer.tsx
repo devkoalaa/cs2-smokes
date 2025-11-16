@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
@@ -13,8 +14,8 @@ import { useMap } from "@/hooks/useMaps"
 import { useRatings } from "@/hooks/useRatings"
 import { useReports } from "@/hooks/useReports"
 import { useSmokeActions, useSmokes } from "@/hooks/useSmokes"
-import { Smoke } from "@/lib/services/smokes.service"
-import { ArrowDown, ArrowLeft, ArrowUp, Check, Clock, Flag, Play, Plus, Search, Target, ThumbsUp, Trash2, User, X } from "lucide-react"
+import { Smoke, SmokeType } from "@/lib/services/smokes.service"
+import { ArrowDown, ArrowLeft, ArrowUp, Check, Clock, Flag, Play, Plus, Search, ThumbsUp, Trash2, User, X } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
@@ -80,12 +81,12 @@ function buildEmbeddableVideoUrl(originalUrl: string, startSeconds?: number): st
 export function MapViewer({ mapId }: MapViewerProps) {
   const [selectedSmoke, setSelectedSmoke] = useState<Smoke | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterDifficulty, setFilterDifficulty] = useState("all")
-  const [showAllMarkers, setShowAllMarkers] = useState(true)
+  const [filterType, setFilterType] = useState<string>("all")
   const [showAddSmoke, setShowAddSmoke] = useState(false)
   const [newTitle, setNewTitle] = useState("")
   const [newVideoUrl, setNewVideoUrl] = useState("")
   const [newTimestamp, setNewTimestamp] = useState<string>("")
+  const [newType, setNewType] = useState<SmokeType>(SmokeType.SMOKE)
   const [selectedCoords, setSelectedCoords] = useState<{ x_coord: number; y_coord: number } | null>(null)
   const [selectingOnMap, setSelectingOnMap] = useState(false)
   const [hoveredSmokeId, setHoveredSmokeId] = useState<number | null>(null)
@@ -133,12 +134,12 @@ export function MapViewer({ mapId }: MapViewerProps) {
   useEffect(() => {
     if (isAuthenticated && user?.token && smokes.length > 0) {
       let isCancelled = false;
-      
+
       const checkReportStatuses = async () => {
         try {
           const smokeIds = smokes.map(smoke => smoke.id)
           const statuses = await getReportsStatusBatch(smokeIds)
-          
+
           if (!isCancelled) {
             const newReportedSmokes = new Set<number>()
             statuses.forEach(status => {
@@ -152,9 +153,9 @@ export function MapViewer({ mapId }: MapViewerProps) {
           console.warn('Failed to check report statuses:', error)
         }
       }
-      
+
       checkReportStatuses()
-      
+
       return () => {
         isCancelled = true;
       }
@@ -331,7 +332,8 @@ export function MapViewer({ mapId }: MapViewerProps) {
 
   const filteredSmokes = smokes.filter(smoke => {
     const matchesSearch = smoke.title.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesSearch
+    const matchesType = filterType === "all" || smoke.type === filterType
+    return matchesSearch && matchesType
   })
 
   if (loading || mapLoading) {
@@ -434,18 +436,6 @@ export function MapViewer({ mapId }: MapViewerProps) {
                         className="pl-10 focus:ring-primary"
                       />
                     </div>
-
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant={showAllMarkers ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setShowAllMarkers(!showAllMarkers)}
-                        className="flex-1"
-                      >
-                        <Target className="w-4 h-4 mr-2" />
-                        {showAllMarkers ? "Ocultar" : "Mostrar"} Marcadores
-                      </Button>
-                    </div>
                   </div>
 
                   <div className="space-y-2 flex-1 overflow-y-auto scrollbar-smokes pr-1 min-h-0">
@@ -474,6 +464,19 @@ export function MapViewer({ mapId }: MapViewerProps) {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <div className="font-medium truncate">{smoke.title}</div>
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ${smoke.type === SmokeType.SMOKE ? 'border-blue-500 text-blue-600' :
+                                    smoke.type === SmokeType.BANG ? 'border-orange-500 text-orange-600' :
+                                      smoke.type === SmokeType.MOLOTOV ? 'border-red-500 text-red-600' :
+                                        'border-green-500 text-green-600'
+                                  }`}
+                              >
+                                {smoke.type === SmokeType.SMOKE ? '💨' :
+                                  smoke.type === SmokeType.BANG ? '💥' :
+                                    smoke.type === SmokeType.MOLOTOV ? '🔥' :
+                                      '📋'}
+                              </Badge>
                             </div>
                             <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
                               <div className="flex items-center gap-1 truncate flex-1 mr-2">
@@ -518,18 +521,24 @@ export function MapViewer({ mapId }: MapViewerProps) {
                   <div className="space-y-4">
                     <div>
                       <label className="text-sm font-medium text-card-foreground mb-2 block">
-                        Dificuldade
+                        Tipo
                       </label>
                       <div className="space-y-2">
-                        {["all", "Fácil", "Médio", "Difícil"].map((difficulty) => (
+                        {[
+                          { value: "all", label: "Todos" },
+                          { value: SmokeType.SMOKE, label: "💨 Smoke" },
+                          { value: SmokeType.BANG, label: "💥 Flashbang" },
+                          { value: SmokeType.MOLOTOV, label: "🔥 Molotov" },
+                          { value: SmokeType.STRATEGY, label: "📋 Estratégia" },
+                        ].map((type) => (
                           <Button
-                            key={difficulty}
-                            variant={filterDifficulty === difficulty ? "default" : "outline"}
+                            key={type.value}
+                            variant={filterType === type.value ? "default" : "outline"}
                             size="sm"
-                            onClick={() => setFilterDifficulty(difficulty)}
+                            onClick={() => setFilterType(type.value)}
                             className="w-full justify-start"
                           >
-                            {difficulty === "all" ? "Todas" : difficulty}
+                            {type.label}
                           </Button>
                         ))}
                       </div>
@@ -599,8 +608,8 @@ export function MapViewer({ mapId }: MapViewerProps) {
                       disabled={ratingLoading}
                       size="icon"
                       className={`${getUserVote(selectedSmoke.id) === 1
-                          ? 'bg-green-600 hover:bg-green-700 text-white'
-                          : ''
+                        ? 'bg-green-600 hover:bg-green-700 text-white'
+                        : ''
                         }`}
                     >
                       <ArrowUp className="w-4 h-4" />
@@ -611,8 +620,8 @@ export function MapViewer({ mapId }: MapViewerProps) {
                       disabled={ratingLoading}
                       size="icon"
                       className={`${getUserVote(selectedSmoke.id) === -1
-                          ? 'bg-red-600 hover:bg-red-700 text-white'
-                          : ''
+                        ? 'bg-red-600 hover:bg-red-700 text-white'
+                        : ''
                         }`}
                     >
                       <ArrowDown className="w-4 h-4" />
@@ -624,11 +633,10 @@ export function MapViewer({ mapId }: MapViewerProps) {
                         variant={confirmingDelete ? "default" : "destructive"}
                         onClick={handleDeleteClick}
                         size={confirmingDelete ? "default" : "icon"}
-                        className={`transition-all duration-300 ${
-                          confirmingDelete 
-                            ? "px-4 py-2 bg-red-600 hover:bg-red-700 text-white" 
+                        className={`transition-all duration-300 ${confirmingDelete
+                            ? "px-4 py-2 bg-red-600 hover:bg-red-700 text-white"
                             : ""
-                        }`}
+                          }`}
                       >
                         {confirmingDelete ? (
                           <>
@@ -739,6 +747,20 @@ export function MapViewer({ mapId }: MapViewerProps) {
               <Input type="number" min={0} step={1} value={newTimestamp} onChange={(e) => setNewTimestamp(e.target.value)} placeholder="Ex: 42" className="hide-number-input-arrows" />
             </div>
             <div className="space-y-2">
+              <label className="text-sm font-medium">Tipo</label>
+              <Select value={newType} onValueChange={(value) => setNewType(value as SmokeType)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={SmokeType.SMOKE}>💨 Smoke</SelectItem>
+                  <SelectItem value={SmokeType.BANG}>💥 Flashbang</SelectItem>
+                  <SelectItem value={SmokeType.MOLOTOV}>🔥 Molotov</SelectItem>
+                  <SelectItem value={SmokeType.STRATEGY}>📋 Estratégia</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
               <label className="text-sm font-medium">Coordenadas</label>
               <div className="text-sm text-muted-foreground">
                 {selectedCoords ? (
@@ -778,6 +800,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
                       title: newTitle.trim(),
                       videoUrl: newVideoUrl.trim(),
                       timestamp: ts,
+                      type: newType,
                       x_coord: selectedCoords.x_coord,
                       y_coord: selectedCoords.y_coord,
                       mapId
@@ -787,6 +810,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
                     setNewTitle("")
                     setNewVideoUrl("")
                     setNewTimestamp("")
+                    setNewType(SmokeType.SMOKE)
                     setSelectedCoords(null)
                     refetch()
                   } catch (err) {
