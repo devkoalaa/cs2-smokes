@@ -4,7 +4,8 @@ import { Smoke, SmokeType } from '@/lib/services/smokes.service';
 import { CRS, Icon, LatLngBounds } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useMemo } from 'react';
-import { ImageOverlay, MapContainer, Marker, useMapEvents } from 'react-leaflet';
+import { ImageOverlay, MapContainer, Marker, Popup, useMapEvents } from 'react-leaflet';
+import MapPopup from './map-popup';
 
 // Fix para ícones do Leaflet no Next.js
 delete (Icon.Default.prototype as any)._getIconUrl;
@@ -57,6 +58,7 @@ interface UnifiedMapProps {
   onMapClick?: (x_percent: number, y_percent: number) => void;
   tempPoint?: { x_coord: number; y_coord: number };
   highlightedSmokeId?: number | null;
+  floor?: string; // 'upper' ou 'lower' - filtra smokes por andar
 }
 
 export default function UnifiedMap({
@@ -68,10 +70,21 @@ export default function UnifiedMap({
   width = '100%',
   onMapClick,
   tempPoint,
-  highlightedSmokeId
+  highlightedSmokeId,
+  floor
 }: UnifiedMapProps) {
   // Dimensões padrão da imagem (assumindo imagens quadradas de alta resolução)
   const imageSize = 1024;
+
+  // Filtrar smokes por andar se especificado
+  const filteredSmokes = useMemo(() => {
+    if (!floor) {
+      // Se não há andar especificado, mostrar apenas smokes sem andar ou todos
+      return smokes.filter(smoke => !smoke.floor);
+    }
+    // Filtrar smokes do andar especificado
+    return smokes.filter(smoke => smoke.floor === floor);
+  }, [smokes, floor]);
 
   // Bounds da imagem usando sistema de coordenadas simples (memoizado para não refazer fit a cada render)
   const bounds = useMemo(() => new LatLngBounds(
@@ -139,7 +152,7 @@ export default function UnifiedMap({
         {onMapClick ? <MapClickHandler /> : null}
 
         {/* Marcadores para smokes */}
-        {smokes.map((smoke) => {
+        {filteredSmokes.map((smoke) => {
           const position = convertToMapCoords(smoke.x_coord, smoke.y_coord);
           const isHighlighted = highlightedSmokeId === smoke.id;
 
@@ -153,7 +166,7 @@ export default function UnifiedMap({
                 click: () => onSmokeClick(smoke),
               }}
             >
-              {/* <Popup
+              <Popup
                 autoPan
                 keepInView
                 autoPanPaddingTopLeft={[16, 64]}
@@ -165,7 +178,7 @@ export default function UnifiedMap({
                   videoUrl={smoke.videoUrl}
                   onDetails={() => onSmokeClick(smoke)}
                 />
-              </Popup> */}
+              </Popup>
             </Marker>
           );
         })}

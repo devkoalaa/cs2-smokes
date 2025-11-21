@@ -7,6 +7,7 @@ export interface Map {
   description?: string;
   thumbnail?: string;
   radar?: string;
+  radarLower?: string; // Radar do andar inferior (para mapas como Nuke)
   smokesCount?: number;
   createdAt?: Date;
   updatedAt?: Date;
