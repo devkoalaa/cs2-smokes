@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
 import { useMap } from "@/hooks/useMaps"
@@ -95,6 +95,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
   const [localScores, setLocalScores] = useState<Record<number, number>>({})
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [reportedSmokes, setReportedSmokes] = useState<Set<number>>(new Set())
+  const [selectedFloor, setSelectedFloor] = useState<string>('upper') // 'upper' ou 'lower'
   const mapRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
@@ -333,7 +334,9 @@ export function MapViewer({ mapId }: MapViewerProps) {
   const filteredSmokes = smokes.filter(smoke => {
     const matchesSearch = smoke.title.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesType = filterType === "all" || smoke.type === filterType
-    return matchesSearch && matchesType
+    // Filtrar por andar se o mapa tiver múltiplos andares
+    const matchesFloor = !map?.radarLower || smoke.floor === selectedFloor || (!smoke.floor && selectedFloor === 'upper')
+    return matchesSearch && matchesType && matchesFloor
   })
 
   if (loading || mapLoading) {
@@ -390,15 +393,34 @@ export function MapViewer({ mapId }: MapViewerProps) {
             {/* Map Container */}
             <div className="flex-1">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-card-foreground">
-                  {map.name} - Mapa Tático
-                </h3>
+                {/* Toggle de andar para mapas com múltiplos andares */}
+                {map.radarLower && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Nível:</span>
+                    <ToggleGroup 
+                      type="single" 
+                      value={selectedFloor} 
+                      onValueChange={(value) => value && setSelectedFloor(value)}
+                      variant="outline"
+                      className="border-border"
+                    >
+                      <ToggleGroupItem value="upper" aria-label="Andar Superior" className="gap-2">
+                        <ArrowUp className="h-4 w-4" />
+                        <span>Superior</span>
+                      </ToggleGroupItem>
+                      <ToggleGroupItem value="lower" aria-label="Andar Inferior" className="gap-2">
+                        <ArrowDown className="h-4 w-4" />
+                        <span>Inferior</span>
+                      </ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
+                )}
               </div>
 
               {/* Usar componente unificado para todos os mapas */}
               {map.radar ? (
                 <UnifiedMap
-                  radarImagePath={map.radar}
+                  radarImagePath={map.radarLower && selectedFloor === 'lower' ? map.radarLower : map.radar}
                   smokes={filteredSmokes}
                   onSmokeClick={handleSmokeClick}
                   onMapClick={selectingOnMap ? ((x, y) => setSelectedCoords({ x_coord: x, y_coord: y })) : undefined}
@@ -406,6 +428,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
                   highlightedSmokeId={hoveredSmokeId}
                   height="600px"
                   className="rounded-lg border border-border"
+                  floor={map.radarLower ? selectedFloor : undefined}
                 />
               ) : (
                 <div className="flex items-center justify-center h-96 bg-muted/20 rounded-lg border border-border">
@@ -419,26 +442,73 @@ export function MapViewer({ mapId }: MapViewerProps) {
 
             {/* Controls Panel */}
             <div className="w-full lg:w-80 h-[600px] flex flex-col space-y-4 min-h-0">
-              <Tabs defaultValue="smokes" className="w-full flex-1 flex flex-col min-h-0">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="smokes">Smokes</TabsTrigger>
-                  <TabsTrigger value="filters">Filtros</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="smokes" className="flex-1 flex flex-col min-h-0 space-y-4">
-                  <div className="space-y-3">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                      <Input
-                        placeholder="Buscar smokes..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 focus:ring-primary"
-                      />
-                    </div>
+              <div className="w-full flex-1 flex flex-col min-h-0 space-y-4">
+                {/* Header */}
+                <div className="space-y-3">
+                  <h2 className="text-xl font-semibold text-card-foreground">Smokes</h2>
+                  
+                  {/* Filter Icons */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Button
+                      variant={filterType === "all" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setFilterType("all")}
+                      className="text-base"
+                      title="Todos"
+                    >
+                      Todos
+                    </Button>
+                    <Button
+                      variant={filterType === SmokeType.SMOKE ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setFilterType(SmokeType.SMOKE)}
+                      className="text-base"
+                      title="Smoke"
+                    >
+                      💨
+                    </Button>
+                    <Button
+                      variant={filterType === SmokeType.BANG ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setFilterType(SmokeType.BANG)}
+                      className="text-base"
+                      title="Flashbang"
+                    >
+                      💥
+                    </Button>
+                    <Button
+                      variant={filterType === SmokeType.MOLOTOV ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setFilterType(SmokeType.MOLOTOV)}
+                      className="text-base"
+                      title="Molotov"
+                    >
+                      🔥
+                    </Button>
+                    <Button
+                      variant={filterType === SmokeType.STRATEGY ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setFilterType(SmokeType.STRATEGY)}
+                      className="text-base"
+                      title="Estratégia"
+                    >
+                      📋
+                    </Button>
                   </div>
 
-                  <div className="space-y-2 flex-1 overflow-y-auto scrollbar-smokes pr-1 min-h-0">
+                  {/* Search */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                    <Input
+                      placeholder="Buscar smokes..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 focus:ring-primary"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2 flex-1 overflow-y-auto scrollbar-smokes pr-1 min-h-0">
                     {filteredSmokes.map((smoke) => (
                       <div
                         key={smoke.id}
@@ -505,47 +575,17 @@ export function MapViewer({ mapId }: MapViewerProps) {
                         </div>
                       </div>
                     ))}
-                  </div>
+                </div>
 
-                  {filteredSmokes.length === 0 && (
-                    <div className="text-center py-8">
-                      <div className="w-12 h-12 mx-auto mb-3 bg-muted rounded-full flex items-center justify-center">
-                        <Search className="w-6 h-6 text-muted-foreground" />
-                      </div>
-                      <p className="text-sm text-muted-foreground">Nenhum smoke encontrado</p>
+                {filteredSmokes.length === 0 && (
+                  <div className="text-center py-8">
+                    <div className="w-12 h-12 mx-auto mb-3 bg-muted rounded-full flex items-center justify-center">
+                      <Search className="w-6 h-6 text-muted-foreground" />
                     </div>
-                  )}
-                </TabsContent>
-
-                <TabsContent value="filters" className="space-y-4">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium text-card-foreground mb-2 block">
-                        Tipo
-                      </label>
-                      <div className="space-y-2">
-                        {[
-                          { value: "all", label: "Todos" },
-                          { value: SmokeType.SMOKE, label: "💨 Smoke" },
-                          { value: SmokeType.BANG, label: "💥 Flashbang" },
-                          { value: SmokeType.MOLOTOV, label: "🔥 Molotov" },
-                          { value: SmokeType.STRATEGY, label: "📋 Estratégia" },
-                        ].map((type) => (
-                          <Button
-                            key={type.value}
-                            variant={filterType === type.value ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setFilterType(type.value)}
-                            className="w-full justify-start"
-                          >
-                            {type.label}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
+                    <p className="text-sm text-muted-foreground">Nenhum smoke encontrado</p>
                   </div>
-                </TabsContent>
-              </Tabs>
+                )}
+              </div>
             </div>
           </div>
         </CardContent>
@@ -760,6 +800,27 @@ export function MapViewer({ mapId }: MapViewerProps) {
                 </SelectContent>
               </Select>
             </div>
+            {map.radarLower && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Nível</label>
+                <ToggleGroup 
+                  type="single" 
+                  value={selectedFloor} 
+                  onValueChange={(value) => value && setSelectedFloor(value)}
+                  variant="outline"
+                  className="border-border w-full"
+                >
+                  <ToggleGroupItem value="upper" aria-label="Andar Superior" className="gap-2 flex-1">
+                    <ArrowUp className="h-4 w-4" />
+                    <span>Superior</span>
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="lower" aria-label="Andar Inferior" className="gap-2 flex-1">
+                    <ArrowDown className="h-4 w-4" />
+                    <span>Inferior</span>
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+            )}
             <div className="space-y-2">
               <label className="text-sm font-medium">Coordenadas</label>
               <div className="text-sm text-muted-foreground">
@@ -803,7 +864,8 @@ export function MapViewer({ mapId }: MapViewerProps) {
                       type: newType,
                       x_coord: selectedCoords.x_coord,
                       y_coord: selectedCoords.y_coord,
-                      mapId
+                      mapId,
+                      floor: map.radarLower ? selectedFloor : undefined
                     })
                     toast({ title: "Smoke criado", description: "Seu smoke foi adicionado." })
                     setShowAddSmoke(false)

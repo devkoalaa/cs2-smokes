@@ -36,6 +36,7 @@ export interface Smoke {
   type: SmokeType;
   x_coord: number;
   y_coord: number;
+  floor?: string; // 'upper' ou 'lower' para mapas com múltiplos andares
   score: number;
   createdAt: Date;
   updatedAt: Date;
@@ -51,6 +52,7 @@ export interface CreateSmokeData {
   x_coord: number;
   y_coord: number;
   mapId: number;
+  floor?: string; // 'upper' ou 'lower' para mapas com múltiplos andares
 }
 
 export class SmokesService {
