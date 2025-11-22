@@ -10,12 +10,15 @@ import { useRouter } from "next/navigation"
 import { useState, useMemo, Suspense } from "react"
 import { MapGridSkeleton } from "@/components/loading-skeleton"
 import { useMaps } from "@/hooks/useMaps"
+import { motion, AnimatePresence } from "framer-motion"
 
 function MapGridContent() {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [filterCategory, setFilterCategory] = useState("all")
   const [sortBy, setSortBy] = useState("name")
+  
+  const [hoveredMapId, setHoveredMapId] = useState<number | null>(null)
   
   const { maps, loading, error } = useMaps()
 
@@ -95,52 +98,101 @@ function MapGridContent() {
       </div>
 
       {/* Maps Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredAndSortedMaps.map((map, index) => (
-          <Card 
-            key={map.id} 
-            className="group hover:shadow-xl transition-all duration-300 bg-card border-border hover:border-primary/50 overflow-hidden p-0"
-            style={{ animationDelay: `${index * 100}ms` }}
-          >
-            <div className="relative overflow-hidden h-48">
-              <img
-                src={map.thumbnail || "/placeholder.svg"}
-                alt={map.displayName || map.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
-              <div className="absolute top-3 right-3 flex gap-2">
-                <Badge className="bg-primary text-primary-foreground px-2 py-1 rounded-md text-sm font-medium shadow-lg">
-                  {(map.smokesCount ?? 0)} smoke{(map.smokesCount ?? 0) !== 1 ? 's' : ''}
-                </Badge>
-              </div>
-            </div>
-            <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="text-xl font-bold text-card-foreground group-hover:text-primary transition-colors">
-                    {map.displayName || map.name}
-                  </h3>
-                </div>
-                <p className="text-muted-foreground mb-4 text-pretty line-clamp-2">
-                  {map.description || 'Mapa do Counter-Strike 2'}
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="w-4 h-4" />
-                    <span>Mapa Ativo</span>
+      <motion.div 
+        layout
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        <AnimatePresence>
+          {filteredAndSortedMaps.map((map, index) => (
+            <motion.div
+              key={map.id}
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ 
+                opacity: 1, 
+                y: 0,
+                scale: hoveredMapId === map.id ? 1.05 : hoveredMapId !== null ? 0.95 : 1,
+                filter: hoveredMapId !== null && hoveredMapId !== map.id ? "blur(2px) grayscale(50%)" : "none",
+                zIndex: hoveredMapId === map.id ? 50 : 1
+              }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+              onMouseEnter={() => setHoveredMapId(map.id)}
+              onMouseLeave={() => setHoveredMapId(null)}
+              onClick={() => handleMapSelect(map.id)}
+              className="h-full cursor-pointer"
+            >
+              <Card 
+                className={`group relative h-full overflow-hidden border-border bg-card/50 backdrop-blur-sm transition-all duration-500 p-0 gap-0
+                  ${hoveredMapId === map.id ? 'shadow-2xl shadow-primary/20 border-primary' : 'hover:border-primary/50'}
+                `}
+              >
+                <div className="relative h-full flex flex-col">
+                  {/* Image Section */}
+                  <div className="relative overflow-hidden h-52">
+                    <motion.div
+                      className="absolute inset-0 bg-cover bg-center"
+                      style={{ backgroundImage: `url(${map.thumbnail || "/placeholder.svg"})` }}
+                      animate={{ 
+                        scale: hoveredMapId === map.id ? 1.15 : 1,
+                        rotate: hoveredMapId === map.id ? 1 : 0
+                      }}
+                      transition={{ duration: 0.6, ease: "easeOut" }}
+                    />
+                    
+                    {/* Top Badges */}
+                    <div className="absolute top-3 right-3 z-10 flex gap-2">
+                      <Badge className="bg-background/80 backdrop-blur-md text-foreground border border-border/50 shadow-sm">
+                        {(map.smokesCount ?? 0)} smoke{(map.smokesCount ?? 0) !== 1 ? 's' : ''}
+                      </Badge>
+                    </div>
+
+                    {/* Large Background Icon */}
+                    <div className={`absolute -bottom-4 -right-4 text-primary/5 transition-all duration-500 transform
+                      ${hoveredMapId === map.id ? 'opacity-100 scale-110 -rotate-12' : 'opacity-0'}
+                    `}>
+                      <MapPin className="w-32 h-32" />
+                    </div>
                   </div>
-                  <Button
-                    onClick={() => handleMapSelect(map.id)}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
-                  >
-                    <Play className="w-4 h-4 mr-2" />
-                    Ver Smokes
-                  </Button>
+
+                  {/* Content Section */}
+                  <CardContent className="flex-1 p-6 relative z-10 flex flex-col border-t border-border/50 bg-card/50">
+                    <div className="mb-3">
+                      <h3 className={`text-2xl font-bold tracking-tight transition-colors duration-300 ${hoveredMapId === map.id ? 'text-primary' : ''}`}>
+                        {map.displayName || map.name}
+                      </h3>
+                    </div>
+                    
+                      <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2 mb-6 flex-1">
+                        {map.description || 'Explore as melhores smokes, granadas e estratégias táticas para dominar este mapa.'}
+                      </p>
+
+                      <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/50">
+                        <div className={`flex items-center gap-2 text-xs font-medium uppercase tracking-wider ${map.isActive ? 'text-muted-foreground' : 'text-destructive'}`}>
+                          <span className="relative flex h-2 w-2">
+                            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${map.isActive ? 'bg-green-400' : 'bg-red-400'}`}></span>
+                            <span className={`relative inline-flex rounded-full h-2 w-2 ${map.isActive ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                          </span>
+                          {map.isActive ? 'Mapa Ativo' : 'Mapa Inativo'}
+                        </div>
+                        
+                        <Button
+                        size="sm"
+                        className="relative overflow-hidden group/btn bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 shadow-lg shadow-primary/20"
+                      >
+                        <span className="relative z-10 flex items-center font-medium">
+                          Ver Smokes 
+                          <Play className={`ml-2 w-3 h-3 transition-transform ${hoveredMapId === map.id ? 'translate-x-1 scale-110' : ''}`} />
+                        </span>
+                      </Button>
+                    </div>
+                  </CardContent>
                 </div>
-              </CardContent>
-            </Card>
-        ))}
-      </div>
+              </Card>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </motion.div>
 
       {filteredAndSortedMaps.length === 0 && (
         <div className="text-center py-12">

@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 
 export default function MapPopup({ title, author, videoUrl, onDetails }: { title: string, author: string, videoUrl: string, onDetails?: () => void }) {
 
@@ -14,7 +15,12 @@ export default function MapPopup({ title, author, videoUrl, onDetails }: { title
     const thumbnailUrl = getYouTubeThumbnail(videoUrl);
 
     return (
-        <div className="min-w-[240px] overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-sm">
+        <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.2 }}
+            className="min-w-[240px] overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-sm"
+        >
             <div className="relative aspect-video bg-muted">
                 {thumbnailUrl ? (
                     <img src={thumbnailUrl} alt={title} className="h-full w-full object-cover" />
@@ -31,6 +37,6 @@ export default function MapPopup({ title, author, videoUrl, onDetails }: { title
                     Detalhes
                 </button>
             </div>
-        </div>
+        </motion.div>
     );
 };
