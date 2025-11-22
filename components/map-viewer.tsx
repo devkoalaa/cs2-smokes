@@ -7,7 +7,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useAuth } from "@/contexts/AuthContext"
 import { useToast } from "@/hooks/use-toast"
 import { useMap } from "@/hooks/useMaps"
@@ -396,24 +395,33 @@ export function MapViewer({ mapId }: MapViewerProps) {
               <div className="flex items-center justify-between mb-4">
                 {/* Toggle de andar para mapas com múltiplos andares */}
                 {map.radarLower && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">Nível:</span>
-                    <ToggleGroup 
-                      type="single" 
-                      value={selectedFloor} 
-                      onValueChange={(value) => value && setSelectedFloor(value)}
-                      variant="outline"
-                      className="border-border"
-                    >
-                      <ToggleGroupItem value="upper" aria-label="Andar Superior" className="gap-2">
-                        <ArrowUp className="h-4 w-4" />
-                        <span>Superior</span>
-                      </ToggleGroupItem>
-                      <ToggleGroupItem value="lower" aria-label="Andar Inferior" className="gap-2">
-                        <ArrowDown className="h-4 w-4" />
-                        <span>Inferior</span>
-                      </ToggleGroupItem>
-                    </ToggleGroup>
+                  <div className="flex items-center gap-3 bg-card border border-border/50 p-1.5 rounded-xl shadow-sm">
+                    <span className="text-xs font-medium text-muted-foreground ml-2">Nível</span>
+                    <div className="relative flex bg-muted/40 p-1 rounded-lg">
+                      {(['upper', 'lower'] as const).map((floor) => (
+                        <button
+                          key={floor}
+                          onClick={() => setSelectedFloor(floor)}
+                          className={`
+                            cursor-pointer relative flex items-center gap-2 px-4 py-1.5 text-sm font-medium rounded-md transition-colors duration-200 z-10
+                            ${selectedFloor === floor ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}
+                          `}
+                        >
+                          {selectedFloor === floor && (
+                            <motion.div
+                              layoutId="active-floor-indicator"
+                              className="absolute inset-0 bg-background shadow-sm border border-border/50 rounded-md -z-10"
+                              initial={false}
+                              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                            />
+                          )}
+                          <span className="flex items-center gap-2">
+                            {floor === 'upper' ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
+                            {floor === 'upper' ? 'Superior' : 'Inferior'}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -867,22 +875,32 @@ export function MapViewer({ mapId }: MapViewerProps) {
             {map.radarLower && (
               <div className="space-y-2">
                 <label className="text-sm font-medium">Nível</label>
-                <ToggleGroup 
-                  type="single" 
-                  value={selectedFloor} 
-                  onValueChange={(value) => value && setSelectedFloor(value)}
-                  variant="outline"
-                  className="border-border w-full"
-                >
-                  <ToggleGroupItem value="upper" aria-label="Andar Superior" className="gap-2 flex-1">
-                    <ArrowUp className="h-4 w-4" />
-                    <span>Superior</span>
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="lower" aria-label="Andar Inferior" className="gap-2 flex-1">
-                    <ArrowDown className="h-4 w-4" />
-                    <span>Inferior</span>
-                  </ToggleGroupItem>
-                </ToggleGroup>
+                <div className="relative flex bg-muted/40 p-1 rounded-lg w-full">
+                  {(['upper', 'lower'] as const).map((floor) => (
+                    <button
+                      key={floor}
+                      type="button"
+                      onClick={() => setSelectedFloor(floor)}
+                      className={`
+                        cursor-pointer relative flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 z-10
+                        ${selectedFloor === floor ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}
+                      `}
+                    >
+                      {selectedFloor === floor && (
+                        <motion.div
+                          layoutId="active-floor-indicator-dialog"
+                          className="absolute inset-0 bg-background shadow-sm border border-border/50 rounded-md -z-10"
+                          initial={false}
+                          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        />
+                      )}
+                      <span className="flex items-center gap-2">
+                        {floor === 'upper' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
+                        {floor === 'upper' ? 'Superior' : 'Inferior'}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
             <div className="space-y-2">
