@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useMobileSidebar } from "@/contexts/MobileSidebarContext"
 import { Github, Map, Menu, Cloudy } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
 
 export function Header() {
   const router = useRouter()
@@ -17,19 +18,53 @@ export function Header() {
   ]
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+    <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60 select-none">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => router.push('/')}>
-            <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-lg transition-transform duration-150 group-hover:scale-105">
-              <Cloudy className="w-6 h-6 text-primary-foreground" />
+          <motion.div 
+            className="flex items-center gap-3 cursor-pointer group" 
+            onClick={() => router.push('/')}
+            whileHover="hover"
+          >
+            <div className="relative">
+              <motion.div 
+                className="flex items-center justify-center w-10 h-10 bg-primary rounded-lg relative z-10"
+                variants={{
+                  hover: { 
+                    scale: 1.05,
+                    rotate: [0, -10, 10, -5, 5, 0],
+                    transition: { duration: 0.5 }
+                  }
+                }}
+              >
+                <Cloudy className="w-6 h-6 text-primary-foreground" />
+              </motion.div>
+              <motion.div
+                className="absolute inset-0 bg-primary/50 rounded-lg blur-md"
+                variants={{
+                  hover: { 
+                    opacity: [0, 0.5, 0],
+                    scale: [1, 1.2, 1.1],
+                    transition: { duration: 1, repeat: Infinity }
+                  }
+                }}
+                initial={{ opacity: 0 }}
+              />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-card-foreground" style={{ fontFamily: 'var(--font-new-amsterdam)' }}>CS2 Smokes Hub</h1>
+              <motion.h1 
+                className="text-3xl font-bold text-card-foreground" 
+                style={{ fontFamily: 'var(--font-new-amsterdam)' }}
+                variants={{
+                  hover: { x: 2 }
+                }}
+              >
+                CS2 Smokes Hub
+              </motion.h1>
               <p className="text-sm text-muted-foreground">Arsenal Comunitário</p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">

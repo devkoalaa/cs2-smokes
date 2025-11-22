@@ -19,6 +19,7 @@ import { ArrowDown, ArrowLeft, ArrowUp, Check, Clock, Flag, Play, Plus, Search, 
 import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 
 // Importar o componente unificado dinamicamente para evitar problemas de SSR
 const UnifiedMap = dynamic(() => import('./unified-map'), {
@@ -441,7 +442,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
             </div>
 
             {/* Controls Panel */}
-            <div className="w-full lg:w-80 h-[600px] flex flex-col space-y-4 min-h-0">
+            <div className="w-full lg:w-96 h-[600px] flex flex-col space-y-4 min-h-0">
               <div className="w-full flex-1 flex flex-col min-h-0 space-y-4">
                 {/* Header */}
                 <div className="space-y-3">
@@ -455,8 +456,14 @@ export function MapViewer({ mapId }: MapViewerProps) {
                       onClick={() => setFilterType("all")}
                       className="text-base"
                       title="Todos"
+                      asChild
                     >
-                      Todos
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        Todos
+                      </motion.button>
                     </Button>
                     <Button
                       variant={filterType === SmokeType.SMOKE ? "default" : "outline"}
@@ -464,8 +471,14 @@ export function MapViewer({ mapId }: MapViewerProps) {
                       onClick={() => setFilterType(SmokeType.SMOKE)}
                       className="text-base"
                       title="Smoke"
+                      asChild
                     >
-                      💨
+                       <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        💨
+                      </motion.button>
                     </Button>
                     <Button
                       variant={filterType === SmokeType.BANG ? "default" : "outline"}
@@ -473,8 +486,14 @@ export function MapViewer({ mapId }: MapViewerProps) {
                       onClick={() => setFilterType(SmokeType.BANG)}
                       className="text-base"
                       title="Flashbang"
+                      asChild
                     >
-                      💥
+                       <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        💥
+                      </motion.button>
                     </Button>
                     <Button
                       variant={filterType === SmokeType.MOLOTOV ? "default" : "outline"}
@@ -482,8 +501,14 @@ export function MapViewer({ mapId }: MapViewerProps) {
                       onClick={() => setFilterType(SmokeType.MOLOTOV)}
                       className="text-base"
                       title="Molotov"
+                      asChild
                     >
-                      🔥
+                       <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        🔥
+                      </motion.button>
                     </Button>
                     <Button
                       variant={filterType === SmokeType.STRATEGY ? "default" : "outline"}
@@ -491,8 +516,14 @@ export function MapViewer({ mapId }: MapViewerProps) {
                       onClick={() => setFilterType(SmokeType.STRATEGY)}
                       className="text-base"
                       title="Estratégia"
+                      asChild
                     >
-                      📋
+                       <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        📋
+                      </motion.button>
                     </Button>
                   </div>
 
@@ -508,45 +539,42 @@ export function MapViewer({ mapId }: MapViewerProps) {
                   </div>
                 </div>
 
-                <div className="space-y-2 flex-1 overflow-y-auto scrollbar-smokes pr-1 min-h-0">
+                <div className="space-y-2 flex-1 overflow-y-auto overflow-x-hidden scrollbar-smokes pr-1 min-h-0 p-1 relative">
+                  <AnimatePresence>
                     {filteredSmokes.map((smoke) => (
-                      <div
+                      <motion.div
                         key={smoke.id}
+                        layout
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        transition={{ duration: 0.2 }}
                         className="border border-border rounded-lg p-3 hover:bg-accent transition-colors group cursor-pointer"
                         onClick={() => handleSmokeClick(smoke)}
                         onMouseEnter={() => setHoveredSmokeId(smoke.id)}
                         onMouseLeave={() => setHoveredSmokeId((prev) => (prev === smoke.id ? null : prev))}
+                        whileHover={{ scale: 1.02, x: 4 }}
                       >
                         <div className="flex items-start gap-3">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleSmokeClick(smoke)
-                            }}
-                            className="p-1 h-auto"
-                            onMouseEnter={() => setHoveredSmokeId(smoke.id)}
-                            onMouseLeave={() => setHoveredSmokeId((prev) => (prev === smoke.id ? null : prev))}
-                          >
-                            <Play className="w-4 h-4 text-primary group-hover:text-accent-foreground transition-colors" />
-                          </Button>
+                          <div className="flex flex-col items-center gap-1 pt-1">
+                            <Badge
+                              variant="outline"
+                              className={`h-8 w-8 flex items-center justify-center p-0 text-lg ${smoke.type === SmokeType.SMOKE ? 'border-blue-500 text-blue-600' :
+                                  smoke.type === SmokeType.BANG ? 'border-orange-500 text-orange-600' :
+                                    smoke.type === SmokeType.MOLOTOV ? 'border-red-500 text-red-600' :
+                                      'border-green-500 text-green-600'
+                                }`}
+                            >
+                              {smoke.type === SmokeType.SMOKE ? '💨' :
+                                smoke.type === SmokeType.BANG ? '💥' :
+                                  smoke.type === SmokeType.MOLOTOV ? '🔥' :
+                                    '📋'}
+                            </Badge>
+                          </div>
+                          
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
                               <div className="font-medium truncate">{smoke.title}</div>
-                              <Badge
-                                variant="outline"
-                                className={`text-xs ${smoke.type === SmokeType.SMOKE ? 'border-blue-500 text-blue-600' :
-                                    smoke.type === SmokeType.BANG ? 'border-orange-500 text-orange-600' :
-                                      smoke.type === SmokeType.MOLOTOV ? 'border-red-500 text-red-600' :
-                                        'border-green-500 text-green-600'
-                                  }`}
-                              >
-                                {smoke.type === SmokeType.SMOKE ? '💨' :
-                                  smoke.type === SmokeType.BANG ? '💥' :
-                                    smoke.type === SmokeType.MOLOTOV ? '🔥' :
-                                      '📋'}
-                              </Badge>
                             </div>
                             <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
                               <div className="flex items-center gap-1 truncate flex-1 mr-2">
@@ -572,19 +600,36 @@ export function MapViewer({ mapId }: MapViewerProps) {
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    ))}
-                </div>
 
-                {filteredSmokes.length === 0 && (
-                  <div className="text-center py-8">
-                    <div className="w-12 h-12 mx-auto mb-3 bg-muted rounded-full flex items-center justify-center">
-                      <Search className="w-6 h-6 text-muted-foreground" />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleSmokeClick(smoke)
+                            }}
+                            className="p-1 h-auto self-center"
+                            onMouseEnter={() => setHoveredSmokeId(smoke.id)}
+                            onMouseLeave={() => setHoveredSmokeId((prev) => (prev === smoke.id ? null : prev))}
+                          >
+                            <Play className="w-4 h-4 text-primary group-hover:text-accent-foreground transition-colors" />
+                          </Button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+
+                  {filteredSmokes.length === 0 && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <div className="text-center py-8">
+                        <div className="w-12 h-12 mx-auto mb-3 bg-muted rounded-full flex items-center justify-center">
+                          <Search className="w-6 h-6 text-muted-foreground" />
+                        </div>
+                        <p className="text-sm text-muted-foreground">Nenhum smoke encontrado</p>
+                      </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">Nenhum smoke encontrado</p>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           </div>

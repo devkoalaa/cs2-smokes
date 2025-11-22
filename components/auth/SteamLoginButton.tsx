@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { LogOut } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 
 export function SteamLoginButton() {
   const { user, isAuthenticated, login, logout, isLoading } = useAuth();
@@ -66,15 +67,20 @@ export function SteamLoginButton() {
   }
 
   return (
-    <Button onClick={login} className="bg-[#171a21] hover:bg-[#2a475e] text-white">
-      <Image
-        src="/images/steam-icon.svg"
-        alt="Steam"
-        width={30}
-        height={30}
-        className="mr-2"
-      />
-      Entrar com Steam
-    </Button>
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+    >
+      <Button onClick={login} className="bg-[#171a21] hover:bg-[#2a475e] text-white">
+        <Image
+          src="/images/steam-icon.svg"
+          alt="Steam"
+          width={30}
+          height={30}
+          className="mr-2"
+        />
+        Entrar com Steam
+      </Button>
+    </motion.div>
   );
 }
