@@ -1,48 +1,60 @@
 'use client';
 
 import { Smoke, SmokeType } from '@/lib/services/smokes.service';
-import { CRS, Icon, LatLngBounds } from 'leaflet';
+import { CRS, DivIcon, LatLngBounds } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { BookOpen, Cloudy, Flame, Sparkles } from 'lucide-react';
 import { useMemo } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { ImageOverlay, MapContainer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import MapPopup from './map-popup';
 
 // Fix para ícones do Leaflet no Next.js
-delete (Icon.Default.prototype as any)._getIconUrl;
-Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
+// delete (Icon.Default.prototype as any)._getIconUrl;
+// Icon.Default.mergeOptions({
+//   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+//   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+//   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+// });
 
 // Função para criar ícones baseados no tipo de smoke
 const createSmokeIcon = (type: SmokeType, highlighted: boolean = false) => {
   const size = highlighted ? 28 : 24;
-  const anchor = highlighted ? 16 : 14;
+  const iconSize = highlighted ? 18 : 14; // Ícone interno menor que o container
+  const anchor = highlighted ? 14 : 12;
 
-  let svgContent = '';
-
+  let IconComponent;
+  
   switch (type) {
     case SmokeType.SMOKE:
-      svgContent = '<circle cx="9" cy="13" r="4" fill="white"/><circle cx="13" cy="12" r="5" fill="white"/><circle cx="16" cy="15" r="3.5" fill="white"/>';
+      IconComponent = Cloudy;
       break;
     case SmokeType.BANG:
-      svgContent = '<circle cx="12" cy="12" r="8" fill="white" stroke="orange" stroke-width="2"/><path d="M8 8l8 8M16 8l-8 8" stroke="orange" stroke-width="2"/>';
+      IconComponent = Sparkles;
       break;
     case SmokeType.MOLOTOV:
-      svgContent = '<rect x="8" y="14" width="8" height="6" fill="brown"/><rect x="9" y="10" width="6" height="4" fill="orange"/><circle cx="12" cy="12" r="2" fill="red"/>';
+      IconComponent = Flame;
       break;
     case SmokeType.STRATEGY:
-      svgContent = '<rect x="6" y="6" width="12" height="12" fill="white" stroke="green" stroke-width="2"/><path d="M9 9h6M9 12h6M9 15h4" stroke="green" stroke-width="1.5"/>';
+      IconComponent = BookOpen;
       break;
     default:
-      svgContent = '<circle cx="9" cy="13" r="4" fill="white"/><circle cx="13" cy="12" r="5" fill="white"/><circle cx="16" cy="15" r="3.5" fill="white"/>';
+      IconComponent = Cloudy;
   }
 
-  return new Icon({
-    iconUrl: `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24">${svgContent}</svg>`,
+  const svgContent = renderToStaticMarkup(
+    <IconComponent 
+      size={iconSize} 
+      color="white" 
+      strokeWidth={2.5}
+      style={{ display: 'block' }}
+    />
+  );
+
+  return new DivIcon({
+    html: `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">${svgContent}</div>`,
     iconSize: [size, size],
-    iconAnchor: [anchor, anchor],
+    iconAnchor: [anchor, anchor], // Ajustado para centralizar (metade do size aprox)
     popupAnchor: [0, -anchor],
     className: `smoke-marker smoke-marker--${type.toLowerCase()}${highlighted ? ' smoke-marker--highlighted' : ''}`
   });
@@ -127,6 +139,7 @@ export default function UnifiedMap({
   return (
     <div className={`unified-map-container ${className}`} style={{ height, width }}>
       <MapContainer
+        key={radarImagePath}
         center={initialCenter}
         style={{ height: '100%', width: '100%' }}
         crs={CRS.Simple}
@@ -166,7 +179,7 @@ export default function UnifiedMap({
                 click: () => onSmokeClick(smoke),
               }}
             >
-              <Popup
+              {/* <Popup
                 autoPan
                 keepInView
                 autoPanPaddingTopLeft={[16, 64]}
@@ -178,7 +191,7 @@ export default function UnifiedMap({
                   videoUrl={smoke.videoUrl}
                   onDetails={() => onSmokeClick(smoke)}
                 />
-              </Popup>
+              </Popup> */}
             </Marker>
           );
         })}
@@ -203,8 +216,8 @@ export default function UnifiedMap({
           background: #3b82f6;
           border: 2px solid #ffffff;
           border-radius: 50%;
-          width: 24px !important;
-          height: 24px !important;
+          width: 28px !important;
+          height: 28px !important;
           display: flex;
           align-items: center;
           justify-content: center;
