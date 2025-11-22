@@ -111,8 +111,8 @@ function MapGridContent() {
               animate={{ 
                 opacity: 1, 
                 y: 0,
-                scale: hoveredMapId === map.id ? 1.05 : hoveredMapId !== null ? 0.95 : 1,
-                filter: hoveredMapId !== null && hoveredMapId !== map.id ? "blur(2px) grayscale(50%)" : "none",
+                scale: hoveredMapId === map.id ? 1.05 : 1,
+                filter: "none",
                 zIndex: hoveredMapId === map.id ? 50 : 1
               }}
               exit={{ opacity: 0, scale: 0.95 }}

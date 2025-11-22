@@ -15,7 +15,7 @@ import { useRatings } from "@/hooks/useRatings"
 import { useReports } from "@/hooks/useReports"
 import { useSmokeActions, useSmokes } from "@/hooks/useSmokes"
 import { Smoke, SmokeType } from "@/lib/services/smokes.service"
-import { ArrowDown, ArrowLeft, ArrowUp, Check, Clock, Flag, Play, Plus, Search, ThumbsUp, Trash2, User, X } from "lucide-react"
+import { ArrowDown, ArrowLeft, ArrowUp, BookOpen, Check, Clock, Cloudy, Flag, Flame, Play, Plus, Search, Sparkles, ThumbsUp, Trash2, User, X } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
@@ -477,7 +477,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                       >
-                        💨
+                        <Cloudy className="w-5 h-5" />
                       </motion.button>
                     </Button>
                     <Button
@@ -492,7 +492,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                       >
-                        💥
+                        <Sparkles className="w-5 h-5" />
                       </motion.button>
                     </Button>
                     <Button
@@ -507,7 +507,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                       >
-                        🔥
+                        <Flame className="w-5 h-5" />
                       </motion.button>
                     </Button>
                     <Button
@@ -522,7 +522,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                       >
-                        📋
+                        <BookOpen className="w-5 h-5" />
                       </motion.button>
                     </Button>
                   </div>
@@ -557,19 +557,18 @@ export function MapViewer({ mapId }: MapViewerProps) {
                       >
                         <div className="flex items-start gap-3">
                           <div className="flex flex-col items-center gap-1 pt-1">
-                            <Badge
-                              variant="outline"
-                              className={`h-8 w-8 flex items-center justify-center p-0 text-lg ${smoke.type === SmokeType.SMOKE ? 'border-blue-500 text-blue-600' :
-                                  smoke.type === SmokeType.BANG ? 'border-orange-500 text-orange-600' :
-                                    smoke.type === SmokeType.MOLOTOV ? 'border-red-500 text-red-600' :
-                                      'border-green-500 text-green-600'
+                            <div
+                              className={`h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-md border ${smoke.type === SmokeType.SMOKE ? 'bg-blue-500 border-blue-500 text-white' :
+                                  smoke.type === SmokeType.BANG ? 'bg-orange-500 border-orange-500 text-white' :
+                                    smoke.type === SmokeType.MOLOTOV ? 'bg-red-500 border-red-500 text-white' :
+                                      'bg-green-500 border-green-500 text-white'
                                 }`}
                             >
-                              {smoke.type === SmokeType.SMOKE ? '💨' :
-                                smoke.type === SmokeType.BANG ? '💥' :
-                                  smoke.type === SmokeType.MOLOTOV ? '🔥' :
-                                    '📋'}
-                            </Badge>
+                              {smoke.type === SmokeType.SMOKE ? <Cloudy size={24} strokeWidth={2.5} /> :
+                                smoke.type === SmokeType.BANG ? <Sparkles size={24} strokeWidth={2.5} /> :
+                                  smoke.type === SmokeType.MOLOTOV ? <Flame size={24} strokeWidth={2.5} /> :
+                                    <BookOpen size={24} strokeWidth={2.5} />}
+                            </div>
                           </div>
                           
                           <div className="flex-1 min-w-0">
@@ -578,12 +577,12 @@ export function MapViewer({ mapId }: MapViewerProps) {
                             </div>
                             <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
                               <div className="flex items-center gap-1 truncate flex-1 mr-2">
-                                <User className="w-3 h-3 flex-shrink-0" />
+                                <User className="w-4 h-4 flex-shrink-0" />
                                 <span className="truncate">{smoke.author.displayName}</span>
                               </div>
                               <div className="flex items-center gap-1 flex-shrink-0">
                                 <Badge variant="secondary" className="flex items-center gap-1 text-xs">
-                                  <ThumbsUp className="w-3 h-3" />
+                                  <ThumbsUp className="w-4 h-4" />
                                   {(() => {
                                     const currentScore = getCurrentScore(smoke.id, smoke.score)
                                     return currentScore > 0 ? `+${currentScore}` : currentScore
@@ -612,7 +611,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
                             onMouseEnter={() => setHoveredSmokeId(smoke.id)}
                             onMouseLeave={() => setHoveredSmokeId((prev) => (prev === smoke.id ? null : prev))}
                           >
-                            <Play className="w-4 h-4 text-primary group-hover:text-accent-foreground transition-colors" />
+                            <Play className="w-5 h-5 text-primary group-hover:text-accent-foreground transition-colors" />
                           </Button>
                         </div>
                       </motion.div>
@@ -838,10 +837,30 @@ export function MapViewer({ mapId }: MapViewerProps) {
                   <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={SmokeType.SMOKE}>💨 Smoke</SelectItem>
-                  <SelectItem value={SmokeType.BANG}>💥 Flashbang</SelectItem>
-                  <SelectItem value={SmokeType.MOLOTOV}>🔥 Molotov</SelectItem>
-                  <SelectItem value={SmokeType.STRATEGY}>📋 Estratégia</SelectItem>
+                  <SelectItem value={SmokeType.SMOKE}>
+                    <div className="flex items-center gap-2">
+                      <Cloudy className="w-4 h-4" />
+                      <span>Smoke</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={SmokeType.BANG}>
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
+                      <span>Flashbang</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={SmokeType.MOLOTOV}>
+                    <div className="flex items-center gap-2">
+                      <Flame className="w-4 h-4" />
+                      <span>Molotov</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value={SmokeType.STRATEGY}>
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="w-4 h-4" />
+                      <span>Estratégia</span>
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
