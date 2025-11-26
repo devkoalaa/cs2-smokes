@@ -19,6 +19,7 @@ import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { OtherMaps } from "./other-maps"
 
 // Importar o componente unificado dinamicamente para evitar problemas de SSR
 const UnifiedMap = dynamic(() => import('./unified-map'), {
@@ -85,7 +86,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
   const [showAddSmoke, setShowAddSmoke] = useState(false)
   const [newTitle, setNewTitle] = useState("")
   const [newVideoUrl, setNewVideoUrl] = useState("")
-  const [newTimestamp, setNewTimestamp] = useState<string>("")
+  const [newTimestamp, setNewTimestamp] = useState<string>("1")
   const [newType, setNewType] = useState<SmokeType>(SmokeType.SMOKE)
   const [selectedCoords, setSelectedCoords] = useState<{ x_coord: number; y_coord: number } | null>(null)
   const [selectingOnMap, setSelectingOnMap] = useState(false)
@@ -643,6 +644,8 @@ export function MapViewer({ mapId }: MapViewerProps) {
         </CardContent>
       </Card>
 
+      <OtherMaps currentMapId={mapId} />
+
       {/* Video Modal */}
       <Dialog open={!!selectedSmoke} onOpenChange={closeModal}>
         <DialogContent className="max-w-5xl bg-popover border-border" showCloseButton={false}>
@@ -817,7 +820,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
         if (!open) {
           setNewTitle("")
           setNewVideoUrl("")
-          setNewTimestamp("")
+          setNewTimestamp("1")
           setSelectedCoords(null)
         }
       }}>
@@ -836,7 +839,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Timestamp do momento da smoke (segundos)</label>
-              <Input type="number" min={0} step={1} value={newTimestamp} onChange={(e) => setNewTimestamp(e.target.value)} placeholder="Ex: 42" className="hide-number-input-arrows" />
+              <Input type="number" min={1} step={1} value={newTimestamp} onChange={(e) => setNewTimestamp(e.target.value)} placeholder="Ex: 42" className="hide-number-input-arrows" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Tipo</label>
@@ -953,7 +956,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
                     setShowAddSmoke(false)
                     setNewTitle("")
                     setNewVideoUrl("")
-                    setNewTimestamp("")
+                    setNewTimestamp("1")
                     setNewType(SmokeType.SMOKE)
                     setSelectedCoords(null)
                     refetch()
