@@ -14,10 +14,10 @@ import { useRatings } from "@/hooks/useRatings"
 import { useReports } from "@/hooks/useReports"
 import { useSmokeActions, useSmokes } from "@/hooks/useSmokes"
 import { Smoke, SmokeType } from "@/lib/services/smokes.service"
-import { ArrowDown, ArrowLeft, ArrowUp, BookOpen, Check, Clock, Cloudy, Flag, Flame, Play, Plus, Search, Sparkles, ThumbsUp, Trash2, User, X } from "lucide-react"
+import { ArrowDown, ArrowLeft, ArrowUp, BookOpen, Check, Clock, Cloudy, Flag, Flame, Play, Plus, Search, Sparkles, ThumbsUp, Trash2, User, X, Share2, ArrowUpCircle } from "lucide-react"
 import dynamic from "next/dynamic"
-import { useRouter } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useRef, useState, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { OtherMaps } from "./other-maps"
 
@@ -98,7 +98,10 @@ export function MapViewer({ mapId }: MapViewerProps) {
   const [reportedSmokes, setReportedSmokes] = useState<Set<number>>(new Set())
   const [selectedFloor, setSelectedFloor] = useState<string>('upper') // 'upper' ou 'lower'
   const mapRef = useRef<HTMLDivElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const [showBackToTop, setShowBackToTop] = useState(false)
 
   const { smokes, loading, error, refetch } = useSmokes(mapId)
   const { map, loading: mapLoading, error: mapError } = useMap(mapId)
@@ -107,6 +110,64 @@ export function MapViewer({ mapId }: MapViewerProps) {
   const { isAuthenticated, user } = useAuth()
   const { createSmoke, deleteSmoke, loading: createLoading } = useSmokeActions()
   const { toast } = useToast()
+
+  // Deep linking effect
+  useEffect(() => {
+    const smokeId = searchParams.get('smokeId')
+    if (smokeId && smokes.length > 0) {
+      const smoke = smokes.find(s => s.id === Number(smokeId))
+      if (smoke) {
+        setSelectedSmoke(smoke)
+      }
+    }
+  }, [searchParams, smokes])
+
+  // Update URL when smoke is selected/deselected
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (selectedSmoke) {
+      params.set('smokeId', selectedSmoke.id.toString())
+    } else {
+      params.delete('smokeId')
+    }
+    
+    // Update URL without full page reload
+    const queryString = params.toString()
+    const newUrl = queryString ? `${window.location.pathname}?${queryString}` : window.location.pathname
+    window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl)
+  }, [selectedSmoke, searchParams])
+
+  // Scroll handler for back to top button
+  const handleScroll = useCallback(() => {
+    if (listRef.current) {
+      setShowBackToTop(listRef.current.scrollTop > 300)
+    }
+  }, [])
+
+  useEffect(() => {
+    const listElement = listRef.current
+    if (listElement) {
+      listElement.addEventListener('scroll', handleScroll)
+      return () => listElement.removeEventListener('scroll', handleScroll)
+    }
+  }, [handleScroll])
+
+  const scrollToTop = () => {
+    if (listRef.current) {
+      listRef.current.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  const handleCopyLink = () => {
+    if (selectedSmoke) {
+      const url = `${window.location.origin}${window.location.pathname}?smokeId=${selectedSmoke.id}`
+      navigator.clipboard.writeText(url)
+      toast({
+        title: "Link copiado!",
+        description: "O link para esta smoke foi copiado para a área de transferência.",
+      })
+    }
+  }
 
   useEffect(() => {
     if (selectingOnMap && selectedCoords) {
@@ -430,6 +491,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
               {/* Usar componente unificado para todos os mapas */}
               {map.radar ? (
                 <UnifiedMap
+                  key={`${map.id}-${selectedFloor}`}
                   radarImagePath={map.radarLower && selectedFloor === 'lower' ? map.radarLower : map.radar}
                   smokes={filteredSmokes}
                   onSmokeClick={handleSmokeClick}
@@ -548,7 +610,10 @@ export function MapViewer({ mapId }: MapViewerProps) {
                   </div>
                 </div>
 
-                <div className="space-y-2 flex-1 overflow-y-auto overflow-x-hidden scrollbar-smokes pr-1 min-h-0 p-1 relative">
+                <div 
+                  ref={listRef}
+                  className="space-y-2 flex-1 overflow-y-auto overflow-x-hidden scrollbar-smokes pr-1 min-h-0 p-1 relative"
+                >
                   <AnimatePresence>
                     {filteredSmokes.map((smoke) => (
                       <motion.div
@@ -637,6 +702,22 @@ export function MapViewer({ mapId }: MapViewerProps) {
                       </div>
                     </div>
                   )}
+                  
+                  {/* Back to Top Button */}
+                  <AnimatePresence>
+                    {showBackToTop && (
+                      <motion.button
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        onClick={scrollToTop}
+                        className="absolute bottom-4 right-4 p-2 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-colors z-10"
+                        title="Voltar ao topo"
+                      >
+                        <ArrowUpCircle className="w-6 h-6" />
+                      </motion.button>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             </div>
@@ -680,6 +761,15 @@ export function MapViewer({ mapId }: MapViewerProps) {
                   <Clock className="w-3 h-3 mr-1" />
                   {selectedSmoke.timestamp}s
                 </Badge>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleCopyLink}
+                  className="ml-auto h-8 w-8 text-muted-foreground hover:text-foreground"
+                  title="Copiar link"
+                >
+                  <Share2 className="w-4 h-4" />
+                </Button>
               </div>
 
               <div className="aspect-video">
