@@ -490,18 +490,23 @@ export function MapViewer({ mapId }: MapViewerProps) {
 
               {/* Usar componente unificado para todos os mapas */}
               {map.radar ? (
-                <UnifiedMap
-                  key={`${map.id}-${selectedFloor}`}
-                  radarImagePath={map.radarLower && selectedFloor === 'lower' ? map.radarLower : map.radar}
-                  smokes={filteredSmokes}
-                  onSmokeClick={handleSmokeClick}
-                  onMapClick={selectingOnMap ? ((x, y) => setSelectedCoords({ x_coord: x, y_coord: y })) : undefined}
-                  tempPoint={selectingOnMap ? (selectedCoords || undefined) : undefined}
-                  highlightedSmokeId={hoveredSmokeId}
-                  height="600px"
-                  className="rounded-lg border border-border"
-                  floor={map.radarLower ? selectedFloor : undefined}
-                />
+                <>
+                  <UnifiedMap
+                    key={`${map.id}-${selectedFloor}`}
+                    radarImagePath={map.radarLower && selectedFloor === 'lower' ? map.radarLower : map.radar}
+                    smokes={filteredSmokes}
+                    onSmokeClick={handleSmokeClick}
+                    onMapClick={selectingOnMap ? ((x, y) => setSelectedCoords({ x_coord: x, y_coord: y })) : undefined}
+                    tempPoint={selectingOnMap ? (selectedCoords || undefined) : undefined}
+                    highlightedSmokeId={hoveredSmokeId}
+                    height="600px"
+                    className="rounded-lg border border-border"
+                    floor={map.radarLower ? selectedFloor : undefined}
+                  />
+                  <div className="text-xs text-muted-foreground mt-2 p-2 bg-muted rounded">
+                    Debug: Floor={selectedFloor} | Path={map.radarLower && selectedFloor === 'lower' ? map.radarLower : map.radar}
+                  </div>
+                </>
               ) : (
                 <div className="flex items-center justify-center h-96 bg-muted/20 rounded-lg border border-border">
                   <div className="text-center">
