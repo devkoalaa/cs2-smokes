@@ -16,6 +16,9 @@ interface MapCardProps {
 }
 
 export function MapCard({ map, isHovered, onMouseEnter, onMouseLeave, onClick }: MapCardProps) {
+  const smokesCount = map.smokesCount ?? 0
+  const isEmpty = smokesCount === 0
+
   return (
     <motion.div
       layout
@@ -43,7 +46,7 @@ export function MapCard({ map, isHovered, onMouseEnter, onMouseLeave, onClick }:
           {/* Image Section */}
           <div className="relative overflow-hidden h-52">
             <motion.div
-              className="absolute inset-0 bg-cover bg-center"
+              className={`absolute inset-0 bg-cover bg-center ${isEmpty ? "grayscale-[60%] opacity-70" : ""}`}
               style={{ backgroundImage: `url(${map.thumbnail || "/placeholder.svg"})` }}
               animate={{
                 scale: isHovered ? 1.15 : 1,
@@ -54,8 +57,10 @@ export function MapCard({ map, isHovered, onMouseEnter, onMouseLeave, onClick }:
 
             {/* Top Badges */}
             <div className="absolute top-3 right-3 z-10 flex gap-2">
-              <Badge className="bg-background/80 backdrop-blur-md text-foreground border border-border/50 shadow-sm">
-                {(map.smokesCount ?? 0)} smoke{(map.smokesCount ?? 0) !== 1 ? 's' : ''}
+              <Badge className={`backdrop-blur-md border shadow-sm ${
+                isEmpty ? "bg-background/80 text-muted-foreground border-border/50" : "bg-primary text-primary-foreground border-primary"
+              }`}>
+                {isEmpty ? "Sem granadas" : `${smokesCount} smoke${smokesCount !== 1 ? "s" : ""}`}
               </Badge>
             </div>
 
@@ -93,7 +98,7 @@ export function MapCard({ map, isHovered, onMouseEnter, onMouseLeave, onClick }:
                 className="relative overflow-hidden group/btn bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 shadow-lg shadow-primary/20"
               >
                 <span className="relative z-10 flex items-center font-medium">
-                  Ver Smokes
+                  {isEmpty ? "Adicionar" : "Ver Smokes"}
                   <Play className={`ml-2 w-3 h-3 transition-transform ${isHovered ? 'translate-x-1 scale-110' : ''}`} />
                 </span>
               </Button>

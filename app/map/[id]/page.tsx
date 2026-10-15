@@ -1,5 +1,6 @@
 import { MapViewer } from "@/components/map-viewer"
 import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
 import { notFound } from "next/navigation"
 import { MapsService } from "@/lib/services/maps.service"
 
@@ -21,15 +22,16 @@ export default async function MapPage({ params }: MapPageProps) {
     const map = await mapsService.getMapById(mapId)
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-1">
         <div className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-balance mb-2">{map.displayName || map.name}</h1>
             <p className="text-lg text-muted-foreground text-pretty">{map.description || 'Mapa do Counter-Strike 2'}</p>
         </div>
           <MapViewer mapId={mapId} />
       </main>
+      <Footer />
     </div>
   )
   } catch (error) {

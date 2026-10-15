@@ -18,7 +18,7 @@ import MapPopup from './map-popup';
 // });
 
 // Função para criar ícones baseados no tipo de smoke
-const createSmokeIcon = (type: SmokeType, highlighted: boolean = false) => {
+const createSmokeIcon = (type: SmokeType, highlighted: boolean = false, temp: boolean = false) => {
   const size = highlighted ? 28 : 24;
   const iconSize = highlighted ? 18 : 14; // Ícone interno menor que o container
   const anchor = highlighted ? 14 : 12;
@@ -56,7 +56,7 @@ const createSmokeIcon = (type: SmokeType, highlighted: boolean = false) => {
     iconSize: [size, size],
     iconAnchor: [anchor, anchor], // Ajustado para centralizar (metade do size aprox)
     popupAnchor: [0, -anchor],
-    className: `smoke-marker smoke-marker--${type.toLowerCase()}${highlighted ? ' smoke-marker--highlighted' : ''}`
+    className: `smoke-marker smoke-marker--${type.toLowerCase()}${highlighted ? ' smoke-marker--highlighted' : ''}${temp ? ' smoke-marker--temp' : ''}`
   });
 };
 
@@ -71,6 +71,7 @@ interface UnifiedMapProps {
   tempPoint?: { x_coord: number; y_coord: number };
   highlightedSmokeId?: number | null;
   floor?: string; // 'upper' ou 'lower' - filtra smokes por andar
+  onSmokeHover?: (smokeId: number | null) => void;
 }
 
 export default function UnifiedMap({
@@ -83,7 +84,8 @@ export default function UnifiedMap({
   onMapClick,
   tempPoint,
   highlightedSmokeId,
-  floor
+  floor,
+  onSmokeHover
 }: UnifiedMapProps) {
   // Dimensões padrão da imagem (assumindo imagens quadradas de alta resolução)
   const imageSize = 1024;
@@ -177,6 +179,8 @@ export default function UnifiedMap({
               zIndexOffset={isHighlighted ? 1000 : 0}
               eventHandlers={{
                 click: () => onSmokeClick(smoke),
+                mouseover: () => onSmokeHover?.(smoke.id),
+                mouseout: () => onSmokeHover?.(null),
               }}
             >
               {/* <Popup
@@ -201,7 +205,7 @@ export default function UnifiedMap({
           <Marker
             key="temp-point"
             position={convertToMapCoords(tempPoint.x_coord, tempPoint.y_coord)}
-            icon={createSmokeIcon(SmokeType.SMOKE, false)}
+            icon={createSmokeIcon(SmokeType.SMOKE, false, true)}
           />
         ) : null}
       </MapContainer>
@@ -242,14 +246,20 @@ export default function UnifiedMap({
           background: #16a34a; /* Verde para estratégia */
         }
         
-        .smoke-marker:hover {
-          transform: scale(1.2);
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
-        }
-        
+        .smoke-marker:hover,
         .smoke-marker--highlighted {
           transform: scale(1.2);
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+          box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.35), 0 4px 14px rgba(0, 0, 0, 0.5);
+        }
+
+        .smoke-marker--temp {
+          background: var(--color-primary);
+          animation: smoke-marker-pulse 1.4s ease-in-out infinite;
+        }
+
+        @keyframes smoke-marker-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--color-primary) 60%, transparent); }
+          50% { box-shadow: 0 0 0 8px transparent; }
         }
         
         .leaflet-popup-content-wrapper {

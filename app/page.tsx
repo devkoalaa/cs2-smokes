@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { Header } from "@/components/header"
 import { MapGrid } from "@/components/map-grid"
-import { Badge } from "@/components/ui/badge"
+import { Footer } from "@/components/footer"
 import { MapsService } from "@/lib/services/maps.service"
 import { UsersService } from "@/lib/services/users.service"
 import { HomeHero } from "@/components/home-hero"
@@ -22,9 +22,9 @@ export default async function HomePage() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-1">
         {/* Hero Section */}
         <HomeHero />
 
@@ -33,18 +33,14 @@ export default async function HomePage() {
 
         {/* Maps Section */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="text-3xl font-bold text-foreground mb-2">Mapas Disponíveis</h2>
-              <p className="text-muted-foreground">Selecione um mapa para começar a aprender</p>
-            </div>
-            <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
-              {maps.length} Mapas
-            </Badge>
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-foreground mb-2">Mapas Disponíveis</h2>
+            <p className="text-muted-foreground">Selecione um mapa para começar a aprender</p>
           </div>
           <MapGrid />
         </div>
       </main>
+      <Footer />
     </div>
   )
 }

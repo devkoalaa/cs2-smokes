@@ -14,7 +14,7 @@ import { useRatings } from "@/hooks/useRatings"
 import { useReports } from "@/hooks/useReports"
 import { useSmokeActions, useSmokes } from "@/hooks/useSmokes"
 import { Smoke, SmokeType } from "@/lib/services/smokes.service"
-import { ArrowDown, ArrowLeft, ArrowUp, BookOpen, Check, Clock, Cloudy, Flag, Flame, Play, Plus, Search, Sparkles, ThumbsUp, Trash2, User, X, Share2, ArrowUpCircle } from "lucide-react"
+import { ArrowDown, ArrowLeft, ArrowUp, BookOpen, Check, Clock, Cloudy, Flag, Flame, Play, Plus, Search, Sparkles, Trash2, User, X, Share2, ArrowUpCircle } from "lucide-react"
 import dynamic from "next/dynamic"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useRef, useState, useCallback } from "react"
@@ -36,6 +36,23 @@ const UnifiedMap = dynamic(() => import('./unified-map'), {
 
 interface MapViewerProps {
   mapId: number
+}
+
+function formatTimestamp(seconds: number): string {
+  const total = Math.max(0, Math.floor(Number(seconds) || 0))
+  const m = Math.floor(total / 60)
+  const sec = total % 60
+  return `${m}:${String(sec).padStart(2, "0")}`
+}
+
+function formatScore(score: number): string {
+  return score > 0 ? `+${score}` : String(score)
+}
+
+function scoreColorClass(score: number): string {
+  if (score > 0) return "bg-secondary/15 text-secondary border-secondary/30"
+  if (score < 0) return "bg-red-500/15 text-red-400 border-red-500/30"
+  return "bg-muted/40 text-muted-foreground border-border"
 }
 
 function buildEmbeddableVideoUrl(originalUrl: string, startSeconds?: number): string {
@@ -99,6 +116,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
   const [selectedFloor, setSelectedFloor] = useState<string>('upper') // 'upper' ou 'lower'
   const mapRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  const listItemRefs = useRef<Record<number, HTMLDivElement | null>>({})
   const router = useRouter()
   const searchParams = useSearchParams()
   const [showBackToTop, setShowBackToTop] = useState(false)
@@ -393,6 +411,13 @@ export function MapViewer({ mapId }: MapViewerProps) {
     }
   }
 
+  const handleMarkerHover = (smokeId: number | null) => {
+    setHoveredSmokeId(smokeId)
+    if (smokeId !== null) {
+      listItemRefs.current[smokeId]?.scrollIntoView({ block: "nearest", behavior: "smooth" })
+    }
+  }
+
   const filteredSmokes = smokes.filter(smoke => {
     const matchesSearch = smoke.title.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesType = filterType === "all" || smoke.type === filterType
@@ -434,11 +459,13 @@ export function MapViewer({ mapId }: MapViewerProps) {
         </Button>
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
-            {smokes.length} smokes disponíveis
+            {smokes.length} smoke{smokes.length !== 1 ? "s" : ""}
           </Badge>
-          <Badge variant="outline" className="border-border">
-            {filteredSmokes.length} filtrados
-          </Badge>
+          {filteredSmokes.length !== smokes.length && (
+            <Badge variant="outline" className="border-border">
+              {filteredSmokes.length} no filtro
+            </Badge>
+          )}
         </div>
         {isAuthenticated && (
           <Button onClick={() => setShowAddSmoke(true)} className="ml-auto">
@@ -450,11 +477,16 @@ export function MapViewer({ mapId }: MapViewerProps) {
 
       {/* Map Controls */}
       <Card className="bg-card border-border">
-        <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row gap-6">
+        <CardContent className="p-3 sm:p-6">
+          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
             {/* Map Container */}
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-4">
+            <div className="flex-1 min-w-0">
+              {selectingOnMap && (
+                <div className="mb-3 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary">
+                  Clique no mapa para marcar onde a granada cai
+                </div>
+              )}
+              <div className={`flex items-center justify-between ${map.radarLower ? "mb-4" : ""}`}>
                 {/* Toggle de andar para mapas com múltiplos andares */}
                 {map.radarLower && (
                   <div className="flex items-center gap-3 bg-card border border-border/50 p-1.5 rounded-xl shadow-sm">
@@ -490,7 +522,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
 
               {/* Usar componente unificado para todos os mapas */}
               {map.radar ? (
-                <>
+                <div className="aspect-square lg:aspect-auto lg:h-[600px] w-full">
                   <UnifiedMap
                     key={`${map.id}-${selectedFloor}`}
                     radarImagePath={map.radarLower && selectedFloor === 'lower' ? map.radarLower : map.radar}
@@ -499,14 +531,12 @@ export function MapViewer({ mapId }: MapViewerProps) {
                     onMapClick={selectingOnMap ? ((x, y) => setSelectedCoords({ x_coord: x, y_coord: y })) : undefined}
                     tempPoint={selectingOnMap ? (selectedCoords || undefined) : undefined}
                     highlightedSmokeId={hoveredSmokeId}
-                    height="600px"
-                    className="rounded-lg border border-border"
+                    onSmokeHover={handleMarkerHover}
+                    height="100%"
+                    className="rounded-lg border border-border overflow-hidden"
                     floor={map.radarLower ? selectedFloor : undefined}
                   />
-                  <div className="text-xs text-muted-foreground mt-2 p-2 bg-muted rounded">
-                    Debug: Floor={selectedFloor} | Path={map.radarLower && selectedFloor === 'lower' ? map.radarLower : map.radar}
-                  </div>
-                </>
+                </div>
               ) : (
                 <div className="flex items-center justify-center h-96 bg-muted/20 rounded-lg border border-border">
                   <div className="text-center">
@@ -518,7 +548,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
             </div>
 
             {/* Controls Panel */}
-            <div className="w-full lg:w-96 h-[600px] flex flex-col space-y-4 min-h-0">
+            <div className="w-full lg:w-96 h-[480px] lg:h-[600px] flex flex-col space-y-4 min-h-0">
               <div className="w-full flex-1 flex flex-col min-h-0 space-y-4">
                 {/* Header */}
                 <div className="space-y-3">
@@ -620,15 +650,22 @@ export function MapViewer({ mapId }: MapViewerProps) {
                   className="space-y-2 flex-1 overflow-y-auto overflow-x-hidden scrollbar-smokes pr-1 min-h-0 p-1 relative"
                 >
                   <AnimatePresence>
-                    {filteredSmokes.map((smoke) => (
+                    {filteredSmokes.map((smoke) => {
+                      const score = getCurrentScore(smoke.id, smoke.score)
+                      const vote = getUserVote(smoke.id)
+                      const isActive = hoveredSmokeId === smoke.id || selectedSmoke?.id === smoke.id
+                      return (
                       <motion.div
                         key={smoke.id}
+                        ref={(el: HTMLDivElement | null) => { listItemRefs.current[smoke.id] = el }}
                         layout
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 20 }}
                         transition={{ duration: 0.2 }}
-                        className="border border-border rounded-lg p-3 hover:bg-accent transition-colors group cursor-pointer"
+                        className={`border rounded-lg p-3 transition-colors group cursor-pointer ${
+                          isActive ? "border-primary/60 bg-primary/10" : "border-border hover:border-primary/40 hover:bg-primary/5"
+                        }`}
                         onClick={() => handleSmokeClick(smoke)}
                         onMouseEnter={() => setHoveredSmokeId(smoke.id)}
                         onMouseLeave={() => setHoveredSmokeId((prev) => (prev === smoke.id ? null : prev))}
@@ -660,21 +697,14 @@ export function MapViewer({ mapId }: MapViewerProps) {
                                 <span className="truncate">{smoke.author.displayName}</span>
                               </div>
                               <div className="flex items-center gap-1 flex-shrink-0">
-                                <Badge variant="secondary" className="flex items-center gap-1 text-xs">
-                                  <ThumbsUp className="w-4 h-4" />
-                                  {(() => {
-                                    const currentScore = getCurrentScore(smoke.id, smoke.score)
-                                    return currentScore > 0 ? `+${currentScore}` : currentScore
-                                  })()}
+                                {vote ? (
+                                  <span className={vote === 1 ? "text-secondary" : "text-red-400"} title="Seu voto">
+                                    {vote === 1 ? <ArrowUp className="w-3.5 h-3.5" /> : <ArrowDown className="w-3.5 h-3.5" />}
+                                  </span>
+                                ) : null}
+                                <Badge variant="outline" className={`text-xs tabular-nums ${scoreColorClass(score)}`}>
+                                  {formatScore(score)}
                                 </Badge>
-                                {getUserVote(smoke.id) && (
-                                  <Badge
-                                    variant={getUserVote(smoke.id) === 1 ? "default" : "destructive"}
-                                    className="text-xs"
-                                  >
-                                    {getUserVote(smoke.id) === 1 ? '↑' : '↓'}
-                                  </Badge>
-                                )}
                               </div>
                             </div>
                           </div>
@@ -690,11 +720,12 @@ export function MapViewer({ mapId }: MapViewerProps) {
                             onMouseEnter={() => setHoveredSmokeId(smoke.id)}
                             onMouseLeave={() => setHoveredSmokeId((prev) => (prev === smoke.id ? null : prev))}
                           >
-                            <Play className="w-5 h-5 text-primary group-hover:text-accent-foreground transition-colors" />
+                            <Play className="w-5 h-5 text-primary transition-colors" />
                           </Button>
                         </div>
                       </motion.div>
-                    ))}
+                      )
+                    })}
                   </AnimatePresence>
 
                   {filteredSmokes.length === 0 && (
@@ -748,24 +779,16 @@ export function MapViewer({ mapId }: MapViewerProps) {
           </DialogHeader>
           {selectedSmoke && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-4">
-                <Badge variant="outline" className="border-border">
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    <ThumbsUp className="w-3 h-3" />
-                    {(() => {
-                      const currentScore = getCurrentScore(selectedSmoke.id, selectedSmoke.score)
-                      return currentScore > 0 ? `+${currentScore}` : currentScore
-                    })()}
-                  </Badge>
-                </Badge>
-                <Badge variant="outline" className="border-border flex items-center gap-1">
-                  <User className="w-3 h-3" />
+              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <User className="w-3.5 h-3.5" />
                   {selectedSmoke.author.displayName}
-                </Badge>
-                <Badge variant="outline" className="border-border">
-                  <Clock className="w-3 h-3 mr-1" />
-                  {selectedSmoke.timestamp}s
-                </Badge>
+                </span>
+                <span aria-hidden="true">•</span>
+                <span className="flex items-center gap-1" title="Momento da granada no vídeo">
+                  <Clock className="w-3.5 h-3.5" />
+                  {formatTimestamp(selectedSmoke.timestamp)}
+                </span>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -791,27 +814,39 @@ export function MapViewer({ mapId }: MapViewerProps) {
 
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center rounded-full border border-border bg-background/40 p-1">
                     <Button
-                      variant={getUserVote(selectedSmoke.id) === 1 ? "default" : "outline"}
+                      variant="ghost"
                       onClick={() => handleUpvote(selectedSmoke.id)}
                       disabled={ratingLoading}
                       size="icon"
-                      className={`${getUserVote(selectedSmoke.id) === 1
-                        ? 'bg-green-600 hover:bg-green-700 text-white'
-                        : ''
+                      title="Votar a favor"
+                      className={`h-8 w-8 rounded-full ${getUserVote(selectedSmoke.id) === 1
+                        ? 'bg-secondary text-secondary-foreground hover:bg-secondary/90'
+                        : 'hover:bg-secondary/15 hover:text-secondary'
                         }`}
                     >
                       <ArrowUp className="w-4 h-4" />
                     </Button>
+                    {(() => {
+                      const score = getCurrentScore(selectedSmoke.id, selectedSmoke.score)
+                      return (
+                        <span className={`min-w-10 px-2 text-center text-sm font-semibold tabular-nums ${
+                          score > 0 ? "text-secondary" : score < 0 ? "text-red-400" : "text-muted-foreground"
+                        }`}>
+                          {formatScore(score)}
+                        </span>
+                      )
+                    })()}
                     <Button
-                      variant={getUserVote(selectedSmoke.id) === -1 ? "default" : "outline"}
+                      variant="ghost"
                       onClick={() => handleDownvote(selectedSmoke.id)}
                       disabled={ratingLoading}
                       size="icon"
-                      className={`${getUserVote(selectedSmoke.id) === -1
-                        ? 'bg-red-600 hover:bg-red-700 text-white'
-                        : ''
+                      title="Votar contra"
+                      className={`h-8 w-8 rounded-full ${getUserVote(selectedSmoke.id) === -1
+                        ? 'bg-red-600 text-white hover:bg-red-700'
+                        : 'hover:bg-red-500/15 hover:text-red-400'
                         }`}
                     >
                       <ArrowDown className="w-4 h-4" />
@@ -840,26 +875,28 @@ export function MapViewer({ mapId }: MapViewerProps) {
                     )}
                     {isAuthenticated && user?.id !== selectedSmoke.author.id && !reportedSmokes.has(selectedSmoke.id) && (
                       <Button
-                        variant="outline"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => {
                           setReportReason("")
                           setShowReportDialog(true)
                         }}
-                        size="icon"
-                        className="bg-orange-500 hover:bg-orange-600 text-white border-orange-500"
+                        className="text-muted-foreground hover:text-orange-400 hover:bg-orange-500/10"
                       >
-                        <Flag className="w-4 h-4" />
+                        <Flag className="w-4 h-4 mr-2" />
+                        Reportar
                       </Button>
                     )}
                     {isAuthenticated && user?.id !== selectedSmoke.author.id && reportedSmokes.has(selectedSmoke.id) && (
                       <Button
-                        variant="outline"
-                        size="icon"
+                        variant="ghost"
+                        size="sm"
                         disabled
-                        className="bg-gray-500 text-white border-gray-500 cursor-not-allowed"
+                        className="text-muted-foreground"
                         title="Você já reportou esta smoke"
                       >
-                        <Flag className="w-4 h-4" />
+                        <Flag className="w-4 h-4 mr-2" />
+                        Reportado
                       </Button>
                     )}
                   </div>

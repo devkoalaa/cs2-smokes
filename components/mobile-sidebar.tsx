@@ -87,15 +87,10 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
        {/* Sidebar */}
        <div
          className={cn(
-           "fixed top-0 right-0 w-80 max-w-[85vw] border-l border-border z-[70] transition-transform duration-300 ease-in-out flex flex-col",
+           "fixed top-0 right-0 w-80 max-w-[85vw] bg-sidebar text-sidebar-foreground border-l border-border z-[70] transition-transform duration-300 ease-in-out flex flex-col",
            isOpen ? "translate-x-0" : "translate-x-full"
          )}
-         style={{
-           backgroundColor: 'hsl(var(--sidebar))',
-           color: 'hsl(var(--sidebar-foreground))',
-           height: '100vh',
-           minHeight: '100vh'
-         }}
+         style={{ height: '100dvh' }}
          role="dialog"
          aria-modal="true"
          aria-label="Menu de navegação"
@@ -204,7 +199,7 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                <Button
                  variant="ghost"
                  onClick={handleLogout}
-                 className="w-full justify-start h-12 text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
+                 className="w-full justify-start h-12 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
                >
                  <LogOut className="w-5 h-5 mr-3" />
                  <span className="text-base">Sair</span>

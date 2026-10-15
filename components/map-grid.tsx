@@ -1,11 +1,8 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MapPin, Play, Search, Filter, Star, Clock } from "lucide-react"
+import { Search } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState, useMemo, Suspense } from "react"
 import { MapGridSkeleton } from "@/components/loading-skeleton"
@@ -16,7 +13,6 @@ import { MapCard } from "@/components/map-card"
 function MapGridContent() {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterCategory, setFilterCategory] = useState("all")
   const [sortBy, setSortBy] = useState("name")
   
   const [hoveredMapId, setHoveredMapId] = useState<number | null>(null)
@@ -41,14 +37,11 @@ function MapGridContent() {
           return aName.localeCompare(bName)
         case "smokes":
           return (b.smokesCount ?? 0) - (a.smokesCount ?? 0)
-        case "difficulty":
-          return 0 // TODO: Add difficulty when available
-        case "popularity":
         default:
           return aName.localeCompare(bName)
       }
     })
-  }, [maps, searchTerm, filterCategory, sortBy])
+  }, [maps, searchTerm, sortBy])
 
   const handleMapSelect = (mapId: number) => {
     router.push(`/map/${mapId}`)
@@ -86,7 +79,6 @@ function MapGridContent() {
           <SelectContent>
             <SelectItem value="name">Nome</SelectItem>
             <SelectItem value="smokes">Número de Smokes</SelectItem>
-            <SelectItem value="difficulty">Dificuldade</SelectItem>
           </SelectContent>
         </Select>
       </div>
