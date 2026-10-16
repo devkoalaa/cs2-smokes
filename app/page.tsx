@@ -26,13 +26,13 @@ export default async function HomePage() {
       <Header />
       <main className="container mx-auto px-4 py-8 flex-1">
         {/* Hero Section */}
-        <HomeHero />
+        <HomeHero backgroundImage={maps.find((m) => m.thumbnail)?.thumbnail} />
 
         {/* Stats Section */}
         <HomeStats stats={stats} />
 
         {/* Maps Section */}
-        <div className="mb-8">
+        <div id="mapas" className="mb-8 scroll-mt-24">
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-foreground mb-2">Mapas Disponíveis</h2>
             <p className="text-muted-foreground">Selecione um mapa para começar a aprender</p>

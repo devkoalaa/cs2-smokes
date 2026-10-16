@@ -1,12 +1,26 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { ArrowDown } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
-export function HomeHero() {
+export function HomeHero({ backgroundImage }: { backgroundImage?: string }) {
   const title = "CS2 Smokes Hub"
   
   return (
-    <div className="text-center mb-16 relative select-none">
+    <div className="relative isolate mb-10 sm:mb-16 overflow-hidden rounded-2xl border border-border/50 px-4 py-14 sm:py-20 text-center select-none">
+      {backgroundImage && (
+        <motion.div
+          aria-hidden="true"
+          className="absolute inset-0 -z-20 bg-cover bg-center"
+          style={{ backgroundImage: `url(${backgroundImage})` }}
+          initial={{ opacity: 0, scale: 1.1 }}
+          animate={{ opacity: 0.3, scale: 1 }}
+          transition={{ duration: 2, ease: "easeOut" }}
+        />
+      )}
+      <div aria-hidden="true" className="absolute inset-0 -z-10 bg-gradient-to-b from-background/30 via-background/70 to-background" />
+
       <div className="relative inline-block">
         <h1 
           className="text-4xl md:text-6xl font-bold mb-6 relative z-10" 
@@ -64,10 +78,23 @@ export function HomeHero() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 1.2 }}
-        className="text-xl text-muted-foreground text-pretty max-w-3xl mx-auto mb-8"
+        className="text-lg sm:text-xl text-muted-foreground text-pretty max-w-3xl mx-auto mb-8"
       >
         O arsenal de smokes definitivo, alimentado e validado pela comunidade.
       </motion.p>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 1.5 }}
+      >
+        <Button asChild size="lg" className="shadow-lg shadow-primary/20">
+          <a href="#mapas">
+            Ver mapas
+            <ArrowDown className="w-4 h-4 ml-2" />
+          </a>
+        </Button>
+      </motion.div>
     </div>
   )
 }

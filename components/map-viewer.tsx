@@ -38,6 +38,8 @@ interface MapViewerProps {
   mapId: number
 }
 
+type SmokeSort = "score" | "recent" | "title"
+
 function formatTimestamp(seconds: number): string {
   const total = Math.max(0, Math.floor(Number(seconds) || 0))
   const m = Math.floor(total / 60)
@@ -100,6 +102,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
   const [selectedSmoke, setSelectedSmoke] = useState<Smoke | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterType, setFilterType] = useState<string>("all")
+  const [sortBy, setSortBy] = useState<SmokeSort>("score")
   const [showAddSmoke, setShowAddSmoke] = useState(false)
   const [newTitle, setNewTitle] = useState("")
   const [newVideoUrl, setNewVideoUrl] = useState("")
@@ -424,6 +427,16 @@ export function MapViewer({ mapId }: MapViewerProps) {
     // Filtrar por andar se o mapa tiver múltiplos andares
     const matchesFloor = !map?.radarLower || smoke.floor === selectedFloor || (!smoke.floor && selectedFloor === 'upper')
     return matchesSearch && matchesType && matchesFloor
+  }).sort((a, b) => {
+    switch (sortBy) {
+      case "recent":
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      case "title":
+        return a.title.localeCompare(b.title)
+      case "score":
+      default:
+        return getCurrentScore(b.id, b.score) - getCurrentScore(a.id, a.score)
+    }
   })
 
   if (loading || mapLoading) {
@@ -633,15 +646,27 @@ export function MapViewer({ mapId }: MapViewerProps) {
                     </Button>
                   </div>
 
-                  {/* Search */}
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                    <Input
-                      placeholder="Buscar smokes..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 focus:ring-primary"
-                    />
+                  {/* Search + Sort */}
+                  <div className="flex gap-2">
+                    <div className="relative flex-1 min-w-0">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                      <Input
+                        placeholder="Buscar smokes..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 focus:ring-primary"
+                      />
+                    </div>
+                    <Select value={sortBy} onValueChange={(v) => setSortBy(v as SmokeSort)}>
+                      <SelectTrigger className="w-[150px] flex-shrink-0 border-border" aria-label="Ordenar smokes">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="score">Mais votadas</SelectItem>
+                        <SelectItem value="recent">Mais recentes</SelectItem>
+                        <SelectItem value="title">Nome (A–Z)</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 

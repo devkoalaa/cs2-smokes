@@ -18,7 +18,7 @@ const iconMap = {
 
 export function HomeStats({ stats }: { stats: Stat[] }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 max-w-4xl mx-auto">
+    <div className="grid grid-cols-3 gap-2 sm:gap-6 mb-10 sm:mb-16 max-w-4xl mx-auto">
       {stats.map((stat, index) => {
         const Icon = iconMap[stat.icon]
         return (
@@ -30,11 +30,11 @@ export function HomeStats({ stats }: { stats: Stat[] }) {
             whileHover={{ y: -5 }}
             className="h-full"
         >
-            <Card className="group relative bg-card/50 backdrop-blur-sm border-border overflow-hidden h-full transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:border-primary/50">
+            <Card className="group relative py-1 sm:py-6 bg-card/50 backdrop-blur-sm border-border overflow-hidden h-full transition-all duration-300 hover:shadow-2xl hover:shadow-primary/20 hover:border-primary/50">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
-              <CardContent className="relative p-6 text-center h-full flex flex-col justify-center z-10">
-                <div className="flex justify-center mb-4">
+              <CardContent className="relative p-3 sm:p-6 text-center h-full flex flex-col justify-center z-10">
+                <div className="hidden sm:flex justify-center mb-4">
                   <motion.div 
                     className="p-4 bg-primary/10 rounded-full group-hover:bg-primary/20 transition-colors duration-300"
                     whileHover={{ rotate: 360, scale: 1.1 }}
@@ -44,14 +44,14 @@ export function HomeStats({ stats }: { stats: Stat[] }) {
                   </motion.div>
                 </div>
                 <motion.div 
-                  className="text-3xl font-bold text-card-foreground mb-2 tracking-tight"
+                  className="text-2xl sm:text-3xl font-bold text-card-foreground mb-1 sm:mb-2 tracking-tight tabular-nums"
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: "spring", stiffness: 100, delay: 0.5 + (index * 0.1) }}
                 >
                   {stat.value}
                 </motion.div>
-                <div className="text-sm font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</div>
+                <div className="text-[10px] leading-tight sm:text-sm font-medium text-muted-foreground uppercase tracking-wider">{stat.label}</div>
                 
                 {/* Decorative background element */}
                 <div className="absolute -bottom-6 -right-6 opacity-0 group-hover:opacity-5 transition-all duration-500 transform group-hover:scale-150 group-hover:-rotate-12 pointer-events-none">
