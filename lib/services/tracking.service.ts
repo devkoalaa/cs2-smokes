@@ -21,12 +21,13 @@ export interface MatchList {
 }
 export type AimMetric = 'preaim' | 'tts' | 'ttd' | 'ttk';
 export interface ReplayStats {
+  premierAfter?: number; premierDelta?: number;
   rank: number | null; kast: number; opening: number; multi: number; clutch: number;
   flashed: number; shots: number; hits: number;
   aim: Partial<Record<AimMetric, { mean: number; n: number }>>;
 }
 export interface MatchDetail {
-  analysis?: { players: Record<string, ReplayStats>; segments: { sideA: number; wins: number[] }[] } | null;
+  analysis?: { premier?: boolean; players: Record<string, ReplayStats>; segments: { sideA: number; wins: number[] }[] } | null;
  id: number; mode: string; map: string; playedAt: string; rounds: number; players: PlayerStats[] }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {

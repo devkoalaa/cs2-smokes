@@ -37,13 +37,33 @@ const aimColumns = [
 
 export function MatchScoreboard({ match, viewer }: { match: MatchDetail; viewer?: string }) {
   const [aim, setAim] = useState(false);
-  const [sort, setSort] = useState({ index: 1, ascending: false });
-  const columns = aim ? aimColumns : scoreboard;
+  const [sort, setSort] = useState({ index: 0, ascending: false });
+  // Compare contributions with the players in this match so 2v2 and 5v5
+  // each have their own reference. Missing damage makes this rating unavailable.
+  const total = match.players.reduce((sum, p) => ({
+    kills: sum.kills + p.kills, assists: sum.assists + p.assists, damage: sum.damage + (p.damage ?? 0),
+  }), { kills: 0, assists: 0, damage: 0 });
+  const rating: Column = {
+    label: 'Rating Hub', precision: 2,
+    description: 'Desempenho relativo à média dos jogadores desta partida (1,00). Peso de 50% para eliminações, 35% para dano e 15% para assistências. Se ninguém pontuou em um critério, seu peso é redistribuído.',
+    value: p => {
+      if (match.players.some(row => row.damage == null)) return null;
+      const metrics = [[p.kills, total.kills, 0.5], [p.damage ?? 0, total.damage, 0.35], [p.assists, total.assists, 0.15]];
+      const available = metrics.filter(([, sum]) => sum > 0);
+      const weights = available.reduce((sum, [, , weight]) => sum + weight, 0);
+      return weights ? available.reduce((sum, [v, all, weight]) => sum + weight * v / all, 0) * match.players.length / weights : null;
+    },
+  };
+  const premier: Column[] = match.analysis?.premier ? [
+    { label: 'Premier final', description: 'Pontos ao fim da partida segundo a atualização de rank da demo.', value: (_,s) => s?.premierAfter },
+    { label: 'Δ Premier', description: 'Saldo confirmado entre os pontos antes e depois. Um traço indica que a demo não informou as duas pontuações.', value: (_,s) => s?.premierDelta },
+  ] : [scoreboard[0]];
+  const columns = aim ? aimColumns : [rating, ...premier, ...scoreboard.slice(1)];
   const column = columns[sort.index];
   const stats = (p: PlayerStats) => match.analysis?.players[p.steamId];
   function choose(view: boolean) {
     setAim(view);
-    setSort(view ? { index: 2, ascending: true } : { index: 1, ascending: false });
+    setSort(view ? { index: 2, ascending: true } : { index: 0, ascending: false });
   }
   return <section className="min-w-0 space-y-4">
     <div className="inline-flex rounded-lg border border-border p-1">
@@ -78,7 +98,7 @@ export function MatchScoreboard({ match, viewer }: { match: MatchDetail; viewer?
             {columns.map((c,i) => {
               const v = c.value(p, stats(p)), count = c.count?.(stats(p));
               return <td key={c.label} className={`px-2 py-2 text-center whitespace-nowrap ${i === sort.index ? 'bg-muted/50 font-semibold' : ''}`}>
-                {v == null ? '—' : v.toLocaleString('pt-BR',{maximumFractionDigits:c.precision ?? 1}) + (c.unit ?? '')}
+                {v == null ? '—' : v.toLocaleString('pt-BR',{maximumFractionDigits:c.precision ?? 1, minimumFractionDigits:c.label === 'Rating Hub' ? 2 : 0, signDisplay:c.label === 'Δ Premier' ? 'exceptZero' : 'auto'}) + (c.unit ?? '')}
                 {aim && count != null && <small className="block text-muted-foreground">{count}</small>}</td>;
             })}</tr>)}</tbody>
         </table></div></section>;
