@@ -6,6 +6,7 @@ import { AuthService } from '@/lib/auth';
 import { config } from '@/lib/config';
 import { useAuth } from '@/contexts/AuthContext';
 import { LoadingOverlay } from '@/components/ui/loading-overlay';
+import { Button } from '@/components/ui/button';
 
 export function SteamCallback() {
   const router = useRouter();
@@ -72,18 +73,9 @@ export function SteamCallback() {
               router.push('/');
             }, 2000);
           } else {
-            const errorText = await response.text();
-            
-            // Try to parse error as JSON
-            let errorMessage = errorText;
-            try {
-              const errorJson = JSON.parse(errorText);
-              errorMessage = errorJson.message || errorText;
-            } catch (e) {
-              // Not JSON, use text as is
-            }
-            
-            throw new Error(`Falha na autenticação: ${response.status} - ${errorMessage}`);
+            const errorJson = await response.json().catch(() => null);
+            const errorMessage = typeof errorJson?.message === 'string' ? errorJson.message : 'O servidor não concluiu o login.';
+            throw new Error(`${response.status}: ${errorMessage}`);
           }
         } else {
           throw new Error('Parâmetros de autenticação inválidos');
@@ -97,6 +89,17 @@ export function SteamCallback() {
     handleSteamCallback();
   }, [searchParams, router]);
 
+
+  if (status === 'error') return (
+    <main className="min-h-screen flex items-center justify-center p-6">
+      <section className="max-w-lg rounded-xl border border-border bg-card p-8 space-y-4" role="alert">
+        <h1 className="text-2xl font-bold">Não foi possível entrar</h1>
+        <p className="text-muted-foreground break-words">{message}</p>
+        <Button onClick={() => { window.location.href = AuthService.getInstance().getSteamAuthUrl(); }}>Tentar novamente com Steam</Button>
+        <Button variant="outline" onClick={() => router.push('/')}>Voltar ao início</Button>
+      </section>
+    </main>
+  );
 
   return (
     <LoadingOverlay 
