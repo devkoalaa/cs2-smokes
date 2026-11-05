@@ -33,11 +33,12 @@ export async function GET(request: Request, { params }: { params: { slug: string
     .sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1) || b.kills - a.kills);
   const label = resultLabel(me.scoreFor, me.scoreAgainst), accent = resultColors[label];
   const columns: [string, number, (p: typeof team[number]) => string][] = [
-    ['RATING', 130, p => fixed(p.rating, 2)],
-    ['K / D / A', premier ? 190 : 220, p => `${p.kills} / ${p.deaths} / ${p.assists}`],
-    ['ADR', 110, p => fixed(p.damage != null && p.rounds ? p.damage / p.rounds : null)],
-    ['HS', 110, p => fixed(p.headshots != null && p.kills ? 100 * p.headshots / p.kills : null, 0, '%')],
-    ['KAST', 110, p => { const s = stats(p.steamId); return fixed(s && p.rounds ? 100 * s.kast / p.rounds : null, 0, '%'); }],
+    ['RATING', 110, p => fixed(p.rating, 2)],
+    ['K / D / A', 175, p => `${p.kills} / ${p.deaths} / ${p.assists}`],
+    ['ADR', 95, p => fixed(p.damage != null && p.rounds ? p.damage / p.rounds : null)],
+    ['DANO', 115, p => fixed(p.damage)],
+    ['HS', 90, p => fixed(p.headshots != null && p.kills ? 100 * p.headshots / p.kills : null, 0, '%')],
+    ['KAST', 95, p => { const s = stats(p.steamId); return fixed(s && p.rounds ? 100 * s.kast / p.rounds : null, 0, '%'); }],
     ...(premier ? [['± PREMIER', 140, (p: typeof team[number]) => { const d = stats(p.steamId)?.premierDelta; return d == null ? '—' : (d > 0 ? '+' : '') + d.toLocaleString('pt-BR'); }] as [string, number, (p: typeof team[number]) => string]] : []),
   ];
   const nameWidth = 1104 - columns.reduce((sum, [, w]) => sum + w, 0);
@@ -64,9 +65,9 @@ export async function GET(request: Request, { params }: { params: { slug: string
           <div style={{ display: 'flex', width: nameWidth - 32 }}>JOGADOR</div>
           {columns.map(([title, width]) => <div key={title} style={{ display: 'flex', width, justifyContent: 'flex-end' }}>{title}</div>)}
         </div>
-        {team.map(p => <div key={p.steamId} style={{ display: 'flex', alignItems: 'center', height: 62, padding: '0 16px', fontSize: 30, borderTop: '1px solid #27272a',
+        {team.map(p => <div key={p.steamId} style={{ display: 'flex', alignItems: 'center', height: 62, padding: '0 16px', fontSize: 28, borderTop: '1px solid #27272a',
           background: p.steamId === me.steamId ? 'rgba(180,108,255,0.16)' : 'transparent', borderRadius: p.steamId === me.steamId ? 10 : 0 }}>
-          <div style={{ display: 'flex', width: nameWidth - 32, fontWeight: 600, color: p.steamId === me.steamId ? '#d4b0ff' : '#fafafa', overflow: 'hidden', whiteSpace: 'nowrap' }}>{p.name.slice(0, 22)}</div>
+          <div style={{ display: 'flex', width: nameWidth - 32, fontWeight: 600, color: p.steamId === me.steamId ? '#d4b0ff' : '#fafafa', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{p.name}</div>
           {columns.map(([title, width, value]) => <div key={title} style={{ display: 'flex', width, justifyContent: 'flex-end', fontWeight: title === 'RATING' ? 600 : 400 }}>{value(p)}</div>)}
         </div>)}
       </div>

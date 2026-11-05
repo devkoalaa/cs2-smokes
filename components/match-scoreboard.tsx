@@ -17,6 +17,7 @@ const scoreboard: Column[] = [
   { label: '+/−', name: 'Saldo', description: 'Abates menos mortes.', signed: true, value: p => p.kills - p.deaths },
   { label: 'K/D', name: 'K/D', description: 'Abates por morte.', precision: 2, value: p => p.deaths ? p.kills / p.deaths : null },
   { label: 'ADR', name: 'ADR', description: 'Dano médio por round.', value: p => p.damage != null && p.rounds ? p.damage / p.rounds : null },
+  { label: 'Dano', name: 'Dano', description: 'Dano total causado na partida, como no placar do jogo (inclui granadas e molotov).', value: p => p.damage },
   { label: 'HS', name: 'HS', description: 'Abates com tiro na cabeça / abates.', unit: '%', value: p => p.headshots != null && p.kills ? 100*p.headshots/p.kills : null },
   accuracy,
   { label: 'KAST', name: 'KAST', description: 'Rounds em que o jogador matou, deu assistência, sobreviveu ou teve a morte vingada em até 5 s.', unit: '%', value: (p,s) => s && p.rounds ? 100*s.kast/p.rounds : null },
@@ -68,7 +69,7 @@ export function MatchScoreboard({ match, viewer }: { match: MatchDetail; viewer?
   // No celular, K, D, A, saldo e K/D (derivados) viram uma célula só: três linhas por jogador.
   const merged = ['K', 'D', 'A', '+/−', 'K/D'];
   const kda: Column = { label: 'K/D/A', name: 'K / D / A', description: '', value: () => null };
-  const cardColumns = aim ? columns : [columns[0], kda, ...columns.slice(1).filter(c => !merged.includes(c.label))];
+  const cardColumns = aim ? columns : [columns[0], kda, ...columns.slice(1).filter(c => !merged.includes(c.label) && c.label !== 'Dano')];
   return <section className="min-w-0 space-y-4">
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="inline-flex rounded-lg border border-border p-1">
@@ -102,8 +103,8 @@ export function MatchScoreboard({ match, viewer }: { match: MatchDetail; viewer?
         </header>
         <ul className="lg:hidden divide-y divide-border">{players.map(p => <li key={p.steamId} className="px-4 py-3">
           <p className={`font-medium truncate ${p.steamId === viewer ? 'text-primary' : ''}`} title={p.name}>{p.name}</p>
-          <dl className="mt-2 grid grid-cols-4 gap-x-2 gap-y-2 tabular-nums">{cardColumns.map(c => <div key={c.label} className={`rounded px-1.5 py-1 ${c === column || (c === kda && merged.includes(column.label)) ? 'bg-muted/60' : ''}`}>
-            <dt className="text-[11px] text-muted-foreground truncate">{c.name}</dt><dd className="text-sm font-semibold">{c === kda ? `${p.kills}/${p.deaths}/${p.assists}` : cell(c, p)}</dd></div>)}</dl>
+          <dl className="mt-2 grid grid-cols-4 gap-x-2 gap-y-2 tabular-nums">{cardColumns.map(c => <div key={c.label} className={`rounded px-1.5 py-1 ${c === column || (c === kda && merged.includes(column.label)) || (c.label === 'ADR' && column.label === 'Dano') ? 'bg-muted/60' : ''}`}>
+            <dt className="text-[11px] text-muted-foreground truncate">{c.name}</dt><dd className="text-sm font-semibold">{c === kda ? `${p.kills}/${p.deaths}/${p.assists}` : cell(c, p)}{c.label === 'ADR' && p.damage != null && <small className="block whitespace-nowrap text-[11px] font-normal text-muted-foreground">{p.damage.toLocaleString('pt-BR')} dano</small>}</dd></div>)}</dl>
         </li>)}</ul>
         <div className="hidden lg:block overflow-x-auto"><table className="w-full text-sm tabular-nums">
           <thead className="text-xs text-muted-foreground"><tr><th scope="col" className="sticky left-0 bg-background p-3 text-left">Jogador</th>
