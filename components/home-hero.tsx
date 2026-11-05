@@ -5,7 +5,7 @@ import { ArrowDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function HomeHero({ backgroundImage }: { backgroundImage?: string }) {
-  const title = "CS2 Smokes Hub"
+  const title = "CS2 Hub"
   
   return (
     <div className="relative isolate mb-10 sm:mb-16 overflow-hidden rounded-2xl border border-border/50 px-4 py-14 sm:py-20 text-center select-none">
@@ -80,7 +80,7 @@ export function HomeHero({ backgroundImage }: { backgroundImage?: string }) {
         transition={{ duration: 0.5, delay: 1.2 }}
         className="text-lg sm:text-xl text-muted-foreground text-pretty max-w-3xl mx-auto mb-8"
       >
-        O arsenal de smokes definitivo, alimentado e validado pela comunidade.
+        Smokes por mapa e o histórico de partidas do grupo.
       </motion.p>
 
       <motion.div

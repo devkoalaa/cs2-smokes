@@ -17,22 +17,23 @@ const newAmsterdamFont = {
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://cs2.devkoala.com'),
-  title: 'CS2 Smoke Hub | Domine as Smokes do Counter Strike 2',
-  description: 'O arsenal de smokes definitivo, alimentado e validado pela comunidade.',
-  keywords: ['CS2', 'Counter Strike 2', 'smoke', 'tutorial', 'tático', 'mapas', 'gaming'],
-  authors: [{ name: 'CS2 Smoke Hub' }],
-  creator: 'CS2 Smoke Hub',
-  publisher: 'CS2 Smoke Hub',
+  title: { default: 'CS2 Hub', template: '%s | CS2 Hub' },
+  description: 'Smokes por mapa e o histórico de partidas do grupo.',
+  keywords: ['CS2', 'Counter Strike 2', 'smoke', 'mapas', 'partidas', 'estatísticas'],
+  authors: [{ name: 'CS2 Hub' }],
+  creator: 'CS2 Hub',
+  publisher: 'CS2 Hub',
   openGraph: {
-    title: 'CS2 Smoke Hub',
-    description: 'O arsenal de smokes definitivo, alimentado e validado pela comunidade.',
+    title: 'CS2 Hub',
+    description: 'Smokes por mapa e o histórico de partidas do grupo.',
+    siteName: 'CS2 Hub',
     type: 'website',
     locale: 'pt_BR',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CS2 Smoke Hub',
-    description: 'O arsenal de smokes definitivo, alimentado e validado pela comunidade.',
+    title: 'CS2 Hub',
+    description: 'Smokes por mapa e o histórico de partidas do grupo.',
   },
   manifest: '/manifest.webmanifest',
 }

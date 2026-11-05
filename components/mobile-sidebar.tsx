@@ -104,7 +104,7 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
             </div>
             <div>
               <h2 className="text-lg font-semibold text-card-foreground" style={{ fontFamily: 'var(--font-new-amsterdam)' }}>
-                CS2 Smokes Hub
+                CS2 Hub
               </h2>
               <p className="text-xs text-muted-foreground">Menu</p>
             </div>

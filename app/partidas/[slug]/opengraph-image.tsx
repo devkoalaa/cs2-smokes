@@ -19,7 +19,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
       background }}>
       {radar && <img src={radar} width={600} height={600} style={{ position: 'absolute', right: -40, top: 15, opacity: 0.22 }} />}
       {!preview ? <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 80 }}>
-        <div style={{ fontSize: 30, color: '#b46cff', letterSpacing: 6 }}>CS2 SMOKES HUB</div>
+        <div style={{ fontSize: 30, color: '#b46cff', letterSpacing: 6 }}>CS2 HUB</div>
         <div style={{ fontFamily: 'Display', fontSize: 150, marginTop: 10 }}>PARTIDA</div>
       </div> : <div style={{ display: 'flex', flexDirection: 'column', width: '100%', padding: '56px 64px' }}>
         <div style={{ display: 'flex', alignItems: 'center', fontSize: 26, color: '#a1a1aa' }}>

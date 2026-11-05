@@ -61,7 +61,7 @@ export function Header() {
                   hover: { x: 2 }
                 }}
               >
-                CS2 Smokes Hub
+                CS2 Hub
               </motion.h1>
               <p className="text-sm text-muted-foreground">Arsenal Comunitário</p>
             </div>
