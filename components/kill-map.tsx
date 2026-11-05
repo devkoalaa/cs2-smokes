@@ -3,7 +3,7 @@ import { Kill, MatchDetail } from '@/lib/services/tracking.service';
 import { isLower, RADARS, toRadar, weaponName } from '@/lib/radar';
 
 type View = 'kills' | 'deaths';
-const SIDE_COLOR = { CT: '#60a5fa', T: '#fbbf24' } as const;
+const SIDE_COLOR = { CT: 'var(--color-ct)', T: 'var(--color-tr)' } as const;
 const SIDE_LABEL = { CT: 'CT', T: 'TR' } as const;
 const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
 const select = 'bg-card border border-border rounded-md px-2 py-1.5 text-sm w-full';
@@ -92,7 +92,7 @@ export function KillMap({ match, viewer }: { match: MatchDetail; viewer?: string
               const on = selected === k.index, dim = selected !== null && !on;
               return <g key={k.index} opacity={dim ? 0.25 : 1} className="cursor-pointer" onClick={() => setSelected(on ? null : k.index)}>
                 {b && <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="#fff" strokeOpacity={on ? 0.9 : 0.35} strokeWidth={(on ? 4 : 2) * u} strokeDasharray={`${8 * u} ${6 * u}`} />}
-                {b && <path d={`M${b.x - 9 * u} ${b.y - 9 * u}L${b.x + 9 * u} ${b.y + 9 * u}M${b.x + 9 * u} ${b.y - 9 * u}L${b.x - 9 * u} ${b.y + 9 * u}`} stroke="#f87171" strokeWidth={(on ? 6 : 4) * u} strokeLinecap="round" />}
+                {b && <path d={`M${b.x - 9 * u} ${b.y - 9 * u}L${b.x + 9 * u} ${b.y + 9 * u}M${b.x + 9 * u} ${b.y - 9 * u}L${b.x - 9 * u} ${b.y + 9 * u}`} stroke="var(--color-loss)" strokeWidth={(on ? 6 : 4) * u} strokeLinecap="round" />}
                 <circle cx={a.x} cy={a.y} r={(on ? 18 : 13) * u} fill={k.subjectSide ? SIDE_COLOR[k.subjectSide] : '#a1a1aa'} stroke={on ? '#fff' : '#000'} strokeWidth={(on ? 5 : 3) * u} />
                 <circle cx={a.x} cy={a.y} r={30 * u} fill="transparent" />
               </g>;
@@ -102,7 +102,7 @@ export function KillMap({ match, viewer }: { match: MatchDetail; viewer?: string
         <p className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: SIDE_COLOR.CT }} />CT</span>
           <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full" style={{ background: SIDE_COLOR.T }} />TR</span>
-          <span className="flex items-center gap-1.5"><span className="font-bold text-red-400">✕</span>{view === 'kills' ? 'vítima' : 'quem matou'}</span>
+          <span className="flex items-center gap-1.5"><span className="font-bold text-loss">✕</span>{view === 'kills' ? 'vítima' : 'quem matou'}</span>
         </p>
       </div>
       <div className="min-w-0 space-y-3">

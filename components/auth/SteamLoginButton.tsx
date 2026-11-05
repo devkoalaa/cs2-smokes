@@ -62,8 +62,8 @@ export function SteamLoginButton() {
           <DropdownMenuItem asChild className="cursor-pointer">
             <Link href={`/perfil/${user.steamId}`}><UserRound className="mr-2 h-4 w-4" />Meu perfil</Link>
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={logout} className="text-red-400 focus:text-red-300 focus:bg-red-500/10">
-            <LogOut className="mr-2 h-4 w-4 text-red-400" />
+          <DropdownMenuItem onClick={logout} className="text-loss focus:text-loss focus:bg-loss/10">
+            <LogOut className="mr-2 h-4 w-4 text-loss" />
             Sair da conta
           </DropdownMenuItem>
         </DropdownMenuContent>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Check, ImageIcon, Loader2, Share2 } from 'lucide-react';
 import { Header } from '@/components/header';
+import { Alert } from '@/components/hub-ui';
 import { KillMap } from '@/components/kill-map';
 import { MatchScoreboard } from '@/components/match-scoreboard';
 import { SteamLoginButton } from '@/components/auth/SteamLoginButton';
@@ -87,12 +88,12 @@ export function MatchView({ slug }: { slug: string }) {
           <h1 className="text-2xl font-bold">Entre para ver esta partida</h1>
           <p className="text-muted-foreground">O placar completo aparece para quem jogou a partida.</p>
           <div className="flex justify-center"><SteamLoginButton /></div></section>
-      : error ? <p role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 p-4 text-red-200">{error}</p>
+      : error ? <Alert>{error}</Alert>
       : !match ? <p role="status" className="py-10 text-center text-muted-foreground">Carregando a partida…</p>
       : <>
         <section className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-5xl md:text-7xl font-bold capitalize leading-none" style={{ fontFamily: 'var(--font-new-amsterdam)' }}>{title}</h1>
+            <h1 className="font-display text-5xl md:text-7xl capitalize leading-none">{title}</h1>
             <p className="text-sm text-muted-foreground mt-3">{modeLabel(match.mode)} · {formatDate(match.playedAt, 'long')} · {match.rounds} rounds</p>
           </div>
           <div className="flex items-center gap-4">
@@ -106,7 +107,7 @@ export function MatchView({ slug }: { slug: string }) {
             </div>
           </div>
         </section>
-        {imageError && <p role="alert" className="text-sm text-red-300">{imageError}</p>}
+        {imageError && <Alert>{imageError}</Alert>}
         <MatchScoreboard match={match} viewer={user?.steamId} />
         <KillMap match={match} viewer={user?.steamId} />
       </>}

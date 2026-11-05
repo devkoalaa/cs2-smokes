@@ -2,9 +2,10 @@ import type { Metadata } from 'next';
 import { config } from '@/lib/config';
 import { InviteView } from './invite-view';
 
-type Props = { params: { code: string } };
+type Props = { params: Promise<{ code: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params: input }: Props): Promise<Metadata> {
+  const params = await input;
   const robots = { index: false, follow: false };
   try {
     const response = await fetch(`${process.env.API_INTERNAL_URL || config.apiUrl}/tracking/invites/${encodeURIComponent(params.code)}`, { cache: 'no-store', signal: AbortSignal.timeout(5000) });
@@ -16,6 +17,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   } catch { return { title: 'Convite', robots }; }
 }
 
-export default function InvitePage({ params }: Props) {
-  return <InviteView params={params} />;
+export default async function InvitePage({ params }: Props) {
+  return <InviteView params={await params} />;
 }

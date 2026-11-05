@@ -36,7 +36,7 @@ export function InviteView({ params }: { params: { code: string } }) {
             : <UserAvatar src={invite.inviter.avatarUrl} name={invite.inviter.username} className="mx-auto h-14 w-14" />}
           <div>
             <p className="text-sm text-muted-foreground">{invite.inviter.username} te convidou para</p>
-            <h1 className="text-4xl font-bold mt-1" style={{ fontFamily: 'var(--font-new-amsterdam)' }}>{invite.group ? invite.group.name : 'o CS2 Hub'}</h1>
+            <h1 className="font-display text-5xl mt-1">{invite.group ? invite.group.name : 'o CS2 Hub'}</h1>
             {invite.group && <p className="text-sm text-muted-foreground mt-1">{invite.group.members} {invite.group.members === 1 ? 'pessoa' : 'pessoas'} no grupo</p>}
           </div>
           <p className="text-sm text-muted-foreground">Seu histórico de partidas de CS2 com placar completo, mapa de abates e{invite.group ? ' ranking com a galera do grupo' : ' links para compartilhar'}.</p>

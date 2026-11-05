@@ -2,10 +2,11 @@ import type { Metadata } from 'next';
 import { fetchPreview, formatDate, groupResult, mapName, modeLabel } from '@/lib/match';
 import { MatchView } from './match-view';
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const preview = await fetchPreview(params.slug);
+  const { slug } = await params;
+  const preview = await fetchPreview(slug);
   const robots = { index: false, follow: false };
   if (!preview) return { title: 'Partida', robots };
   const result = groupResult(preview);
@@ -14,10 +15,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = [preview.group.map(p => `${p.name} ${p.kills}/${p.deaths}/${p.assists}`).join(' · '),
     `${modeLabel(preview.mode)} · ${formatDate(preview.playedAt)}`].filter(Boolean).join(' — ');
   return { title, description, robots,
-    openGraph: { title, description, type: 'article', url: `/partidas/${params.slug}`, siteName: 'CS2 Hub', locale: 'pt_BR' },
+    openGraph: { title, description, type: 'article', url: `/partidas/${slug}`, siteName: 'CS2 Hub', locale: 'pt_BR' },
     twitter: { card: 'summary_large_image', title, description } };
 }
 
-export default function MatchPage({ params }: Props) {
-  return <MatchView slug={params.slug} />;
+export default async function MatchPage({ params }: Props) {
+  return <MatchView slug={(await params).slug} />;
 }

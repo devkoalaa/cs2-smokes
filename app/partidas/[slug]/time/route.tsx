@@ -12,8 +12,8 @@ const fixed = (v: number | null | undefined, digits = 0, suffix = '') => v == nu
 
 // Imagem da tabela do time de quem pediu. O placar completo é privado: o token
 // do usuário vai para a API, que só responde a quem jogou a partida.
-export async function GET(request: Request, { params }: { params: { slug: string } }) {
-  const parsed = parseMatchSlug(params.slug);
+export async function GET(request: Request, { params }: { params: Promise<{ slug: string }> }) {
+  const parsed = parseMatchSlug((await params).slug);
   const auth = request.headers.get('authorization');
   if (!parsed) return fail(404, 'Partida não encontrada.');
   if (!auth?.startsWith('Bearer ')) return fail(401, 'Entre com sua conta Steam para continuar.');

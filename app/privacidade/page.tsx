@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
+import { PageTitle } from '@/components/hub-ui';
 
 export const metadata: Metadata = { title: 'Privacidade', description: 'O que o CS2 Hub guarda, quem vê e como apagar.' };
 
@@ -25,7 +26,7 @@ export default function PrivacyPage() {
   return <div className="min-h-screen bg-background">
     <Header />
     <main className="container mx-auto max-w-3xl px-4 py-8 md:py-12 space-y-8">
-      <h1 className="text-5xl md:text-6xl font-bold leading-none" style={{ fontFamily: 'var(--font-new-amsterdam)' }}>Privacidade</h1>
+      <PageTitle>Privacidade</PageTitle>
       {sections.map(([title, body]) => <section key={title} className="space-y-2 text-muted-foreground leading-relaxed">
         <h2 className="text-xl font-semibold text-foreground">{title}</h2>{body}</section>)}
     </main>

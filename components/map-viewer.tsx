@@ -57,7 +57,8 @@ function scoreColorClass(score: number): string {
   return "bg-muted/40 text-muted-foreground border-border"
 }
 
-function buildEmbeddableVideoUrl(originalUrl: string, startSeconds?: number): string {
+// Só embute vídeos do YouTube (pelo domínio sem cookies). Qualquer outro endereço não vira iframe.
+function buildEmbeddableVideoUrl(originalUrl: string, startSeconds?: number): string | null {
   try {
     const url = new URL(originalUrl)
     const hostname = url.hostname.replace(/^www\./, "")
@@ -91,10 +92,9 @@ function buildEmbeddableVideoUrl(originalUrl: string, startSeconds?: number): st
       }
     }
 
-    // Any other URL: return as-is
-    return originalUrl
+    return null
   } catch {
-    return originalUrl
+    return null
   }
 }
 
@@ -826,15 +826,15 @@ export function MapViewer({ mapId }: MapViewerProps) {
               </div>
 
               <div className="aspect-video">
-                <iframe
-                  src={buildEmbeddableVideoUrl(selectedSmoke.videoUrl, selectedSmoke.timestamp)}
+                {buildEmbeddableVideoUrl(selectedSmoke.videoUrl, selectedSmoke.timestamp) ? <iframe
+                  src={buildEmbeddableVideoUrl(selectedSmoke.videoUrl, selectedSmoke.timestamp)!}
                   title={selectedSmoke.title}
                   className="w-full h-full rounded-lg"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   referrerPolicy="strict-origin-when-cross-origin"
                   loading="lazy"
                   allowFullScreen
-                />
+                /> : <div className="flex h-full items-center justify-center rounded-lg border border-border bg-card text-sm text-muted-foreground">Vídeo indisponível.</div>}
               </div>
 
               <div className="space-y-4">

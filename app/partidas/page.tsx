@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Activity, ArrowRight, BarChart3, ChevronLeft, ChevronRight, Clock3, Crosshair, ExternalLink, RefreshCw, Settings2, Trophy, Users } from 'lucide-react';
 import { Header } from '@/components/header';
+import { PageTitle, Alert } from '@/components/hub-ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -93,7 +94,7 @@ export default function MatchesPage() {
     <Header />
     <main className="container mx-auto max-w-7xl px-4 py-6 md:py-10 space-y-6">
       <section className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-5xl md:text-6xl font-bold leading-none" style={{ fontFamily: 'var(--font-new-amsterdam)' }}>Partidas</h1>
+        <PageTitle>Partidas</PageTitle>
         {!authLoading && isAuthenticated && status?.access !== false && <div className="flex gap-2"><Button variant="outline" size="sm" onClick={() => void refresh()} disabled={loading}><RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />Atualizar</Button>
           <Button size="sm" variant={settings ? 'default' : 'outline'} onClick={() => setSettings(s => !s)}><Settings2 className="h-4 w-4 mr-2" />Conexão</Button></div>}
       </section>
@@ -103,9 +104,9 @@ export default function MatchesPage() {
           <h2 className="text-2xl font-bold">Beta fechado</h2>
           <p className="text-muted-foreground max-w-lg mx-auto">O histórico de partidas está liberado só por convite por enquanto. Para entrar, abra o link de convite que alguém do CS2 Hub te mandou.</p>
           <p className="text-sm text-muted-foreground">{status.seats.used} de {status.seats.max} vagas ocupadas.</p></section> : <>
-        {error && <div role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 p-4 text-red-200">{error}</div>}
-        {message && <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-200">{message}</p>}
-        {status?.tracking && <p className="flex items-center gap-2 text-sm text-muted-foreground"><span className={`h-2 w-2 shrink-0 rounded-full ${status.tracking.enabled && status.workerOnline ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+        {error && <Alert>{error}</Alert>}
+        {message && <p role="status" className="rounded-lg border border-win/30 bg-win/10 p-4 text-foreground">{message}</p>}
+        {status?.tracking && <p className="flex items-center gap-2 text-sm text-muted-foreground"><span className={`h-2 w-2 shrink-0 rounded-full ${status.tracking.enabled && status.workerOnline ? 'bg-win' : 'bg-draw'}`} />
           {status.tracking.lastError || (!status.tracking.enabled ? 'Importação automática pausada.' : !status.workerOnline ? 'Importação automática fora do ar no momento.'
             : `Importação automática ligada${status.tracking.lastCheckedAt ? ` · última busca ${date(status.tracking.lastCheckedAt)}` : ''}.`)}</p>}
         {status && !status.tracking && !settings && !!data?.total && <p className="text-sm text-muted-foreground">Estas partidas foram importadas por quem jogou com você. Para as suas entrarem sozinhas, use <button type="button" className="text-primary underline-offset-4 hover:underline" onClick={() => setSettings(true)}>Conexão</button>.</p>}
@@ -129,7 +130,7 @@ export default function MatchesPage() {
           
         </section>
         <section className="grid grid-cols-2 lg:grid-cols-5 gap-3">{cards.map(card => <div key={card.label} className="rounded-xl border border-border bg-card/50 p-4 md:p-5 last:col-span-2 lg:last:col-span-1"><div className="flex justify-between text-muted-foreground text-sm"><span>{card.label}</span><card.icon className="w-4 h-4 text-primary" /></div><p className="text-2xl md:text-3xl font-bold mt-2 md:mt-3 tabular-nums">{card.value}</p><p className="text-xs text-muted-foreground mt-2">{card.note}</p></div>)}</section>
-        {!!data?.evolution.length && <section className="rounded-xl border border-border p-5"><h2 className="text-xl font-semibold">ADR por partida</h2><p className="text-sm text-muted-foreground mt-2">Últimas 30 partidas do filtro, da mais antiga para a mais recente.</p><div className="h-52 mt-6" role="img" aria-label="Gráfico do dano médio por round em cada partida"><ResponsiveContainer width="100%" height="100%"><LineChart data={data.evolution}><CartesianGrid stroke="#333" strokeDasharray="3 3" /><XAxis dataKey="id" tickFormatter={(id: number) => `#${id}`} tick={{ fill: '#aaa', fontSize: 11 }} /><YAxis tick={{ fill: '#aaa', fontSize: 11 }} width={35} /><Tooltip contentStyle={{ background: '#202020', borderColor: '#444', borderRadius: 8 }} labelFormatter={(_label, payload) => payload?.[0]?.payload?.playedAt ? date(payload[0].payload.playedAt) : 'Partida'} /><Line type="linear" dataKey="adr" name="ADR" stroke="#bf6fff" strokeWidth={2} dot={{ r: 3 }} connectNulls={false} /></LineChart></ResponsiveContainer></div></section>}
+        {!!data?.evolution.length && <section className="rounded-xl border border-border p-5"><h2 className="text-xl font-semibold">ADR por partida</h2><p className="text-sm text-muted-foreground mt-2">Últimas 30 partidas do filtro, da mais antiga para a mais recente.</p><div className="h-52 mt-6" role="img" aria-label="Gráfico do dano médio por round em cada partida"><ResponsiveContainer width="100%" height="100%"><LineChart data={data.evolution}><CartesianGrid stroke="#333" strokeDasharray="3 3" /><XAxis dataKey="id" tickFormatter={(id: number) => `#${id}`} tick={{ fill: '#aaa', fontSize: 11 }} /><YAxis tick={{ fill: '#aaa', fontSize: 11 }} width={35} /><Tooltip contentStyle={{ background: '#202020', borderColor: '#444', borderRadius: 8 }} labelFormatter={(_label, payload) => payload?.[0]?.payload?.playedAt ? date(payload[0].payload.playedAt) : 'Partida'} /><Line type="linear" dataKey="adr" name="ADR" stroke="var(--color-primary)" strokeWidth={2} dot={{ r: 3 }} connectNulls={false} /></LineChart></ResponsiveContainer></div></section>}
         <section className="rounded-xl border border-border overflow-hidden"><div className="p-4 md:p-5 flex justify-between items-center border-b border-border"><h2 className="text-xl font-semibold">Histórico</h2><span className="text-sm text-muted-foreground">{loading ? 'Carregando…' : `${data?.total ?? 0} partidas`}</span></div>
           {!data?.matches.length ? <div className="py-16 px-6 text-center"><Clock3 className="w-9 h-9 mx-auto mb-4 text-muted-foreground" /><h3 className="font-semibold">{loading ? 'Carregando partidas' : 'Nenhuma partida neste filtro'}</h3><p className="text-sm text-muted-foreground mt-2">{loading ? '' : 'Tente outro período ou modalidade.'}</p></div> : <>
           <ul className="md:hidden divide-y divide-border">{data.matches.map(match => {

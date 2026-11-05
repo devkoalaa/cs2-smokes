@@ -4,7 +4,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { SteamLoginButton } from "@/components/auth/SteamLoginButton"
 import { useAuth } from "@/contexts/AuthContext"
-import { Github, LogOut, BarChart3, Map, X, Cloudy, Users, UserRound } from "lucide-react"
+import { LogOut, BarChart3, Map, X, Users, UserRound } from "lucide-react"
+import { GithubIcon } from "@/components/github-icon"
+import { BrandGlyph } from "@/components/brand-mark"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
@@ -102,10 +104,10 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
         <div className="flex items-center justify-between p-6 border-b border-border bg-sidebar">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-lg">
-              <Cloudy className="w-6 h-6 text-primary-foreground" />
+              <BrandGlyph className="w-6 h-6 text-primary-foreground" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-card-foreground" style={{ fontFamily: 'var(--font-new-amsterdam)' }}>
+              <h2 className="text-lg font-semibold text-card-foreground font-display">
                 CS2 Hub
               </h2>
               <p className="text-xs text-muted-foreground">Menu</p>
@@ -186,7 +188,7 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                }}
                className="w-full justify-start h-12 text-card-foreground hover:text-primary-foreground hover:bg-primary transition-colors"
              >
-               <Github className="w-5 h-5 mr-3" />
+               <GithubIcon className="w-5 h-5 mr-3" />
                <span className="text-base">GitHub</span>
              </Button>
            </nav>
@@ -202,7 +204,7 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
                <Button
                  variant="ghost"
                  onClick={handleLogout}
-                 className="w-full justify-start h-12 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                 className="w-full justify-start h-12 text-loss hover:text-loss hover:bg-loss/10 transition-colors"
                >
                  <LogOut className="w-5 h-5 mr-3" />
                  <span className="text-base">Sair</span>

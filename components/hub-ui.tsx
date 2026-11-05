@@ -71,4 +71,9 @@ export function LoginPrompt({ text }: { text: string }) {
 }
 
 export const Alert = ({ children }: { children: React.ReactNode }) =>
-  <div role="alert" className="rounded-lg border border-red-500/40 bg-red-500/10 p-4 text-red-200">{children}</div>;
+  <div role="alert" className="rounded-lg border border-loss/40 bg-loss/10 p-4 text-sm text-foreground">{children}</div>;
+
+/** Título de página: fonte da marca, mesmo tamanho em todas as telas. */
+export function PageTitle({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return <h1 className={`font-display text-5xl md:text-6xl leading-none ${className}`}>{children}</h1>;
+}

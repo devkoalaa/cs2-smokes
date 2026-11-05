@@ -7,7 +7,7 @@ export const formatDate = (value: string | Date, style: 'short' | 'long' = 'shor
 });
 export const formatNumber = (value: number | null | undefined, suffix = '') => value == null ? '—' : value.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) + suffix;
 export const resultLabel = (scoreFor: number, scoreAgainst: number) => scoreFor === scoreAgainst ? 'Empate' : scoreFor > scoreAgainst ? 'Vitória' : 'Derrota';
-export const resultColor = (scoreFor: number, scoreAgainst: number) => scoreFor === scoreAgainst ? 'text-amber-300' : scoreFor > scoreAgainst ? 'text-emerald-400' : 'text-red-400';
+export const resultColor = (scoreFor: number, scoreAgainst: number) => scoreFor === scoreAgainst ? 'text-draw' : scoreFor > scoreAgainst ? 'text-win' : 'text-loss';
 
 // O link leva a chave de quem compartilhou para a miniatura pública; sem ela, só quem participou vê.
 export const matchPath = (id: number, shareKey?: string | null) => `/partidas/${id}${shareKey ? '-' + shareKey : ''}`;

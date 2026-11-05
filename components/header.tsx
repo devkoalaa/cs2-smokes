@@ -4,7 +4,9 @@ import { SteamLoginButton } from "@/components/auth/SteamLoginButton"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/AuthContext"
 import { useMobileSidebar } from "@/contexts/MobileSidebarContext"
-import { Github, BarChart3, Map, Menu, Cloudy, Users } from "lucide-react"
+import { BarChart3, Map, Menu, Users } from "lucide-react"
+import { GithubIcon } from "@/components/github-icon"
+import { BrandGlyph } from "@/components/brand-mark"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 
@@ -40,7 +42,7 @@ export function Header() {
                   }
                 }}
               >
-                <Cloudy className="w-6 h-6 text-primary-foreground" />
+                <BrandGlyph className="w-6 h-6 text-primary-foreground" />
               </motion.div>
               <motion.div
                 className="absolute inset-0 bg-primary/50 rounded-lg blur-md"
@@ -55,16 +57,15 @@ export function Header() {
               />
             </div>
             <div>
-              <motion.h1 
-                className="text-3xl font-bold text-card-foreground" 
-                style={{ fontFamily: 'var(--font-new-amsterdam)' }}
+              <motion.span 
+                className="block font-display text-3xl leading-tight text-card-foreground"
                 variants={{
                   hover: { x: 2 }
                 }}
               >
                 CS2 Hub
-              </motion.h1>
-              <p className="text-sm text-muted-foreground">Arsenal Comunitário</p>
+              </motion.span>
+              <p className="text-sm text-muted-foreground">Smokes e partidas</p>
             </div>
           </motion.div>
 
@@ -76,7 +77,7 @@ export function Header() {
               className="text-card-foreground hover:text-primary-foreground hover:bg-primary "
               title="GitHub"
             >
-              <Github className="w-4 h-4 mr-2" />
+              <GithubIcon className="w-4 h-4 mr-2" />
               GitHub
             </Button>
             {navigation.map((item) => (

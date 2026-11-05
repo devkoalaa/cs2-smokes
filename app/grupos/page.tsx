@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ChevronRight, Copy, Crown, Plus, Trash2, Users } from 'lucide-react';
 import { Header } from '@/components/header';
-import { Alert, LoginPrompt, UserAvatar, useCopy } from '@/components/hub-ui';
+import { Alert, LoginPrompt, UserAvatar, useCopy, PageTitle } from '@/components/hub-ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
@@ -34,7 +34,7 @@ export default function GroupsPage() {
   return <div className="min-h-screen bg-background">
     <Header />
     <main className="container mx-auto max-w-5xl px-4 py-6 md:py-10 space-y-6">
-      <h1 className="text-5xl md:text-6xl font-bold leading-none" style={{ fontFamily: 'var(--font-new-amsterdam)' }}>Grupos</h1>
+      <PageTitle>Grupos</PageTitle>
       {isLoading ? <p role="status">Verificando sua sessão…</p> : !isAuthenticated ? <LoginPrompt text="Entre com a Steam para ver seus grupos." />
       : error ? <Alert>{error}</Alert> : !status ? <p role="status" className="text-muted-foreground">Carregando…</p>
       : !status.access ? <section className="rounded-xl border border-border bg-card/50 p-8 text-center space-y-2">
@@ -45,7 +45,7 @@ export default function GroupsPage() {
         <section className="grid gap-3 sm:grid-cols-2">
           {status.groups.map(g => <Link key={g.id} href={`/grupos/${g.id}`} className="flex items-center gap-4 rounded-xl border border-border bg-card/50 p-4 hover:border-primary/50">
             <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/15 text-primary"><Users className="h-5 w-5" /></span>
-            <span className="min-w-0 flex-1"><span className="flex items-center gap-2 font-semibold truncate">{g.name}{g.owner && <Crown className="h-3.5 w-3.5 text-amber-300" aria-label="Você criou" />}</span>
+            <span className="min-w-0 flex-1"><span className="flex items-center gap-2 font-semibold truncate">{g.name}{g.owner && <Crown className="h-3.5 w-3.5 text-draw" aria-label="Você criou" />}</span>
               <span className="text-sm text-muted-foreground">{g.members} {g.members === 1 ? 'pessoa' : 'pessoas'}</span></span>
             <ChevronRight className="h-4 w-4 text-muted-foreground" /></Link>)}
           <form onSubmit={create} className="rounded-xl border border-dashed border-border p-4 space-y-3">
@@ -70,7 +70,7 @@ function AdminPanel() {
   useEffect(load, [load]);
   const run = (action: () => Promise<unknown>) => action().then(load).catch(e => setError(e.message));
 
-  return <section className="rounded-xl border border-amber-500/30 p-4 md:p-5 space-y-5">
+  return <section className="rounded-xl border border-draw/30 p-4 md:p-5 space-y-5">
     <div><h2 className="text-xl font-semibold">Beta · administração</h2>
       {data && <p className="text-sm text-muted-foreground mt-1">{data.seats.used} de {data.seats.max} vagas ocupadas. Convites de grupo também ocupam vaga quando trazem alguém novo.</p>}</div>
     {error && <Alert>{error}</Alert>}
@@ -97,7 +97,7 @@ function AdminPanel() {
           <UserAvatar src={u.avatarUrl} name={u.username} className="h-8 w-8" />
           <span className="min-w-0 flex-1"><span className="block truncate font-medium">{u.username}{data.founders.includes(u.steamId) ? ' · fundador' : ''}</span>
             <span className="text-xs text-muted-foreground">desde {formatDate(u.accessGrantedAt)} · {u.importing ? 'importando' : 'sem importação'} · {u.groups} {u.groups === 1 ? 'grupo' : 'grupos'}</span></span>
-          {!data.founders.includes(u.steamId) && <Button size="sm" variant="ghost" className="text-red-300" onClick={() => {
+          {!data.founders.includes(u.steamId) && <Button size="sm" variant="danger-ghost" onClick={() => {
             if (confirm(`Tirar o acesso de ${u.username}? A importação dele é desligada e a vaga fica livre.`)) run(() => groupsApi.revokeAccess(u.id));
           }}>Tirar acesso</Button>}
         </li>)}

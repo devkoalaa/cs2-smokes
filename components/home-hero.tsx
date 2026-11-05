@@ -1,7 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { ArrowDown } from 'lucide-react'
+import Link from 'next/link'
+import { ArrowDown, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 export function HomeHero({ backgroundImage }: { backgroundImage?: string }) {
@@ -23,8 +24,7 @@ export function HomeHero({ backgroundImage }: { backgroundImage?: string }) {
 
       <div className="relative inline-block">
         <h1 
-          className="text-4xl md:text-6xl font-bold mb-6 relative z-10" 
-          style={{ fontFamily: 'var(--font-new-amsterdam)' }}
+          className="font-display text-5xl md:text-7xl mb-6 relative z-10"
         >
           <motion.div
               initial="hidden"
@@ -77,22 +77,29 @@ export function HomeHero({ backgroundImage }: { backgroundImage?: string }) {
       <motion.p 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 1.2 }}
+        transition={{ duration: 0.4, delay: 0.3 }}
         className="text-lg sm:text-xl text-muted-foreground text-pretty max-w-3xl mx-auto mb-8"
       >
-        Smokes por mapa e o histórico de partidas do grupo.
+        Smokes por mapa e o seu histórico de partidas, com mapa de abates e ranking com os amigos.
       </motion.p>
 
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 1.5 }}
+        transition={{ duration: 0.4, delay: 0.45 }}
+        className="flex flex-wrap justify-center gap-3"
       >
         <Button asChild size="lg" className="shadow-lg shadow-primary/20">
           <a href="#mapas">
             Ver mapas
             <ArrowDown className="w-4 h-4 ml-2" />
           </a>
+        </Button>
+        <Button asChild size="lg" variant="outline">
+          <Link href="/partidas">
+            Minhas partidas
+            <BarChart3 className="w-4 h-4 ml-2" />
+          </Link>
         </Button>
       </motion.div>
     </div>

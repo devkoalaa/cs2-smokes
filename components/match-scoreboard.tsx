@@ -97,7 +97,7 @@ export function MatchScoreboard({ match, viewer }: { match: MatchDetail; viewer?
       return <section key={team} className="rounded-xl border border-border overflow-hidden">
         <header className="flex flex-wrap items-center gap-x-3 gap-y-2 bg-card px-4 py-3">
           <strong className="text-2xl tabular-nums">{first.scoreFor}</strong><h3 className="font-semibold">{mine ? 'Seu time' : `Time ${team+1}`}</h3>
-          <span className={`text-xs ${draw ? 'text-muted-foreground' : win ? 'text-emerald-400' : 'text-red-400'}`}>{draw ? 'Empate' : win ? 'Vitória' : 'Derrota'}</span>
+          <span className={`text-xs ${draw ? 'text-muted-foreground' : win ? 'text-win' : 'text-loss'}`}>{draw ? 'Empate' : win ? 'Vitória' : 'Derrota'}</span>
           <div className="ml-auto flex flex-wrap gap-2 text-xs">{match.analysis?.segments.map((s,i) => <span key={i} title={(s.sideA === 3) !== !!team ? 'Rounds vencidos de CT' : 'Rounds vencidos de TR'} className="rounded border border-border px-2 py-1">
             {(s.sideA === 3) !== !!team ? 'CT' : 'TR'} {s.wins[team]}</span>)}</div>
         </header>

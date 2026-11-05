@@ -54,7 +54,7 @@ function MapGridContent() {
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-500">Erro ao carregar mapas: {error}</p>
+        <p className="text-loss">Erro ao carregar mapas: {error}</p>
       </div>
     )
   }

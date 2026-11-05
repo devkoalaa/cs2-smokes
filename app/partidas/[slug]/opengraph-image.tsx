@@ -1,13 +1,14 @@
 import { ImageResponse } from 'next/og';
 import { fetchPreview, formatDate, groupResult, mapName, modeLabel } from '@/lib/match';
 import { asset, background, loadFonts, resultColors } from '@/lib/og';
+import { BRAND } from '@/lib/brand';
 
 export const alt = 'Placar da partida';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-export default async function Image({ params }: { params: { slug: string } }) {
-  const [preview, fonts] = await Promise.all([fetchPreview(params.slug), loadFonts()]);
+export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
+  const [preview, fonts] = await Promise.all([params.then(p => fetchPreview(p.slug)), loadFonts()]);
   const radar = preview && await asset('images', 'maps', 'og', `${mapName(preview.map).replace(/ /g, '_')}.png`).then(b => `data:image/png;base64,${b.toString('base64')}`).catch(() => null);
   const result = preview && groupResult(preview);
   const score = result ? [result.scoreFor, result.scoreAgainst] : preview?.score ?? [];
@@ -19,7 +20,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
       background }}>
       {radar && <img src={radar} width={600} height={600} style={{ position: 'absolute', right: -40, top: 15, opacity: 0.22 }} />}
       {!preview ? <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 80 }}>
-        <div style={{ fontSize: 30, color: '#b46cff', letterSpacing: 6 }}>CS2 HUB</div>
+        <div style={{ fontSize: 30, color: BRAND.primary, letterSpacing: 6 }}>CS2 HUB</div>
         <div style={{ fontFamily: 'Display', fontSize: 150, marginTop: 10 }}>PARTIDA</div>
       </div> : <div style={{ display: 'flex', flexDirection: 'column', width: '100%', padding: '56px 64px' }}>
         <div style={{ display: 'flex', alignItems: 'center', fontSize: 26, color: '#a1a1aa' }}>

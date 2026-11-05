@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { ExternalLink, Users } from 'lucide-react';
 import { Header } from '@/components/header';
 import { Alert, LoginPrompt, MatchRow, PeriodSelect, StatGrid, UserAvatar } from '@/components/hub-ui';
@@ -14,7 +14,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatDate, mapName } from '@/lib/match';
 import { groupsApi, Profile, trackingApi } from '@/lib/services/tracking.service';
 
-export default function ProfilePage({ params }: { params: { steamId: string } }) {
+export default function ProfilePage() {
+  const params = useParams<{ steamId: string }>();
   const { isAuthenticated, isLoading } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [days, setDays] = useState(30);
@@ -38,7 +39,7 @@ export default function ProfilePage({ params }: { params: { steamId: string } })
           <div className="flex items-center gap-4 min-w-0">
             <UserAvatar src={p.user.avatarUrl} name={p.user.username} className="h-16 w-16 md:h-20 md:w-20" />
             <div className="min-w-0">
-              <h1 className="text-4xl md:text-5xl font-bold leading-none truncate" style={{ fontFamily: 'var(--font-new-amsterdam)' }}>{p.user.username}</h1>
+              <h1 className="font-display text-5xl md:text-6xl leading-none truncate">{p.user.username}</h1>
               <p className="text-sm text-muted-foreground mt-2">No CS2 Hub desde {formatDate(p.user.memberSince, 'long').replace(/ às.*/, '')}
                 {' · '}{p.user.importing ? 'importação automática ligada' : 'sem importação automática'}</p>
               <a href={`https://steamcommunity.com/profiles/${p.user.steamId}`} target="_blank" rel="noreferrer" className="text-sm text-primary inline-flex items-center gap-1 mt-1">Perfil na Steam <ExternalLink className="h-3.5 w-3.5" /></a>
@@ -106,11 +107,11 @@ function OwnSettings({ importing }: { importing: boolean }) {
     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5">
       <div><p className="font-medium">Excluir meus dados</p><p className="text-sm text-muted-foreground">Desliga a importação, tira você dos grupos, apaga os grupos que você criou e libera sua vaga. <Link href="/privacidade" className="text-primary hover:underline">Detalhes</Link>.</p></div>
       <AlertDialog>
-        <AlertDialogTrigger asChild><Button variant="outline" className="text-red-300 border-red-500/40">Excluir</Button></AlertDialogTrigger>
+        <AlertDialogTrigger asChild><Button variant="danger">Excluir</Button></AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader><AlertDialogTitle>Excluir seus dados do CS2 Hub?</AlertDialogTitle>
             <AlertDialogDescription>Não dá para desfazer. Para voltar depois, você vai precisar de um convite novo. Os seus números continuam no placar das partidas de quem jogou com você, como no placar do próprio jogo.</AlertDialogDescription></AlertDialogHeader>
-          <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => void erase()}>Excluir tudo</AlertDialogAction></AlertDialogFooter>
+          <AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={() => void erase()}>Excluir tudo</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
