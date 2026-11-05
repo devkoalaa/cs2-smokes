@@ -145,7 +145,7 @@ export default function MatchesPage() {
         <p className="text-xs text-muted-foreground">Estatísticas calculadas somente sobre partidas importadas. ADR usa dano total / rounds; HS% usa eliminações com headshot / eliminações. “—” indica dado indisponível ou divisão por zero.</p>
       </>}
     </main>
-    <Dialog open={selected !== null} onOpenChange={open => { if (!open) setSelected(null); }}><DialogContent className="w-[96vw] max-w-7xl max-h-[90dvh] overflow-y-auto"><DialogHeader><DialogTitle className="capitalize">{detail ? mapName(detail.map) : 'Placar da partida'}</DialogTitle><DialogDescription>{detail ? `${date(detail.playedAt)} · ${detail.mode === 'wingman' ? 'Duplas 2×2' : '5×5'} · ${detail.rounds} rounds` : 'Carregando o resultado da partida.'}</DialogDescription></DialogHeader>
+    <Dialog open={selected !== null} onOpenChange={open => { if (!open) setSelected(null); }}><DialogContent className="w-[96vw] sm:max-w-7xl max-h-[90dvh] overflow-y-auto"><DialogHeader><DialogTitle className="capitalize">{detail ? mapName(detail.map) : 'Placar da partida'}</DialogTitle><DialogDescription>{detail ? `${date(detail.playedAt)} · ${detail.mode === 'wingman' ? 'Duplas 2×2' : '5×5'} · ${detail.rounds} rounds` : 'Carregando o resultado da partida.'}</DialogDescription></DialogHeader>
       {detailLoading ? <p role="status" className="py-10 text-center">Carregando…</p> : detail && <MatchScoreboard match={detail} viewer={user?.steamId} />}
     </DialogContent></Dialog>
   </div>;
