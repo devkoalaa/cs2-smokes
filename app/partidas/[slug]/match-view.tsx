@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Check, ImageIcon, Loader2, Share2 } from 'lucide-react';
 import { Header } from '@/components/header';
+import { KillMap } from '@/components/kill-map';
 import { MatchScoreboard } from '@/components/match-scoreboard';
 import { SteamLoginButton } from '@/components/auth/SteamLoginButton';
 import { Button } from '@/components/ui/button';
@@ -107,6 +108,7 @@ export function MatchView({ slug }: { slug: string }) {
         </section>
         {imageError && <p role="alert" className="text-sm text-red-300">{imageError}</p>}
         <MatchScoreboard match={match} viewer={user?.steamId} />
+        <KillMap match={match} viewer={user?.steamId} />
       </>}
     </main>
   </div>;

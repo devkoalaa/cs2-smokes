@@ -26,8 +26,12 @@ export interface ReplayStats {
   flashed: number; shots: number; hits: number;
   aim: Partial<Record<AimMetric, { mean: number; n: number }>>;
 }
+export interface Kill {
+  round: number; time: number; attacker: string | null; victim: string; weapon: string; headshot: boolean;
+  attackerPos: number[] | null; victimPos: number[] | null; attackerSide: 'CT' | 'T' | null; victimSide: 'CT' | 'T' | null;
+}
 export interface MatchDetail {
-  analysis?: { premier?: boolean; players: Record<string, ReplayStats>; segments: { sideA: number; wins: number[] }[] } | null;
+  analysis?: { premier?: boolean; players: Record<string, ReplayStats>; segments: { sideA: number; wins: number[] }[]; kills?: Kill[] } | null;
  id: number; shareKey: string | null; mode: string; map: string; playedAt: string; rounds: number; players: PlayerStats[] }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
