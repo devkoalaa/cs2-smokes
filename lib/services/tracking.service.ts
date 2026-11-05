@@ -19,7 +19,15 @@ export interface MatchList {
   comparison: { steamId: string; username: string; stats: Summary }[];
   matches: { id: number; mode: string; map: string; playedAt: string; player: PlayerStats }[];
 }
-export interface MatchDetail { id: number; mode: string; map: string; playedAt: string; rounds: number; players: PlayerStats[] }
+export type AimMetric = 'preaim' | 'tts' | 'ttd' | 'ttk';
+export interface ReplayStats {
+  rank: number | null; kast: number; opening: number; multi: number; clutch: number;
+  flashed: number; shots: number; hits: number;
+  aim: Partial<Record<AimMetric, { mean: number; n: number }>>;
+}
+export interface MatchDetail {
+  analysis?: { players: Record<string, ReplayStats>; segments: { sideA: number; wins: number[] }[] } | null;
+ id: number; mode: string; map: string; playedAt: string; rounds: number; players: PlayerStats[] }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = AuthService.getInstance().getToken();

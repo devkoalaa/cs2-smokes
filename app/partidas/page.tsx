@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { Activity, ArrowRight, BarChart3, ChevronLeft, ChevronRight, Clock3, Crosshair, ExternalLink, RefreshCw, Settings2, ShieldCheck, Trophy, Users } from 'lucide-react';
+import { MatchScoreboard } from '@/components/match-scoreboard';
 import { Header } from '@/components/header';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -144,8 +145,8 @@ export default function MatchesPage() {
         <p className="text-xs text-muted-foreground">Estatísticas calculadas somente sobre partidas importadas. ADR usa dano total / rounds; HS% usa eliminações com headshot / eliminações. “—” indica dado indisponível ou divisão por zero.</p>
       </>}
     </main>
-    <Dialog open={selected !== null} onOpenChange={open => { if (!open) setSelected(null); }}><DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto"><DialogHeader><DialogTitle className="capitalize">{detail ? mapName(detail.map) : 'Placar da partida'}</DialogTitle><DialogDescription>{detail ? `${date(detail.playedAt)} · ${detail.mode === 'wingman' ? 'Duplas 2×2' : '5×5'} · ${detail.rounds} rounds` : 'Carregando o resultado da partida.'}</DialogDescription></DialogHeader>
-      {detailLoading ? <p role="status" className="py-10 text-center">Carregando…</p> : detail && [0, 1].map(team => <div key={team} className="mt-4"><h3 className="font-semibold mb-2">Time {team + 1} · {detail.players.find(p => p.team === team)?.scoreFor} rounds</h3><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-muted-foreground"><th className="text-left p-2">Jogador</th><th className="p-2">K / D / A</th><th className="p-2">ADR</th><th className="p-2">HS%</th></tr></thead><tbody>{detail.players.filter(p => p.team === team).map(p => <tr key={p.steamId} className={`border-t border-border ${p.steamId === user?.steamId ? 'bg-primary/10' : ''}`}><td className="p-2 max-w-52 truncate">{p.name}</td><td className="p-2 text-center whitespace-nowrap">{p.kills} / {p.deaths} / {p.assists}</td><td className="p-2 text-center">{number(p.damage == null || !p.rounds ? null : p.damage / p.rounds)}</td><td className="p-2 text-center">{number(p.headshots == null || !p.kills ? null : p.headshots / p.kills * 100, '%')}</td></tr>)}</tbody></table></div></div>)}
+    <Dialog open={selected !== null} onOpenChange={open => { if (!open) setSelected(null); }}><DialogContent className="w-[96vw] max-w-7xl max-h-[90dvh] overflow-y-auto"><DialogHeader><DialogTitle className="capitalize">{detail ? mapName(detail.map) : 'Placar da partida'}</DialogTitle><DialogDescription>{detail ? `${date(detail.playedAt)} · ${detail.mode === 'wingman' ? 'Duplas 2×2' : '5×5'} · ${detail.rounds} rounds` : 'Carregando o resultado da partida.'}</DialogDescription></DialogHeader>
+      {detailLoading ? <p role="status" className="py-10 text-center">Carregando…</p> : detail && <MatchScoreboard match={detail} viewer={user?.steamId} />}
     </DialogContent></Dialog>
   </div>;
 }
