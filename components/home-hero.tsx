@@ -14,7 +14,7 @@ export function HomeHero({ backgroundImage }: { backgroundImage?: string }) {
         <motion.div
           aria-hidden="true"
           className="absolute inset-0 -z-20 bg-cover bg-center"
-          style={{ backgroundImage: `url(${backgroundImage})` }}
+          style={{ backgroundImage }}
           initial={{ opacity: 0, scale: 1.1 }}
           animate={{ opacity: 0.3, scale: 1 }}
           transition={{ duration: 2, ease: "easeOut" }}

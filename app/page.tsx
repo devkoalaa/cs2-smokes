@@ -34,7 +34,7 @@ export default async function HomePage() {
 
   const stats = [
     { label: "Mapas", value: maps.length.toString(), icon: "map" as const },
-    { label: "Smokes", value: totalSmokes.toString(), icon: "cloudy" as const },
+    { label: "Granadas", value: totalSmokes.toString(), icon: "cloudy" as const },
     { label: "Usuários", value: usersCount.toString(), icon: "users" as const },
   ]
 
@@ -44,7 +44,7 @@ export default async function HomePage() {
       <Header />
       <main className="container mx-auto px-4 py-8 flex-1">
         {/* Hero Section */}
-        <HomeHero backgroundImage={maps.find((m) => m.thumbnail)?.thumbnail} />
+        <HomeHero backgroundImage={[maps.find((m) => m.thumbnail)?.thumbnail, maps.find((m) => m.radar)?.radar].filter(Boolean).map((u) => `url(${u})`).join(", ")} />
 
         {/* Stats Section */}
         <HomeStats stats={stats} />
@@ -53,7 +53,7 @@ export default async function HomePage() {
         <div id="mapas" className="mb-8 scroll-mt-24">
           <div className="mb-8">
             <h2 className="font-display text-4xl md:text-5xl leading-none mb-2">Mapas</h2>
-            <p className="text-muted-foreground">Escolha um mapa para ver as smokes, flashes e molotovs.</p>
+            <p className="text-muted-foreground">Escolha um mapa para ver smokes, flashes e molotovs com vídeo e posição no radar.</p>
           </div>
           <MapGrid />
         </div>

@@ -47,7 +47,8 @@ export function MapCard({ map, isHovered, onMouseEnter, onMouseLeave, onClick }:
           <div className="relative overflow-hidden h-52">
             <motion.div
               className={`absolute inset-0 bg-cover bg-center ${isEmpty ? "grayscale-[60%] opacity-70" : ""}`}
-              style={{ backgroundImage: `url(${map.thumbnail || "/placeholder.svg"})` }}
+              // Duas camadas: se a miniatura externa (Imgur) não carregar, aparece o radar, que é do próprio site.
+              style={{ backgroundImage: [map.thumbnail, map.radar, "/placeholder.svg"].filter(Boolean).map(u => `url(${u})`).join(", ") }}
               animate={{
                 scale: isHovered ? 1.15 : 1,
                 rotate: isHovered ? 1 : 0
@@ -60,7 +61,7 @@ export function MapCard({ map, isHovered, onMouseEnter, onMouseLeave, onClick }:
               <Badge className={`backdrop-blur-md border shadow-sm ${
                 isEmpty ? "bg-background/80 text-muted-foreground border-border/50" : "bg-primary text-primary-foreground border-primary"
               }`}>
-                {isEmpty ? "Sem granadas" : `${smokesCount} smoke${smokesCount !== 1 ? "s" : ""}`}
+                {isEmpty ? "Sem granadas" : `${smokesCount} granada${smokesCount !== 1 ? "s" : ""}`}
               </Badge>
             </div>
 
@@ -85,20 +86,15 @@ export function MapCard({ map, isHovered, onMouseEnter, onMouseLeave, onClick }:
             </p>
 
             <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/50">
-              <div className={`flex items-center gap-2 text-xs font-medium uppercase tracking-wider ${map.isActive ? 'text-muted-foreground' : 'text-destructive'}`}>
-                <span className="relative flex h-2 w-2">
-                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${map.isActive ? 'bg-green-400' : 'bg-red-400'}`}></span>
-                  <span className={`relative inline-flex rounded-full h-2 w-2 ${map.isActive ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                </span>
-                {map.isActive ? 'Mapa Ativo' : 'Mapa Inativo'}
-              </div>
+              {/* Status só quando informa algo: mapa fora do pool. */}
+              <span className="text-xs text-muted-foreground">{map.isActive ? '' : 'Fora do pool'}</span>
 
               <Button
                 size="sm"
                 className="relative overflow-hidden group/btn bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 shadow-lg shadow-primary/20"
               >
                 <span className="relative z-10 flex items-center font-medium">
-                  {isEmpty ? "Adicionar" : "Ver Smokes"}
+                  {isEmpty ? "Adicionar" : "Ver granadas"}
                   <Play className={`ml-2 w-3 h-3 transition-transform ${isHovered ? 'translate-x-1 scale-110' : ''}`} />
                 </span>
               </Button>

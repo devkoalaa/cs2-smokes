@@ -471,8 +471,8 @@ export function MapViewer({ mapId }: MapViewerProps) {
           Voltar
         </Button>
         <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="bg-secondary text-secondary-foreground">
-            {smokes.length} smoke{smokes.length !== 1 ? "s" : ""}
+          <Badge className="bg-primary text-primary-foreground">
+            {smokes.length} granada{smokes.length !== 1 ? "s" : ""}
           </Badge>
           {filteredSmokes.length !== smokes.length && (
             <Badge variant="outline" className="border-border">
@@ -483,7 +483,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
         {isAuthenticated && (
           <Button onClick={() => setShowAddSmoke(true)} className="ml-auto">
             <Plus className="w-4 h-4 mr-2" />
-            Adicionar Smoke
+            Adicionar granada
           </Button>
         )}
       </div>
@@ -565,7 +565,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
               <div className="w-full flex-1 flex flex-col min-h-0 space-y-4">
                 {/* Header */}
                 <div className="space-y-3">
-                  <h2 className="text-xl font-semibold text-card-foreground">Smokes</h2>
+                  <h2 className="text-xl font-semibold text-card-foreground">Granadas</h2>
                   
                   {/* Filter Icons */}
                   <div className="flex items-center gap-2 flex-wrap">
@@ -983,7 +983,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
       }}>
         <DialogContent className="max-w-lg bg-popover border-border">
           <DialogHeader>
-            <DialogTitle className="text-popover-foreground">Adicionar novo Smoke</DialogTitle>
+            <DialogTitle className="text-popover-foreground">Adicionar granada</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">

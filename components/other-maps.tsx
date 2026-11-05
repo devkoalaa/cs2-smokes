@@ -30,7 +30,7 @@ export function OtherMaps({ currentMapId }: OtherMapsProps) {
   return (
     <div className="space-y-6 mt-12">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">Confira outros mapas</h2>
+        <h2 className="font-display text-4xl leading-none">Outros mapas</h2>
         <Button variant="ghost" onClick={() => router.push('/')}>
           Ver todos
         </Button>

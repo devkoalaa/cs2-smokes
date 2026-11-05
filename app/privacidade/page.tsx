@@ -4,7 +4,7 @@ import { Header } from '@/components/header';
 import { Footer } from '@/components/footer';
 import { PageTitle } from '@/components/hub-ui';
 
-export const metadata: Metadata = { title: 'Privacidade', description: 'O que o CS2 Hub guarda, quem vê e como apagar.' };
+export const metadata: Metadata = { title: 'Privacidade', description: 'O que o CS2 Hub guarda, quem vê e como apagar.', alternates: { canonical: '/privacidade' } };
 
 const sections: [string, React.ReactNode][] = [
   ['O que guardamos', <ul key="a" className="list-disc pl-5 space-y-1">
