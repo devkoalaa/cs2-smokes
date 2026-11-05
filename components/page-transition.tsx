@@ -13,10 +13,11 @@ export default function PageTransition({
   return (
     <motion.div
       key={pathname}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 20 }}
-      transition={{ duration: 0.3 }}
+      // Só opacidade: o deslize para baixo fazia a página estourar a altura e piscar a barra de rolagem.
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
       className="w-full h-full"
     >
       {children}

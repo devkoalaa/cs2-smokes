@@ -32,8 +32,9 @@ export function SteamLoginButton() {
   }
 
   if (isAuthenticated && user) {
+    // modal={false}: abrir o menu não trava a rolagem nem esconde a barra (o layout pulava).
     return (
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full cursor-pointer hidden md:flex">
             <Avatar className="h-10 w-10">

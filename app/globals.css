@@ -140,6 +140,11 @@ html, body {
   body {
     @apply bg-background text-foreground;
   }
+  /* Reserva sempre o espaço da barra de rolagem: trocar de página ou abrir um menu
+     não faz o layout pular quando a barra aparece ou some. */
+  html {
+    scrollbar-gutter: stable;
+  }
   /* Selects nativos: seta própria com respiro da borda, igual em todo navegador.
      !important na camada base vence o padding-right das classes p-2/px-2. */
   select:not([multiple]):not([size]) {
