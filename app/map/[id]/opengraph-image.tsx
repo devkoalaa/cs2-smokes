@@ -19,7 +19,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 80px' }}>
         <div style={{ display: 'flex', fontSize: 28, letterSpacing: 6, color: BRAND.primary, fontWeight: 600 }}>CS2 HUB · SMOKES</div>
         <div style={{ display: 'flex', fontFamily: 'Display', fontSize: 200, lineHeight: 1, marginTop: 12, textTransform: 'uppercase' }}>{name}</div>
-        <div style={{ display: 'flex', fontSize: 38, marginTop: 20, color: BRAND.muted }}>{count ? `${count} ${count === 1 ? 'lineup' : 'lineups'} com vídeo e posição no radar` : 'Smokes, flashes e molotovs com vídeo'}</div>
+        <div style={{ display: 'flex', fontSize: 38, marginTop: 20, color: BRAND.muted }}>{count ? `${count} ${count === 1 ? 'granada' : 'granadas'} com vídeo e posição no radar` : 'Smokes, flashes e molotovs com vídeo'}</div>
       </div>
     </div>,
     { ...size, fonts },
