@@ -76,7 +76,7 @@ export function KillMap({ match, viewer }: { match: MatchDetail; viewer?: string
             <option value="all">CT e TR</option><option value="CT">Só de CT</option><option value="T">Só de TR</option>
           </select>
           <select aria-label="Round" className={select} value={round} onChange={e => setRound(Number(e.target.value))}>
-            <option value={0}>Todos os rounds</option>
+            <option value={0}>Rounds</option>
             {Array.from({ length: rounds }, (_, i) => <option key={i} value={i + 1}>Round {i + 1}</option>)}
           </select>
         </div>

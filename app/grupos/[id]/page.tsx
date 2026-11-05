@@ -3,14 +3,16 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Check, Copy, Crown, Pencil, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Check, ChevronRight, Copy, Crown, Pencil, RefreshCw } from 'lucide-react';
 import { Header } from '@/components/header';
-import { Alert, LoginPrompt, MatchRow, PeriodSelect, UserAvatar, useCopy } from '@/components/hub-ui';
+import { Alert, LoginPrompt, PeriodSelect, UserAvatar, useCopy } from '@/components/hub-ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
-import { formatNumber } from '@/lib/match';
+import { formatNumber, mapName, resultLabel } from '@/lib/match';
 import { GroupDetail, groupsApi } from '@/lib/services/tracking.service';
+
+type Together = GroupDetail['together'][number];
 
 type Sort = 'rating' | 'kd' | 'adr' | 'hsPercent' | 'winRate' | 'matches';
 const COLUMNS: [Sort, string][] = [['rating', 'Rating'], ['kd', 'K/D'], ['adr', 'ADR'], ['hsPercent', 'HS'], ['winRate', 'Vitórias'], ['matches', 'Partidas']];
@@ -87,9 +89,10 @@ export default function GroupPage({ params }: { params: { id: string } }) {
 
         <section className="rounded-xl border border-border overflow-hidden">
           <div className="p-4 border-b border-border"><h2 className="text-xl font-semibold">Jogaram juntos</h2>
-            <p className="text-sm text-muted-foreground mt-1">Partidas com pelo menos dois do grupo no mesmo time.</p></div>
+            <p className="text-sm text-muted-foreground mt-1">Partidas com pelo menos dois do grupo no mesmo time. O número colorido é o Rating.</p></div>
           {!group.together.length ? <p className="p-4 text-sm text-muted-foreground">Nenhuma partida juntos no período.</p>
-          : <ul className="divide-y divide-border">{group.together.map(m => <li key={`${m.id}-${m.player.steamId}`}><MatchRow match={m} players={m.players} /></li>)}</ul>}
+          : <ul className="divide-y divide-border">{group.together.map(m => <li key={`${m.id}-${m.player.steamId}`}>
+              <TogetherRow match={m} avatars={Object.fromEntries(group.members.map(u => [u.steamId, u.avatarUrl]))} me={user?.steamId} /></li>)}</ul>}
         </section>
 
         <section className="rounded-xl border border-border p-4 md:p-5 space-y-3">
@@ -110,4 +113,33 @@ export default function GroupPage({ params }: { params: { id: string } }) {
       </>}
     </main>
   </div>;
+}
+
+// Uma partida do grupo: faixa com o resultado, mapa e data numa linha, e cada um do
+// grupo numa pastilha com K/D/A e o Rating colorido.
+const ratingColor = (r: number | null) => r == null ? 'text-muted-foreground' : r >= 1.1 ? 'text-emerald-400' : r < 0.9 ? 'text-red-400' : 'text-foreground';
+function TogetherRow({ match: m, avatars, me }: { match: Together; avatars: Record<string, string | null>; me?: string }) {
+  const result = resultLabel(m.scoreFor, m.scoreAgainst);
+  const bar = result === 'Vitória' ? 'bg-emerald-400' : result === 'Derrota' ? 'bg-red-400' : 'bg-amber-300';
+  const date = new Date(m.playedAt).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }).replace(',', '');
+  const players = [...m.players].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+  const body = <>
+    <span className={`w-1 self-stretch rounded-full ${bar}`} aria-hidden />
+    <div className="min-w-0 flex-1 space-y-2">
+      <p className="text-sm"><span className="font-semibold capitalize">{mapName(m.map)}</span>
+        <span className="text-muted-foreground"> · {date} · {m.mode === 'wingman' ? '2×2' : '5×5'}</span></p>
+      <div className="flex flex-wrap gap-1.5">{players.map(p => <span key={p.steamId}
+        className={`inline-flex items-center gap-1.5 rounded-full border py-0.5 pl-0.5 pr-2.5 text-xs tabular-nums ${p.steamId === me ? 'border-primary/50 bg-primary/10' : 'border-border bg-card/60'}`}>
+        <UserAvatar src={avatars[p.steamId]} name={p.name} className="h-5 w-5" />
+        <span className="font-medium">{p.name}</span>
+        <span className="text-muted-foreground">{p.kills}/{p.deaths}/{p.assists}</span>
+        <span className={`font-semibold ${ratingColor(p.rating)}`}>{p.rating == null ? '—' : p.rating.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
+      </span>)}</div>
+    </div>
+    <div className="text-right shrink-0"><p className="font-semibold tabular-nums">{m.scoreFor}:{m.scoreAgainst}</p>
+      <p className="text-xs text-muted-foreground">{result}</p></div>
+  </>;
+  return m.viewerPlayed
+    ? <Link href={`/partidas/${m.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-card/60">{body}<ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" /></Link>
+    : <div className="flex items-center gap-3 px-4 py-3">{body}<span className="w-4 shrink-0" /></div>;
 }
