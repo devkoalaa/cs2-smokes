@@ -25,6 +25,7 @@ export default function MatchesPage() {
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [days, setDays] = useState('30');
+  const [mode, setMode] = useState('all');
   const [map, setMap] = useState('');
   const [scope, setScope] = useState('all');
   const [page, setPage] = useState(1);
@@ -42,12 +43,13 @@ export default function MatchesPage() {
     setLoading(true); setError('');
     try {
       const query = new URLSearchParams({ days, scope, page: String(page) });
+      if (mode !== 'all') query.set('mode', mode);
       if (map) query.set('map', map);
       const [nextStatus, nextData] = await Promise.all([trackingApi.status(), trackingApi.list(query)]);
       if (current === generation.current) { setStatus(nextStatus); setData(nextData); }
     } catch (e) { if (current === generation.current) { setError((e as Error).message); setData(null); } }
     finally { if (current === generation.current) setLoading(false); }
-  }, [isAuthenticated, user?.steamId, days, map, scope, page]);
+  }, [isAuthenticated, user?.steamId, days, mode, map, scope, page]);
 
   useEffect(() => { void refresh(); return () => { generation.current++; }; }, [refresh]);
   useEffect(() => {
@@ -93,7 +95,7 @@ export default function MatchesPage() {
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div><p className="text-primary text-sm font-semibold tracking-widest uppercase mb-3">Smokes Hub / Partidas</p>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-new-amsterdam)' }}>Cada partida conta.</h1>
-          <p className="text-muted-foreground mt-3 max-w-xl">Seu histórico de Premier e Competitivo, a evolução do grupo e os números por trás de cada vitória.</p></div>
+          <p className="text-muted-foreground mt-3 max-w-xl">Seu histórico de Premier, Competitivo e Duplas, a evolução do grupo e os números por trás de cada vitória.</p></div>
         {!authLoading && isAuthenticated && <div className="flex gap-2"><Button variant="outline" onClick={() => void refresh()} disabled={loading}><RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />Atualizar</Button>
           <Button onClick={() => setSettings(s => !s)}><Settings2 className="h-4 w-4 mr-2" />Rastreamento</Button></div>}
       </section>
@@ -120,6 +122,7 @@ export default function MatchesPage() {
         </section>}
         <section aria-label="Filtros de partidas" className="flex flex-wrap gap-3 items-end">
           <div><Label htmlFor="period">Período</Label><select id="period" className="block bg-card border border-border rounded-md p-2 mt-2" value={days} onChange={e => { setDays(e.target.value); setPage(1); }}><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="90">Últimos 90 dias</option><option value="0">Todo o histórico</option></select></div>
+          <div><Label htmlFor="mode-filter">Modalidade</Label><select id="mode-filter" className="block bg-card border border-border rounded-md p-2 mt-2" value={mode} onChange={e => { setMode(e.target.value); setPage(1); }}><option value="all">Todas as modalidades</option><option value="competitive">Premier / Competitivo 5×5</option><option value="wingman">Duplas / Wingman 2×2</option></select></div>
           <div><Label htmlFor="map-filter">Mapa</Label><select id="map-filter" className="block bg-card border border-border rounded-md p-2 mt-2 capitalize" value={map} onChange={e => { setMap(e.target.value); setPage(1); }}><option value="">Todos os mapas</option>{data?.maps.map(m => <option key={m} value={m}>{mapName(m)}</option>)}</select></div>
           <div><Label htmlFor="group-filter">Jogadores</Label><select id="group-filter" className="block bg-card border border-border rounded-md p-2 mt-2" value={scope} onChange={e => { setScope(e.target.value); setPage(1); }}><option value="all">Minhas partidas</option><option value="together">Grupo no mesmo time</option></select></div>
           {loading && <p role="status" className="text-sm text-muted-foreground p-2">Carregando partidas…</p>}
@@ -130,18 +133,18 @@ export default function MatchesPage() {
           {!data?.matches.length ? <div className="py-16 px-6 text-center"><Clock3 className="w-9 h-9 mx-auto mb-4 text-muted-foreground" /><h3 className="font-semibold">{loading ? 'Buscando seu histórico' : 'Nenhuma partida neste filtro'}</h3><p className="text-sm text-muted-foreground mt-2">{status?.tracking ? 'As partidas aparecem aqui quando as demos forem processadas. Experimente também outro período.' : 'Conecte o histórico para começar a acompanhar seus resultados.'}</p></div> :
           <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="text-muted-foreground bg-card/40"><tr>{['Mapa / data', 'Resultado', 'Placar', 'K / D / A', 'ADR', 'HS%', ''].map((label, i) => <th key={i} className="p-4 text-left font-medium">{label}</th>)}</tr></thead><tbody>{data.matches.map(match => {
             const p = match.player, win = p.scoreFor > p.scoreAgainst, draw = p.scoreFor === p.scoreAgainst;
-            return <tr key={match.id} className="border-t border-border hover:bg-card/40"><td className="p-4"><p className="font-semibold capitalize">{mapName(match.map)}</p><p className="text-xs text-muted-foreground mt-1 whitespace-nowrap">{date(match.playedAt)}</p></td><td className={`p-4 font-medium ${draw ? 'text-amber-300' : win ? 'text-emerald-400' : 'text-red-400'}`}>{draw ? 'Empate' : win ? 'Vitória' : 'Derrota'}</td><td className="p-4 whitespace-nowrap tabular-nums font-semibold">{p.scoreFor} : {p.scoreAgainst}</td><td className="p-4 whitespace-nowrap tabular-nums">{p.kills} / {p.deaths} / {p.assists}</td><td className="p-4">{number(p.damage == null || !p.rounds ? null : p.damage / p.rounds)}</td><td className="p-4">{number(p.headshots == null || !p.kills ? null : p.headshots / p.kills * 100, '%')}</td><td className="p-4"><Button variant="ghost" size="sm" onClick={() => setSelected(match.id)}>Placar<ArrowRight className="w-4 h-4 ml-2" /></Button></td></tr>;
+            return <tr key={match.id} className="border-t border-border hover:bg-card/40"><td className="p-4"><p className="font-semibold capitalize">{mapName(match.map)}</p><p className="text-xs text-primary mt-1">{match.mode === 'wingman' ? 'Duplas · 2×2' : 'Premier / Competitivo · 5×5'}</p><p className="text-xs text-muted-foreground mt-1 whitespace-nowrap">{date(match.playedAt)}</p></td><td className={`p-4 font-medium ${draw ? 'text-amber-300' : win ? 'text-emerald-400' : 'text-red-400'}`}>{draw ? 'Empate' : win ? 'Vitória' : 'Derrota'}</td><td className="p-4 whitespace-nowrap tabular-nums font-semibold">{p.scoreFor} : {p.scoreAgainst}</td><td className="p-4 whitespace-nowrap tabular-nums">{p.kills} / {p.deaths} / {p.assists}</td><td className="p-4">{number(p.damage == null || !p.rounds ? null : p.damage / p.rounds)}</td><td className="p-4">{number(p.headshots == null || !p.kills ? null : p.headshots / p.kills * 100, '%')}</td><td className="p-4"><Button variant="ghost" size="sm" onClick={() => setSelected(match.id)}>Placar<ArrowRight className="w-4 h-4 ml-2" /></Button></td></tr>;
           })}</tbody></table></div>}
           {!!data?.total && <div className="flex items-center justify-between p-4 border-t border-border"><Button variant="outline" disabled={page <= 1 || loading} onClick={() => setPage(p => p - 1)}><ChevronLeft className="w-4 h-4 mr-1" />Anterior</Button><span className="text-xs text-muted-foreground">Página {page} de {Math.ceil(data.total / 20)}</span><Button variant="outline" disabled={page * 20 >= data.total || loading} onClick={() => setPage(p => p + 1)}>Próxima<ChevronRight className="w-4 h-4 ml-1" /></Button></div>}
         </section>
-        <section className="rounded-xl border border-border p-5"><h2 className="text-xl font-semibold flex items-center gap-2"><Users className="w-5 h-5 text-primary" />O grupo em números</h2><p className="text-sm text-muted-foreground mt-2">Mesmo período e mapa. Apenas membros com rastreamento ativado aparecem na comparação.</p>
+        <section className="rounded-xl border border-border p-5"><h2 className="text-xl font-semibold flex items-center gap-2"><Users className="w-5 h-5 text-primary" />O grupo em números</h2><p className="text-sm text-muted-foreground mt-2">Mesmo período, modalidade e mapa. Apenas membros com rastreamento ativado aparecem na comparação.</p>
           {!data?.comparison.length ? <p className="text-sm text-muted-foreground py-8">A comparação fica disponível quando o grupo conectar o histórico.</p> : <div className="grid md:grid-cols-3 gap-4 mt-6">{data.comparison.map(member => <div key={member.steamId} className="bg-card/50 rounded-lg p-5"><h3 className="font-semibold truncate">{member.username}{member.steamId === user?.steamId ? ' · você' : ''}</h3><p className="text-xs text-muted-foreground mt-1">{member.stats.matches} partidas</p><dl className="grid grid-cols-3 gap-2 mt-5">{[['K/D', number(member.stats.kd)], ['ADR', number(member.stats.adr)], ['Vitórias', number(member.stats.winRate, '%')]].map(([label, value]) => <div key={label}><dt className="text-xs text-muted-foreground">{label}</dt><dd className="text-lg font-semibold mt-1">{value}</dd></div>)}</dl></div>)}</div>}
         </section>
         {!!status?.queue.length && <section className="rounded-xl border border-border p-5"><h2 className="font-semibold">Fila de importação</h2><ul className="mt-4 space-y-3 text-sm">{status.queue.map(job => <li key={job.id} className="flex flex-wrap gap-2 justify-between border-b border-border pb-3"><span>Partida #{job.id} · {job.status === 'FAILED' ? 'Não importada' : job.status === 'PROCESSING' ? 'Processando' : 'Aguardando'}</span><span className="text-muted-foreground">{job.lastError || 'O coletor buscará a demo automaticamente.'}</span></li>)}</ul></section>}
         <p className="text-xs text-muted-foreground">Estatísticas calculadas somente sobre partidas importadas. ADR usa dano total / rounds; HS% usa eliminações com headshot / eliminações. “—” indica dado indisponível ou divisão por zero.</p>
       </>}
     </main>
-    <Dialog open={selected !== null} onOpenChange={open => { if (!open) setSelected(null); }}><DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto"><DialogHeader><DialogTitle className="capitalize">{detail ? mapName(detail.map) : 'Placar da partida'}</DialogTitle><DialogDescription>{detail ? `${date(detail.playedAt)} · ${detail.rounds} rounds` : 'Carregando o resultado da partida.'}</DialogDescription></DialogHeader>
+    <Dialog open={selected !== null} onOpenChange={open => { if (!open) setSelected(null); }}><DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto"><DialogHeader><DialogTitle className="capitalize">{detail ? mapName(detail.map) : 'Placar da partida'}</DialogTitle><DialogDescription>{detail ? `${date(detail.playedAt)} · ${detail.mode === 'wingman' ? 'Duplas 2×2' : '5×5'} · ${detail.rounds} rounds` : 'Carregando o resultado da partida.'}</DialogDescription></DialogHeader>
       {detailLoading ? <p role="status" className="py-10 text-center">Carregando…</p> : detail && [0, 1].map(team => <div key={team} className="mt-4"><h3 className="font-semibold mb-2">Time {team + 1} · {detail.players.find(p => p.team === team)?.scoreFor} rounds</h3><div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr className="text-muted-foreground"><th className="text-left p-2">Jogador</th><th className="p-2">K / D / A</th><th className="p-2">ADR</th><th className="p-2">HS%</th></tr></thead><tbody>{detail.players.filter(p => p.team === team).map(p => <tr key={p.steamId} className={`border-t border-border ${p.steamId === user?.steamId ? 'bg-primary/10' : ''}`}><td className="p-2 max-w-52 truncate">{p.name}</td><td className="p-2 text-center whitespace-nowrap">{p.kills} / {p.deaths} / {p.assists}</td><td className="p-2 text-center">{number(p.damage == null || !p.rounds ? null : p.damage / p.rounds)}</td><td className="p-2 text-center">{number(p.headshots == null || !p.kills ? null : p.headshots / p.kills * 100, '%')}</td></tr>)}</tbody></table></div></div>)}
     </DialogContent></Dialog>
   </div>;

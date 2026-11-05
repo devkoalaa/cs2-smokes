@@ -17,9 +17,9 @@ export interface MatchList {
   evolution: { id: number; playedAt: string; adr: number | null }[];
   summary: Summary; total: number; page: number; maps: string[];
   comparison: { steamId: string; username: string; stats: Summary }[];
-  matches: { id: number; map: string; playedAt: string; player: PlayerStats }[];
+  matches: { id: number; mode: string; map: string; playedAt: string; player: PlayerStats }[];
 }
-export interface MatchDetail { id: number; map: string; playedAt: string; rounds: number; players: PlayerStats[] }
+export interface MatchDetail { id: number; mode: string; map: string; playedAt: string; rounds: number; players: PlayerStats[] }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = AuthService.getInstance().getToken();
