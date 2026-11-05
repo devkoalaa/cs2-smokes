@@ -1,0 +1,46 @@
+name: Deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: [self-hosted, koala-server]
+    timeout-minutes: 30
+    env:
+      COMPOSE_PROJECT_NAME: cs2-smokes
+      CS2_API_ENV_FILE: /home/ubuntu/apps/cs2-smokes-hub-api/.env
+      GIT_COMMIT_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: docker compose build --pull
+      - name: Iniciar aplicação
+        run: |
+          docker compose up -d app
+      - name: Verificar saúde e versão
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS --max-time 5 http://127.0.0.1:3010/healthz | jq -e --arg sha "$GIT_COMMIT_SHA" '.ok == true and .commit == $sha' >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          docker compose logs --tail 40
+          exit 1
+      - name: Notify Telegram
+        if: always()
+        env:
+          STATUS: ${{ job.status }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          text="Deploy $GITHUB_REPOSITORY: $STATUS
+          ${GITHUB_SHA:0:7} — ${COMMIT_MESSAGE%%$'\n'*}
+          $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          jq -n --arg text "$text" '{text: $text}' | curl -fsS --max-time 10 http://127.0.0.1:8081/notify -H 'Content-Type: application/json' --data-binary @- || echo "Falha ao notificar Telegram"
+      - name: Limpar imagens antigas
+        if: always()
+        run: docker image prune -f

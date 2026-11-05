@@ -4,7 +4,7 @@ import { SteamLoginButton } from "@/components/auth/SteamLoginButton"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/AuthContext"
 import { useMobileSidebar } from "@/contexts/MobileSidebarContext"
-import { Github, Map, Menu, Cloudy } from "lucide-react"
+import { Github, BarChart3, Map, Menu, Cloudy } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 
@@ -15,6 +15,7 @@ export function Header() {
 
   const navigation = [
     { name: "Mapas", href: "/", icon: Map },
+    { name: "Partidas", href: "/partidas", icon: BarChart3 },
   ]
 
   return (

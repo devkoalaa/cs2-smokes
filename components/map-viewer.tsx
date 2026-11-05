@@ -538,7 +538,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
                 <div className="aspect-square lg:aspect-auto lg:h-[600px] w-full">
                   <UnifiedMap
                     key={`${map.id}-${selectedFloor}`}
-                    radarImagePath={map.radarLower && selectedFloor === 'lower' ? map.radarLower : map.radar}
+                    radarImagePath={map.name === 'Nuke' && selectedFloor === 'lower' ? '/images/maps/map_nuke_lower.webp' : (map.radarLower && selectedFloor === 'lower' ? map.radarLower : map.radar)}
                     smokes={filteredSmokes}
                     onSmokeClick={handleSmokeClick}
                     onMapClick={selectingOnMap ? ((x, y) => setSelectedCoords({ x_coord: x, y_coord: y })) : undefined}

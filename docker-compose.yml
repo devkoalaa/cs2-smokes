@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        GIT_COMMIT_SHA: ${GIT_COMMIT_SHA:-local}
+        NEXT_PUBLIC_API_URL: https://cs2.devkoala.com/api
+    image: cs2-smokes:latest
+    container_name: cs2-smokes
+    restart: unless-stopped
+    environment:
+      TZ: America/Sao_Paulo
+    ports: ["127.0.0.1:3010:3000"]
