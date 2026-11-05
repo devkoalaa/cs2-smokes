@@ -50,6 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [authService]);
 
   const login = () => {
+    // Volta para a página de origem (ex.: link de partida compartilhado) após o login.
+    sessionStorage.setItem('login_return', window.location.pathname + window.location.search);
     window.location.href = authService.getSteamAuthUrl();
   };
 

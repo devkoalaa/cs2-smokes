@@ -16,6 +16,7 @@ const newAmsterdamFont = {
 }
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://cs2.devkoala.com'),
   title: 'CS2 Smoke Hub | Domine as Smokes do Counter Strike 2',
   description: 'O arsenal de smokes definitivo, alimentado e validado pela comunidade.',
   keywords: ['CS2', 'Counter Strike 2', 'smoke', 'tutorial', 'tático', 'mapas', 'gaming'],

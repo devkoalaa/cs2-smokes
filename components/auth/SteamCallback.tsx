@@ -68,9 +68,10 @@ export function SteamCallback() {
             setStatus('success');
             setMessage('Autenticação realizada com sucesso!');
             
-            // Redirect to home page after 2 seconds
+            const target = sessionStorage.getItem('login_return');
+            sessionStorage.removeItem('login_return');
             setTimeout(() => {
-              router.push('/');
+              router.push(target && /^\/(?![/\\])/.test(target) && !target.startsWith('/auth') ? target : '/');
             }, 2000);
           } else {
             const errorJson = await response.json().catch(() => null);
