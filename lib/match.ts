@@ -9,10 +9,11 @@ export const formatNumber = (value: number | null | undefined, suffix = '') => v
 export const resultLabel = (scoreFor: number, scoreAgainst: number) => scoreFor === scoreAgainst ? 'Empate' : scoreFor > scoreAgainst ? 'Vitória' : 'Derrota';
 export const resultColor = (scoreFor: number, scoreAgainst: number) => scoreFor === scoreAgainst ? 'text-amber-300' : scoreFor > scoreAgainst ? 'text-emerald-400' : 'text-red-400';
 
-// O link leva a chave da partida para a miniatura pública; sem ela, só quem participou vê.
+// O link leva a chave de quem compartilhou para a miniatura pública; sem ela, só quem participou vê.
 export const matchPath = (id: number, shareKey?: string | null) => `/partidas/${id}${shareKey ? '-' + shareKey : ''}`;
 export function parseMatchSlug(slug: string) {
-  const match = /^(\d{1,9})(?:-([a-f0-9]{16}))?$/.exec(slug);
+  // Chave antiga (HMAC, 16 hex) ou código do link de quem compartilhou (10 letras).
+  const match = /^(\d{1,9})(?:-([a-f0-9]{16}|[A-Za-z0-9]{10}))?$/.exec(slug);
   return match ? { id: Number(match[1]), key: match[2] ?? null } : null;
 }
 

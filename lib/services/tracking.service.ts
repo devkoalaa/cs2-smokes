@@ -8,7 +8,9 @@ export interface Summary {
   matches: number; wins: number; draws: number; kills: number; deaths: number; assists: number;
   rounds: number; kd: number | null; adr: number | null; hsPercent: number | null; winRate: number | null; adrMatches: number;
 }
+export interface GroupSummary { id: number; name: string; owner: boolean; members: number }
 export interface TrackingStatus {
+  access: boolean; admin: boolean; seats: { used: number; max: number }; allowPreview: boolean; groups: GroupSummary[];
   tracking: { enabled: boolean; lastCheckedAt: string | null; lastError: string | null } | null;
   workerOnline: boolean; workerLastSeen: string | null; serverConfigured: boolean;
   queue: { id: number; status: string; lastError: string | null; attempts: number }[];
@@ -52,4 +54,53 @@ export const trackingApi = {
   detail: (id: number) => request<MatchDetail>(`matches/${id}`),
   configure: (authCode: string, shareCode: string) => request<{ message: string }>('settings', { method: 'POST', body: JSON.stringify({ authCode, shareCode }) }),
   disconnect: () => request<{ message: string }>('settings', { method: 'DELETE' }),
+};
+
+export interface PublicUser { id: number; steamId: string; username: string; avatarUrl: string | null }
+export interface PeriodStats extends Summary { rating: number | null }
+export interface PlayerLine { steamId: string; name: string; kills: number; deaths: number; assists: number; damage: number | null; adr: number | null;
+  hsPercent: number | null; kastPercent: number | null; rating: number | null; premierAfter: number | null; premierDelta: number | null }
+export interface MatchCard { id: number; map: string; mode: string; playedAt: string; rounds: number; scoreFor: number; scoreAgainst: number;
+  player: PlayerLine; teammates: PlayerLine[]; viewerPlayed: boolean }
+export interface GroupDetail {
+  id: number; name: string; createdAt: string; owner: boolean; ownerId: number; invite: string | null; days: number;
+  limits: { groupsPerUser: number; membersPerGroup: number };
+  members: (PublicUser & { joinedAt: string; owner: boolean; stats: PeriodStats })[];
+  together: (MatchCard & { players: PlayerLine[] })[];
+}
+export interface Profile {
+  user: { steamId: string; username: string; avatarUrl: string | null; memberSince: string; importing: boolean; self: boolean };
+  days: number; stats: PeriodStats; best: MatchCard | null; maps: { map: string; matches: number; wins: number }[];
+  recent: MatchCard[]; groups: { id: number; name: string; members: number }[];
+}
+export interface InviteInfo { kind: 'ACCESS' | 'GROUP'; inviter: { username: string; avatarUrl: string | null }; group: { name: string; members: number } | null }
+export interface AdminOverview {
+  seats: { used: number; max: number }; founders: string[];
+  invites: { code: string; usesLeft: number | null; createdAt: string }[];
+  users: (PublicUser & { accessGrantedAt: string; importing: boolean; groups: number })[];
+}
+
+async function publicRequest<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}/tracking/${path}`, { cache: 'no-store' });
+  if (!response.ok) throw new Error((await response.json().catch(() => null))?.message || 'Não foi possível carregar.');
+  return response.json();
+}
+const json = (method: string, body?: unknown): RequestInit => ({ method, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+
+export const groupsApi = {
+  create: (name: string) => request<{ id: number }>('groups', json('POST', { name })),
+  get: (id: number, days: number) => request<GroupDetail>(`groups/${id}?days=${days}`),
+  rename: (id: number, name: string) => request<{ name: string }>(`groups/${id}`, json('PATCH', { name })),
+  remove: (id: number) => request<{ message: string }>(`groups/${id}`, json('DELETE')),
+  rotateInvite: (id: number) => request<{ code: string }>(`groups/${id}/invite`, json('POST')),
+  removeMember: (id: number, userId: number) => request<{ message: string }>(`groups/${id}/members/${userId}`, json('DELETE')),
+  profile: (steamId: string, days: number) => request<Profile>(`profiles/${steamId}?days=${days}`),
+  invite: (code: string) => publicRequest<InviteInfo>(`invites/${encodeURIComponent(code)}`),
+  accept: (code: string) => request<{ groupId: number | null }>(`invites/${encodeURIComponent(code)}/accept`, json('POST')),
+  preferences: (allowPreview: boolean) => request<{ allowPreview: boolean }>('me', json('PATCH', { allowPreview })),
+  deleteMine: () => request<{ message: string }>('me', json('DELETE')),
+  admin: () => request<AdminOverview>('admin'),
+  createAccessInvite: (uses: number) => request<{ code: string; usesLeft: number }>('admin/invites', json('POST', { uses })),
+  deleteAccessInvite: (code: string) => request<{ message: string }>(`admin/invites/${code}`, json('DELETE')),
+  revokeAccess: (userId: number) => request<{ message: string }>(`admin/users/${userId}/access`, json('DELETE')),
 };

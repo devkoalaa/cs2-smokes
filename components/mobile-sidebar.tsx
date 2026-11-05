@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { SteamLoginButton } from "@/components/auth/SteamLoginButton"
 import { useAuth } from "@/contexts/AuthContext"
-import { Github, LogOut, BarChart3, Map, X, Cloudy } from "lucide-react"
+import { Github, LogOut, BarChart3, Map, X, Cloudy, Users, UserRound } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
@@ -22,6 +22,8 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
   const navigation = [
     { name: "Mapas", href: "/", icon: Map },
     { name: "Partidas", href: "/partidas", icon: BarChart3 },
+    { name: "Grupos", href: "/grupos", icon: Users },
+    ...(isAuthenticated && user ? [{ name: "Meu perfil", href: `/perfil/${user.steamId}`, icon: UserRound }] : []),
   ]
 
   // Prevent hydration mismatch
