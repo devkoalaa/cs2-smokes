@@ -1,28 +1,22 @@
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 import { ImageResponse } from 'next/og';
 import { fetchPreview, formatDate, groupResult, mapName, modeLabel } from '@/lib/match';
+import { asset, background, loadFonts, resultColors } from '@/lib/og';
 
 export const alt = 'Placar da partida';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
-const asset = (...path: string[]) => readFile(join(process.cwd(), 'public', ...path));
-const colors = { Vitória: '#34d399', Derrota: '#f87171', Empate: '#fcd34d' } as Record<string, string>;
-
 export default async function Image({ params }: { params: { slug: string } }) {
-  const [preview, display, regular, semibold] = await Promise.all([fetchPreview(params.slug),
-    asset('fonts', 'NewAmsterdam-Regular.ttf'), asset('fonts', 'Geist-Regular.ttf'), asset('fonts', 'Geist-SemiBold.ttf')]);
-  const fonts = [{ name: 'Display', data: display, weight: 400 as const }, { name: 'Geist', data: regular, weight: 400 as const }, { name: 'Geist', data: semibold, weight: 600 as const }];
+  const [preview, fonts] = await Promise.all([fetchPreview(params.slug), loadFonts()]);
   const radar = preview && await asset('images', 'maps', 'og', `${mapName(preview.map).replace(/ /g, '_')}.png`).then(b => `data:image/png;base64,${b.toString('base64')}`).catch(() => null);
   const result = preview && groupResult(preview);
   const score = result ? [result.scoreFor, result.scoreAgainst] : preview?.score ?? [];
-  const accent = result ? colors[result.label] : '#e5e5e5';
+  const accent = result ? resultColors[result.label] : '#e5e5e5';
   const compact = (preview?.group.length ?? 0) > 3;
 
   return new ImageResponse(
     <div style={{ width: '100%', height: '100%', display: 'flex', position: 'relative', fontFamily: 'Geist', color: '#fafafa',
-      background: 'linear-gradient(135deg, #09090b 0%, #120c1c 55%, #24123d 100%)' }}>
+      background }}>
       {radar && <img src={radar} width={600} height={600} style={{ position: 'absolute', right: -40, top: 15, opacity: 0.22 }} />}
       {!preview ? <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 80 }}>
         <div style={{ fontSize: 30, color: '#b46cff', letterSpacing: 6 }}>CS2 SMOKES HUB</div>

@@ -39,3 +39,16 @@ export function groupResult(preview: MatchPreview) {
   const scoreFor = preview.score[teams[0]], scoreAgainst = preview.score[1 - teams[0]];
   return { scoreFor, scoreAgainst, label: resultLabel(scoreFor, scoreAgainst) };
 }
+
+type RatingRow = { kills: number; assists: number; damage: number | null };
+// Compara a contribuição com a dos jogadores da mesma partida, para 2×2 e 5×5
+// terem cada um sua referência (1,00 = média). Sem dano de alguém, fica indisponível.
+export function hubRating(p: RatingRow, players: RatingRow[]) {
+  if (players.some(row => row.damage == null)) return null;
+  const total = players.reduce<{ kills: number; assists: number; damage: number }>((sum, row) => ({ kills: sum.kills + row.kills, assists: sum.assists + row.assists, damage: sum.damage + (row.damage ?? 0) }),
+    { kills: 0, assists: 0, damage: 0 });
+  const metrics: [number, number, number][] = [[p.kills, total.kills, 0.5], [p.damage ?? 0, total.damage, 0.35], [p.assists, total.assists, 0.15]];
+  const available = metrics.filter(([, sum]) => sum > 0);
+  const weights = available.reduce((sum, [, , weight]) => sum + weight, 0);
+  return weights ? available.reduce((sum, [v, all, weight]) => sum + weight * v / all, 0) * players.length / weights : null;
+}

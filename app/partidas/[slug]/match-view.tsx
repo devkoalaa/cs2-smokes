@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Check, Share2 } from 'lucide-react';
+import { ArrowLeft, Check, ImageIcon, Loader2, Share2 } from 'lucide-react';
 import { Header } from '@/components/header';
 import { MatchScoreboard } from '@/components/match-scoreboard';
 import { SteamLoginButton } from '@/components/auth/SteamLoginButton';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { AuthService } from '@/lib/auth';
 import { MatchDetail, trackingApi } from '@/lib/services/tracking.service';
 import { formatDate, mapName, matchPath, modeLabel, parseMatchSlug, resultColor, resultLabel } from '@/lib/match';
 
@@ -16,6 +17,8 @@ export function MatchView({ slug }: { slug: string }) {
   const [match, setMatch] = useState<MatchDetail | null>(null);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [imageError, setImageError] = useState('');
+  const [image, setImage] = useState<'idle' | 'working' | 'copied' | 'shared' | 'saved'>('idle');
   const parsed = parseMatchSlug(slug);
 
   useEffect(() => {
@@ -47,6 +50,32 @@ export function MatchView({ slug }: { slug: string }) {
     setTimeout(() => setCopied(false), 2500);
   }
 
+  // A imagem é pedida já dentro do clique: o Safari só libera a área de
+  // transferência se o ClipboardItem for criado no gesto, com a promessa do PNG.
+  async function copyTeam() {
+    if (!match || image === 'working') return;
+    setImage('working'); setImageError('');
+    const png = fetch(`${matchPath(match.id, match.shareKey)}/time`, { headers: { Authorization: `Bearer ${AuthService.getInstance().getToken()}` }, cache: 'no-store' })
+      .then(async r => { if (!r.ok) throw new Error((await r.json().catch(() => null))?.message || 'Não foi possível gerar a imagem.'); return r.blob(); });
+    let done: typeof image = 'copied';
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
+    } catch {
+      try {
+        const file = new File([await png], `${mapName(match.map)}-${match.id}.png`, { type: 'image/png' });
+        if (navigator.canShare?.({ files: [file] })) {
+          try { await navigator.share({ files: [file] }); done = 'shared'; }
+          catch (e) { if ((e as Error).name === 'AbortError') { setImage('idle'); return; } throw e; }
+        } else {
+          const link = Object.assign(document.createElement('a'), { href: URL.createObjectURL(file), download: file.name });
+          link.click(); setTimeout(() => URL.revokeObjectURL(link.href), 10000); done = 'saved';
+        }
+      } catch (e) { setImageError((e as Error).message); setImage('idle'); return; }
+    }
+    setImage(done);
+    setTimeout(() => setImage('idle'), 3000);
+  }
+
   return <div className="min-h-screen bg-background">
     <Header />
     <main className="container mx-auto max-w-7xl px-4 py-6 md:py-10 space-y-6">
@@ -68,9 +97,15 @@ export function MatchView({ slug }: { slug: string }) {
           <div className="flex items-center gap-4">
             {me && <div className="text-right"><p className="text-4xl font-bold tabular-nums">{me.scoreFor} <span className="text-muted-foreground">:</span> {me.scoreAgainst}</p>
               <p className={`text-sm font-medium ${resultColor(me.scoreFor, me.scoreAgainst)}`}>{resultLabel(me.scoreFor, me.scoreAgainst)}</p></div>}
-            <Button variant="outline" onClick={() => void share()}>{copied ? <Check className="h-4 w-4 mr-2" /> : <Share2 className="h-4 w-4 mr-2" />}{copied ? 'Link copiado' : 'Compartilhar'}</Button>
+            <div className="flex flex-col gap-2">
+              <Button variant="outline" size="sm" onClick={() => void share()}>{copied ? <Check className="h-4 w-4 mr-2" /> : <Share2 className="h-4 w-4 mr-2" />}{copied ? 'Link copiado' : 'Compartilhar link'}</Button>
+              <Button variant="outline" size="sm" disabled={image === 'working'} onClick={() => void copyTeam()}>
+                {image === 'working' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : image === 'idle' ? <ImageIcon className="h-4 w-4 mr-2" /> : <Check className="h-4 w-4 mr-2" />}
+                {{ idle: 'Copiar imagem do time', working: 'Gerando imagem…', copied: 'Imagem copiada', shared: 'Imagem enviada', saved: 'Imagem baixada' }[image]}</Button>
+            </div>
           </div>
         </section>
+        {imageError && <p role="alert" className="text-sm text-red-300">{imageError}</p>}
         <MatchScoreboard match={match} viewer={user?.steamId} />
       </>}
     </main>

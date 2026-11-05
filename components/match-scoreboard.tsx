@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AimMetric, MatchDetail, PlayerStats, ReplayStats } from '@/lib/services/tracking.service';
+import { hubRating } from '@/lib/match';
 
 type Column = {
   label: string; name: string; description: string; unit?: string; precision?: number; low?: boolean; signed?: boolean;
@@ -44,21 +45,10 @@ function format(c: Column, v: number | null | undefined) {
 export function MatchScoreboard({ match, viewer }: { match: MatchDetail; viewer?: string }) {
   const [aim, setAim] = useState(false);
   const [sort, setSort] = useState({ index: 0, ascending: false });
-  // Compare contributions with the players in this match so 2v2 and 5v5
-  // each have their own reference. Missing damage makes this rating unavailable.
-  const total = match.players.reduce((sum, p) => ({
-    kills: sum.kills + p.kills, assists: sum.assists + p.assists, damage: sum.damage + (p.damage ?? 0),
-  }), { kills: 0, assists: 0, damage: 0 });
   const rating: Column = {
     label: 'Rating', name: 'Rating', precision: 2,
     description: 'Desempenho comparado à média dos jogadores desta partida (1,00). Pesa 50% abates, 35% dano e 15% assistências.',
-    value: p => {
-      if (match.players.some(row => row.damage == null)) return null;
-      const metrics = [[p.kills, total.kills, 0.5], [p.damage ?? 0, total.damage, 0.35], [p.assists, total.assists, 0.15]];
-      const available = metrics.filter(([, sum]) => sum > 0);
-      const weights = available.reduce((sum, [, , weight]) => sum + weight, 0);
-      return weights ? available.reduce((sum, [v, all, weight]) => sum + weight * v / all, 0) * match.players.length / weights : null;
-    },
+    value: p => hubRating(p, match.players),
   };
   const premier: Column[] = match.analysis?.premier ? [
     { label: 'Premier', name: 'Premier', description: 'Pontos de Premier ao fim da partida.', value: (_,s) => s?.premierAfter },
