@@ -25,6 +25,6 @@ export function BrandGlyph({ className = 'h-6 w-6' }: { className?: string }) {
 export function Wordmark({ size = 'h-8 w-8' }: { size?: string }) {
   return <span className="flex items-center gap-2.5">
     <BrandMark className={size} />
-    <span className="text-lg font-black italic tracking-tight">CS2<span className="ml-1 rounded-[4px] bg-primary px-1.5 py-0.5 not-italic text-primary-foreground">HUB</span></span>
+    <span className="text-lg font-black tracking-tight">CS2<span className="ml-1 rounded-[4px] bg-primary px-1.5 py-0.5 text-primary-foreground">HUB</span></span>
   </span>;
 }
