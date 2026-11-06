@@ -56,8 +56,8 @@ export function BannerEditor({ banner, favorite, onChanged }: { banner: Banner; 
         <DialogDescription>Escolha a arte de um mapa ou envie uma imagem sua.</DialogDescription>
       </DialogHeader>
       {error && <Alert>{error}</Alert>}
-      <div className="flex flex-wrap items-center gap-3 rounded-lg bg-black/20 p-3 ring-1 ring-white/[0.06]">
-        {banner.url && <div className={`relative h-14 w-32 shrink-0 overflow-hidden rounded-md bg-cover bg-center ring-2 ${selected === 'image' ? 'ring-primary' : 'ring-transparent'}`}
+      <div className="flex flex-col gap-3 rounded-lg bg-black/20 p-3 ring-1 ring-white/[0.06] sm:flex-row sm:items-center">
+        {banner.url && <div className={`relative h-24 w-full shrink-0 overflow-hidden rounded-md sm:h-14 sm:w-32 bg-cover bg-center ring-2 ${selected === 'image' ? 'ring-primary' : 'ring-transparent'}`}
           style={{ backgroundImage: `url("${mediaUrl(banner.url)}")` }} role="img" aria-label="Sua imagem atual" />}
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">{banner.url ? 'Sua imagem está no banner' : 'Imagem própria'}</p>
