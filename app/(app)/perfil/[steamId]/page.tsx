@@ -34,7 +34,7 @@ export default function ProfilePage() {
       {isLoading ? <p role="status">Verificando sua sessão…</p> : !isAuthenticated ? <LoginPrompt text="Entre com a Steam para ver perfis." />
       : error && !p ? <Alert>{error === 'Perfil não encontrado.' ? 'Perfil não encontrado. Perfis só aparecem para quem está em algum grupo junto.' : error}</Alert>
       : !p ? <p role="status" className="text-muted-foreground">Carregando o perfil…</p> : <>
-        <ArtHero map={p.maps[0]?.map ?? 'de_mirage'} height="h-52 md:h-64">
+        <ArtHero map={p.maps[0]?.map ?? 'de_mirage'} height="min-h-52 md:min-h-64">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="flex min-w-0 items-center gap-4">
               <UserAvatar src={p.user.avatarUrl} name={p.user.username} className="h-16 w-16 ring-2 ring-white/20 md:h-20 md:w-20" />
@@ -42,7 +42,7 @@ export default function ProfilePage() {
                 <h1 className="truncate font-display text-4xl md:text-5xl">{p.user.username}</h1>
                 <p className="mt-1 text-sm text-zinc-300">No CS2 Hub desde {formatDate(p.user.memberSince, 'long').replace(/ às.*/, '')}
                   {' · '}{p.user.importing ? 'importação automática ligada' : 'sem importação automática'}</p>
-                <a href={`https://steamcommunity.com/profiles/${p.user.steamId}`} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-primary">Perfil na Steam <ExternalLink className="h-3.5 w-3.5" /></a>
+                <a href={`https://steamcommunity.com/profiles/${p.user.steamId}`} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-rose-300 hover:text-rose-200">Perfil na Steam <ExternalLink className="h-3.5 w-3.5" /></a>
               </div>
             </div>
             <PeriodSelect value={days} onChange={setDays} />

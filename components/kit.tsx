@@ -43,11 +43,15 @@ export function PageHeader({ title, subtitle, actions, eyebrow }: { title: React
 }
 
 /** Destaque com a arte do mapa ao fundo e o conteúdo por cima. */
-export function ArtHero({ map, children, height = 'h-64 md:h-80', className = '' }: { map?: string | null; children: React.ReactNode; height?: string; className?: string }) {
+export function ArtHero({ map, children, height = 'min-h-64 md:min-h-80', className = '' }: { map?: string | null; children: React.ReactNode; height?: string; className?: string }) {
+  // A arte fica atrás com vinheta (baixo, esquerda e bordas) para o texto sempre ter contraste;
+  // o banner cresce com o conteúdo, então nada fica por cima da parte clara da imagem.
   return <div className={`relative overflow-hidden rounded-xl ring-1 ring-white/[0.06] ${className}`} style={rise(0)}>
-    <div className={`${height} bg-cover bg-center`} style={{ backgroundImage: artBackground(map) }} />
-    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-    <div className="absolute inset-x-3 bottom-3 md:inset-x-4 md:bottom-4">{children}</div>
+    <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: artBackground(map) }} />
+    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/75 to-background/15" />
+    <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/30 to-transparent" />
+    <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.65)]" />
+    <div className={`relative flex flex-col justify-end p-3 pt-20 [text-shadow:0_1px_10px_rgb(0_0_0/0.6)] md:p-4 md:pt-24 ${height}`}>{children}</div>
   </div>;
 }
 

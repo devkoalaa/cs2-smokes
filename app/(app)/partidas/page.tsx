@@ -118,7 +118,7 @@ export default function MatchesPage() {
         {!!status?.groups.length && <select aria-label="Grupo" className={select} value={group ?? ''} onChange={e => { const id = Number(e.target.value); localStorage.setItem('cs2_group', String(id)); setGroup(id); setPage(1); }}>{status.groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}</select>}
         <select aria-label="Jogadores" className={select} value={scope} onChange={e => { setScope(e.target.value); setPage(1); }}><option value="all">Minhas partidas</option><option value="together" disabled={!group}>Com alguém do grupo no meu time</option></select>
       </section>
-      {last && <ArtHero map={last.map} height="h-56 md:h-72">
+      {last && <ArtHero map={last.map} height="min-h-56 md:min-h-72">
         <div className="rounded-xl bg-surface/95 p-4 ring-1 ring-white/[0.08] backdrop-blur">
           <div className="flex flex-wrap items-center gap-2"><Pill kind="highlight">Última partida</Pill>{resultPill(last.player.scoreFor, last.player.scoreAgainst)}<span className="text-xs text-muted-foreground">{date(last.playedAt)} · {modeLabel(last.mode)}</span></div>
           <div className="mt-2 flex flex-wrap items-end gap-x-6 gap-y-3">

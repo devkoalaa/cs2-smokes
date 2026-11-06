@@ -90,7 +90,7 @@ export function MatchView({ slug }: { slug: string }) {
     : error ? <Alert>{error}</Alert>
     : !match ? <p role="status" className="py-10 text-center text-muted-foreground">Carregando a partida…</p>
     : <>
-      <ArtHero map={match.map} height="h-60 md:h-80">
+      <ArtHero map={match.map} height="min-h-60 md:min-h-80">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <div className="flex flex-wrap gap-1.5">{match.analysis?.premier ? <Pill kind="premier">Premier</Pill> : null}<Pill>{modeLabel(match.mode)} · {match.rounds} rounds</Pill></div>

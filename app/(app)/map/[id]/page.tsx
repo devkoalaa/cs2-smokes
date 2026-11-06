@@ -37,7 +37,7 @@ export default async function MapPage({ params }: MapPageProps) {
   const name = map.displayName || map.name
   return (
     <>
-      <ArtHero map={name} height="h-48 md:h-64">
+      <ArtHero map={name} height="min-h-48 md:min-h-64">
         <nav aria-label="Caminho" className="text-sm text-zinc-300"><Link href="/smokes" className="hover:text-white">Smokes</Link><span className="mx-1.5 text-zinc-500">/</span>{name}</nav>
         <h1 className="mt-1 font-display text-4xl md:text-5xl">{name}</h1>
         <p className="mt-1 max-w-2xl text-sm text-zinc-300">{map.description || 'Smokes, flashes e molotovs com vídeo e posição no radar.'}</p>
