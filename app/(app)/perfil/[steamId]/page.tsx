@@ -57,7 +57,7 @@ export default function ProfilePage() {
         {error && <Alert>{error}</Alert>}
         {!p.stats.matches ? <Panel className="p-6 text-muted-foreground">Nenhuma partida no período.</Panel> : <>
           <StatGrid stats={p.stats} />
-          <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
+          <div className="grid items-start gap-4 lg:grid-cols-[360px_1fr]">
             {p.best && <div className="space-y-2"><h2 className="text-lg font-bold">Melhor partida</h2><MatchRow match={p.best} i={7} /></div>}
             <div className="space-y-2"><h2 className="text-lg font-bold">Mapas</h2>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{p.maps.slice(0, 6).map((m, i) => <div key={m.map} style={rise(i + 7)} className="group relative h-24 overflow-hidden rounded-xl ring-1 ring-white/[0.06]">
