@@ -64,9 +64,11 @@ export default function GroupPage() {
           </div><div className="min-w-0">
             {editing ? <form onSubmit={rename} className="flex gap-2"><Input aria-label="Nome do grupo" value={name} onChange={e => setName(e.target.value)} minLength={2} maxLength={40} autoFocus />
               <Button type="submit" size="sm" disabled={name.trim().length < 2}>Salvar</Button><Button type="button" size="sm" variant="ghost" onClick={() => setEditing(false)}>Cancelar</Button></form>
-            : <h1 className="font-display text-4xl leading-none break-words md:text-5xl">{group.name}
-                {group.owner && <button type="button" aria-label="Renomear" onClick={() => setEditing(true)} className="ml-3 align-middle text-muted-foreground hover:text-foreground"><Pencil className="inline h-5 w-5" /></button>}</h1>}
+            : <h1 className="font-display text-4xl leading-none break-words md:text-5xl">{group.name}</h1>}
+            {/* Ações do dono ficam na linha de baixo: um ícone colado no nome quebrava sozinho em nome longo. */}
             <p className="text-sm text-muted-foreground mt-2">{group.members.length} de {group.limits.membersPerGroup} pessoas
+              {group.owner && !editing && <> · <button type="button" className="hover:text-foreground hover:underline"
+                onClick={() => setEditing(true)}><Pencil className="mr-1 inline h-3.5 w-3.5 -translate-y-px" />renomear</button></>}
               {group.owner && group.avatarUrl && <> · <button type="button" className="hover:text-foreground hover:underline"
                 onClick={() => run(() => groupsApi.removeGroupAvatar(id), () => { load(); notifyGroupsChanged(); })}>tirar a foto</button></>}</p>
           </div></div>
