@@ -104,14 +104,19 @@ export function MatchView({ slug }: { slug: string }) {
           </div>}
         </div>
       </ArtHero>
-      <div className="flex flex-wrap items-center gap-2" style={rise(1)}>
-        <Button onClick={() => void share()}>{copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}{copied ? 'Link copiado' : 'Compartilhar'}</Button>
-        <Button variant="outline" disabled={image === 'working'} onClick={() => void copyTeam()}>
+      {/* Botões e tags em grupos separados: o texto do botão muda (gerando, copiada…) e não pode empurrar as tags. */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center" style={rise(1)}>
+        <div className="flex flex-wrap gap-2">
+        <Button className="min-w-36" onClick={() => void share()}>{copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}{copied ? 'Link copiado' : 'Compartilhar'}</Button>
+        <Button variant="outline" className="min-w-52" disabled={image === 'working'} onClick={() => void copyTeam()}>
           {image === 'working' ? <Loader2 className="h-4 w-4 animate-spin" /> : image === 'idle' ? <ImageIcon className="h-4 w-4" /> : <Check className="h-4 w-4" />}
           {{ idle: 'Copiar imagem do time', working: 'Gerando imagem…', copied: 'Imagem copiada', shared: 'Imagem enviada', saved: 'Imagem baixada' }[image]}</Button>
-        {me && <div className="ml-auto">{resultPill(me.scoreFor, me.scoreAgainst)}</div>}
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5 sm:ml-auto">
+        {me && resultPill(me.scoreFor, me.scoreAgainst)}
         {!!halves.length && <div className="flex gap-1.5">{halves.map((h, i) => <span key={i} title={h.ct ? 'Rounds vencidos de CT' : 'Rounds vencidos de TR'}
           className={`rounded-md px-2 py-1 text-xs font-bold ${h.ct ? 'bg-ct/15 text-ct' : 'bg-tr/15 text-tr'}`}>{h.ct ? 'CT' : 'TR'} {h.wins}</span>)}</div>}
+        </div>
       </div>
       {imageError && <Alert>{imageError}</Alert>}
       <div style={rise(2)}><MatchScoreboard match={match} viewer={user?.steamId} /></div>
