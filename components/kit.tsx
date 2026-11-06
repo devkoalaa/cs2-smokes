@@ -71,10 +71,10 @@ export function MatchArtCard({ href, map, mode, playedAt, scoreFor, scoreAgainst
   const body = <>
     <div className="relative h-32 overflow-hidden sm:h-36">
       <div className="absolute inset-0 bg-cover bg-center transition duration-500 group-hover:scale-105" style={{ backgroundImage: artBackground(map, true) }} />
-      <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+      <div className="absolute inset-x-0 top-0 -bottom-px bg-gradient-to-t from-card from-5% via-card/70 via-30% to-transparent to-80%" />
       <span className="absolute left-3 top-3 rounded-md bg-black/60 px-2 py-1 text-[11px] font-bold uppercase text-white backdrop-blur">{mode === 'wingman' ? '2×2' : '5×5'}</span>
     </div>
-    <div className="space-y-2 p-3.5 pt-1">
+    <div className="relative -mt-0.5 space-y-2 bg-card p-3.5 pt-1.5">
       <div className="flex flex-wrap items-center gap-1.5">
         {resultPill(scoreFor, scoreAgainst)}
         {premierDelta != null && <Pill kind="premier">{premierDelta > 0 ? '+' : ''}{premierDelta}</Pill>}
