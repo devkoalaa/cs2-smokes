@@ -23,7 +23,7 @@ export function InviteView({ params }: { params: { code: string } }) {
     setBusy(true); setError('');
     try {
       const { groupId } = await groupsApi.accept(params.code);
-      router.push(groupId ? `/grupos/${groupId}` : '/partidas?conexao=1');
+      router.push(groupId ? `/grupos/${groupId}` : '/conexao');
     } catch (e) { setError((e as Error).message); setBusy(false); }
   }
 

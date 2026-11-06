@@ -58,7 +58,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <p className="mt-6 px-2 text-xs font-semibold text-muted-foreground">Conta</p>
           <nav aria-label="Conta" className="mt-2 space-y-0.5">
             <SideLink item={me} on={active(me)} />
-            <SideLink item={{ label: 'Conexão Steam', href: '/partidas?conexao=1', icon: Crosshair }} on={false} />
+            <SideLink item={{ label: 'Conexão Steam', href: '/conexao', icon: Crosshair }} on={pathname === '/conexao'} />
             <button onClick={logout} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition hover:text-loss"><LogOut className="h-4 w-4" />Sair</button>
           </nav>
         </>}

@@ -1,14 +1,13 @@
 'use client';
 
-import { FormEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, ChevronLeft, ChevronRight, Clock3, ExternalLink, RefreshCw, Settings2 } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Clock3, RefreshCw, Settings2 } from 'lucide-react';
 import { Alert, LoginPrompt } from '@/components/hub-ui';
 import { ArtHero, MatchArtCard, PageHeader, Panel, PanelTitle, Pill, resultPill, StatTile } from '@/components/kit';
 import { rise } from '@/lib/motion';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 import { MatchList, TrackingStatus, trackingApi } from '@/lib/services/tracking.service';
 import { formatDate as date, formatNumber as number, mapName, matchPath, modeLabel } from '@/lib/match';
@@ -20,21 +19,17 @@ const hs = (p: { headshots: number | null; kills: number }) => number(p.headshot
 
 export default function MatchesPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const router = useRouter();
   const [status, setStatus] = useState<TrackingStatus | null>(null);
   const [data, setData] = useState<MatchList | null>(null);
   const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [days, setDays] = useState('30');
   const [mode, setMode] = useState('all');
   const [map, setMap] = useState('');
   const [scope, setScope] = useState('all');
   const [group, setGroup] = useState<number | null>(null);
   const [page, setPage] = useState(1);
-  const [settings, setSettings] = useState(false);
-  const [authCode, setAuthCode] = useState('');
-  const [shareCode, setShareCode] = useState('');
   const generation = useRef(0);
 
   const refresh = useCallback(async () => {
@@ -61,26 +56,13 @@ export default function MatchesPage() {
   }, [isAuthenticated, user?.steamId, days, mode, map, scope, page, group]);
 
   useEffect(() => { void refresh(); return () => { generation.current++; }; }, [refresh]);
-  // Vindo do perfil ("Ligar"/"Gerenciar" importação): abre a conexão.
-  useEffect(() => { if (new URLSearchParams(window.location.search).has('conexao')) setSettings(true); }, []);
+  // Links antigos (/partidas?conexao=1) agora vão para a página própria da conexão.
+  useEffect(() => { if (new URLSearchParams(window.location.search).has('conexao')) router.replace('/conexao'); }, [router]);
   useEffect(() => {
-    if (!isAuthenticated) { setAuthCode(''); setShareCode(''); }
     const timer = setInterval(() => { if (document.visibilityState === 'visible' && isAuthenticated) void refresh(); }, 30000);
     return () => clearInterval(timer);
   }, [refresh, isAuthenticated]);
 
-  async function save(event: FormEvent) {
-    event.preventDefault(); setBusy(true); setError(''); setMessage('');
-    try {
-      const result = await trackingApi.configure(authCode.trim(), shareCode.trim());
-      setAuthCode(''); setShareCode(''); setSettings(false); setMessage(result.message); await refresh();
-    } catch (e) { setError((e as Error).message); } finally { setBusy(false); }
-  }
-  async function disconnect() {
-    setBusy(true); setError('');
-    try { setMessage((await trackingApi.disconnect()).message); await refresh(); }
-    catch (e) { setError((e as Error).message); } finally { setBusy(false); }
-  }
 
   const summary = data?.summary;
   const last = page === 1 ? data?.matches[0] : undefined;
@@ -91,26 +73,18 @@ export default function MatchesPage() {
         : `Importação automática ligada${status.tracking.lastCheckedAt ? ` · última busca ${date(status.tracking.lastCheckedAt)}` : ''}`)) : 'Seu histórico de Premier, Competitivo e Duplas.'}
       actions={!authLoading && isAuthenticated && status?.access !== false ? <>
         <Button variant="outline" onClick={() => void refresh()} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />Atualizar</Button>
-        <Button variant={settings ? 'default' : 'outline'} onClick={() => setSettings(s => !s)}><Settings2 className="h-4 w-4" />Conexão</Button></> : undefined} />
+        <Button variant="outline" asChild><Link href="/conexao"><Settings2 className="h-4 w-4" />Conexão</Link></Button></> : undefined} />
     {authLoading || (isAuthenticated && !status && !error) ? <MatchesSkeleton />
     : !isAuthenticated ? <LoginPrompt title="Seu histórico de partidas" text="Entre com a Steam para ver o placar completo, o mapa de abates e a evolução das suas partidas." />
     : status && !status.access ? <Panel className="space-y-2 p-8 text-center"><h2 className="font-display text-3xl">Beta fechado</h2>
         <p className="mx-auto max-w-lg text-muted-foreground">O histórico de partidas está liberado só por convite por enquanto. Para entrar, abra o link de convite que alguém do CS2 Hub te mandou.</p>
         <p className="text-sm text-muted-foreground">{status.seats.used} de {status.seats.max} vagas ocupadas.</p></Panel> : <>
       {error && <Alert>{error}</Alert>}
-      {message && <p role="status" className="rounded-xl border border-win/30 bg-win/10 p-4 text-sm">{message}</p>}
-      {status && !status.tracking && !settings && !!data?.total && <p className="text-sm text-muted-foreground">Estas partidas foram importadas por quem jogou com você. Para as suas entrarem sozinhas, use <button type="button" className="font-semibold text-primary hover:underline" onClick={() => setSettings(true)}>Conexão</button>.</p>}
-      {status && (settings || (!status.tracking && !loading && !data?.total)) && <Panel className="p-5 md:p-6">
-        <PanelTitle>Importar suas partidas automaticamente</PanelTitle>
-        <p className="mt-2 text-sm text-muted-foreground">Pegue na Steam o código de autenticação e o código da sua partida mais recente. As próximas partidas entram sozinhas.</p>
-        <a href="https://help.steampowered.com/en/wizard/HelpWithGameIssue/?appid=730&issueid=128" target="_blank" rel="noreferrer" className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-primary">Pegar os códigos na Steam <ExternalLink className="h-4 w-4" /></a>
-        <form onSubmit={save} className="mt-5 grid gap-4 md:grid-cols-2">
-          <div className="space-y-2"><Label htmlFor="tracking-auth">Código de autenticação</Label><Input id="tracking-auth" type="password" autoComplete="off" value={authCode} onChange={e => setAuthCode(e.target.value)} placeholder="AAAA-AAAAA-AAAA" required pattern="[A-Za-z0-9]{4}-[A-Za-z0-9]{5}-[A-Za-z0-9]{4}" maxLength={15} /></div>
-          <div className="space-y-2"><Label htmlFor="tracking-match">Código da partida inicial</Label><Input id="tracking-match" autoComplete="off" value={shareCode} onChange={e => setShareCode(e.target.value)} placeholder="CSGO-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx" required pattern="CSGO-([A-Za-z0-9]{5}-){4}[A-Za-z0-9]{5}" maxLength={34} /></div>
-          <div className="flex flex-wrap items-center gap-3 md:col-span-2"><Button disabled={busy || !status.serverConfigured} type="submit">{busy ? 'Salvando…' : 'Salvar'}<ArrowRight className="h-4 w-4" /></Button>
-            {status.tracking && <Button variant="danger" type="button" disabled={busy} onClick={() => void disconnect()}>Desconectar</Button>}
-            <p className="text-xs text-muted-foreground">{status.serverConfigured ? 'O código fica criptografado no servidor. Desconectar não apaga as partidas já importadas.' : 'O servidor ainda não está configurado.'}</p></div>
-        </form>
+      {status && !status.tracking && !!data?.total && <p className="text-sm text-muted-foreground">Estas partidas foram importadas por quem jogou com você. Para as suas entrarem sozinhas, ligue a <Link href="/conexao" className="font-semibold text-primary hover:underline">importação automática</Link>.</p>}
+      {status && !status.tracking && !loading && !data?.total && <Panel className="flex flex-wrap items-center gap-4 p-5 md:p-6">
+        <div className="min-w-0 flex-1"><PanelTitle>Ligue a importação automática</PanelTitle>
+          <p className="mt-1 text-sm text-muted-foreground">Com dois códigos da Steam, suas partidas novas entram sozinhas, com placar, mapa de abates e comparação com o grupo.</p></div>
+        <Button asChild><Link href="/conexao">Conectar a Steam<ArrowRight className="h-4 w-4" /></Link></Button>
       </Panel>}
       <section aria-label="Filtros de partidas" className="flex flex-wrap gap-2" style={rise(1)}>
         <select aria-label="Período" className={select} value={days} onChange={e => { setDays(e.target.value); setPage(1); }}><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option><option value="90">Últimos 90 dias</option><option value="0">Todo o histórico</option></select>
@@ -165,7 +139,6 @@ export default function MatchesPage() {
           </MatchArtCard>)}</div>}
         {!!data?.total && data.total > 20 && <div className="flex items-center justify-between"><Button variant="outline" disabled={page <= 1 || loading} onClick={() => setPage(p => p - 1)}><ChevronLeft className="h-4 w-4" />Anterior</Button><span className="text-xs text-muted-foreground">{page} de {Math.ceil(data.total / 20)}</span><Button variant="outline" disabled={page * 20 >= data.total || loading} onClick={() => setPage(p => p + 1)}>Próxima<ChevronRight className="h-4 w-4" /></Button></div>}
       </section>
-      {!!status?.queue.length && <Panel className="p-5"><PanelTitle>Importando</PanelTitle><ul className="mt-4 space-y-3 text-sm">{status.queue.map(job => <li key={job.id} className="flex flex-wrap justify-between gap-2 border-b border-border pb-3"><span>Partida #{job.id} · {job.status === 'FAILED' ? 'Não importada' : job.status === 'PROCESSING' ? 'Processando' : 'Na fila'}</span><span className="text-muted-foreground">{job.lastError || 'A demo será baixada automaticamente.'}</span></li>)}</ul></Panel>}
     </>}
   </>;
 }

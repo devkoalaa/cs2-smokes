@@ -102,7 +102,7 @@ function OwnSettings({ importing }: { importing: boolean }) {
     {error && <Alert>{error}</Alert>}
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div><p className="font-medium">Importação automática</p><p className="text-sm text-muted-foreground">{importing ? 'Ligada: as partidas novas entram sozinhas.' : 'Desligada.'}</p></div>
-      <Button variant="outline" asChild><Link href="/partidas?conexao=1">{importing ? 'Gerenciar' : 'Ligar'}</Link></Button>
+      <Button variant="outline" asChild><Link href="/conexao">{importing ? 'Gerenciar' : 'Ligar'}</Link></Button>
     </div>
     <div className="flex items-center justify-between gap-4">
       <label htmlFor="allow-preview" className="cursor-pointer"><p className="font-medium">Aparecer nas miniaturas dos links</p>

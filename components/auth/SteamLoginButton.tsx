@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, UserRound } from 'lucide-react';
+import { LogOut, UserRound, Crosshair } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -60,6 +60,9 @@ export function SteamLoginButton() {
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild className="cursor-pointer">
             <Link href={`/perfil/${user.steamId}`}><UserRound className="mr-2 h-4 w-4" />Meu perfil</Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild className="cursor-pointer">
+            <Link href="/conexao"><Crosshair className="mr-2 h-4 w-4" />Conexão Steam</Link>
           </DropdownMenuItem>
           <DropdownMenuItem onClick={logout} className="text-loss focus:text-loss focus:bg-loss/10">
             <LogOut className="mr-2 h-4 w-4 text-loss" />
