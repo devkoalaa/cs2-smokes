@@ -8,9 +8,11 @@ export interface Summary {
   matches: number; wins: number; draws: number; kills: number; deaths: number; assists: number;
   rounds: number; kd: number | null; adr: number | null; hsPercent: number | null; winRate: number | null; adrMatches: number;
 }
-export interface GroupSummary { id: number; name: string; owner: boolean; members: number }
+export interface GroupSummary { id: number; name: string; owner: boolean; members: number; avatarUrl: string | null }
+/** Banner do perfil: imagem enviada (url) ou mapa escolhido (map); sem nenhum, o mapa mais jogado. */
+export interface Banner { map: string | null; url: string | null }
 export interface TrackingStatus {
-  access: boolean; admin: boolean; seats: { used: number; max: number }; allowPreview: boolean; groups: GroupSummary[];
+  access: boolean; admin: boolean; seats: { used: number; max: number }; allowPreview: boolean; groups: GroupSummary[]; banner: Banner;
   tracking: { enabled: boolean; lastCheckedAt: string | null; lastError: string | null } | null;
   workerOnline: boolean; workerLastSeen: string | null; serverConfigured: boolean;
   queue: { id: number; status: string; lastError: string | null; attempts: number }[];
@@ -39,8 +41,10 @@ export interface MatchDetail {
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = AuthService.getInstance().getToken();
   if (!token) throw new Error('Entre com sua conta Steam para continuar.');
+  // FormData (upload de imagem): o navegador monta o Content-Type com o boundary.
+  const upload = typeof FormData !== 'undefined' && options.body instanceof FormData;
   const response = await fetch(`${API_BASE_URL}/tracking/${path}`, { ...options,
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, cache: 'no-store' });
+    headers: { ...(upload ? {} : { 'Content-Type': 'application/json' }), Authorization: `Bearer ${token}` }, cache: 'no-store' });
   if (!response.ok) {
     const error = await response.json().catch(() => null);
     if (response.status === 401) throw new Error('Sua sessão expirou. Entre novamente pela Steam.');
@@ -63,17 +67,17 @@ export interface PlayerLine { steamId: string; name: string; kills: number; deat
 export interface MatchCard { id: number; map: string; mode: string; playedAt: string; rounds: number; scoreFor: number; scoreAgainst: number;
   player: PlayerLine; teammates: PlayerLine[]; viewerPlayed: boolean }
 export interface GroupDetail {
-  id: number; name: string; createdAt: string; owner: boolean; ownerId: number; invite: string | null; days: number;
+  id: number; name: string; avatarUrl: string | null; createdAt: string; owner: boolean; ownerId: number; invite: string | null; days: number;
   limits: { groupsPerUser: number; membersPerGroup: number };
   members: (PublicUser & { joinedAt: string; owner: boolean; stats: PeriodStats })[];
   together: (MatchCard & { players: PlayerLine[] })[];
 }
 export interface Profile {
-  user: { steamId: string; username: string; avatarUrl: string | null; memberSince: string; importing: boolean; self: boolean };
+  user: { steamId: string; username: string; avatarUrl: string | null; memberSince: string; importing: boolean; self: boolean; banner: Banner };
   days: number; stats: PeriodStats; best: MatchCard | null; maps: { map: string; matches: number; wins: number }[];
-  recent: MatchCard[]; groups: { id: number; name: string; members: number }[];
+  recent: MatchCard[]; groups: { id: number; name: string; members: number; avatarUrl: string | null }[];
 }
-export interface InviteInfo { kind: 'ACCESS' | 'GROUP'; inviter: { username: string; avatarUrl: string | null }; group: { name: string; members: number } | null }
+export interface InviteInfo { kind: 'ACCESS' | 'GROUP'; inviter: { username: string; avatarUrl: string | null }; group: { name: string; members: number; avatarUrl: string | null } | null }
 export interface AdminOverview {
   seats: { used: number; max: number }; founders: string[];
   invites: { code: string; usesLeft: number | null; createdAt: string }[];
@@ -85,6 +89,18 @@ async function publicRequest<T>(path: string): Promise<T> {
   if (!response.ok) throw new Error((await response.json().catch(() => null))?.message || 'Não foi possível carregar.');
   return response.json();
 }
+const form = (file: File) => { const data = new FormData(); data.append('file', file); return data; };
+
+/** As imagens enviadas vêm como caminho do site (/api/...); vira endereço completo da API. */
+export const mediaUrl = (path?: string | null) => path ? new URL(path, API_BASE_URL).href : null;
+
+/** Confere antes de mandar: a API aceita até 6 MB em JPG, PNG ou WebP. */
+export function checkImage(file: File) {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return 'Use uma imagem JPG, PNG ou WebP.';
+  if (file.size > 6 * 1024 * 1024) return 'A imagem passa de 6 MB.';
+  return null;
+}
+
 const json = (method: string, body?: unknown): RequestInit => ({ method, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
 
 export const groupsApi = {
@@ -98,6 +114,11 @@ export const groupsApi = {
   invite: (code: string) => publicRequest<InviteInfo>(`invites/${encodeURIComponent(code)}`),
   accept: (code: string) => request<{ groupId: number | null }>(`invites/${encodeURIComponent(code)}/accept`, json('POST')),
   preferences: (allowPreview: boolean) => request<{ allowPreview: boolean }>('me', json('PATCH', { allowPreview })),
+  bannerMap: (map: string | null) => request<{ bannerMap: string | null }>('me', json('PATCH', { bannerMap: map })),
+  uploadBanner: (file: File) => request<{ url: string }>('me/banner', { method: 'PUT', body: form(file) }),
+  removeBanner: () => request<{ url: null }>('me/banner', json('DELETE')),
+  uploadGroupAvatar: (id: number, file: File) => request<{ url: string }>(`groups/${id}/avatar`, { method: 'PUT', body: form(file) }),
+  removeGroupAvatar: (id: number) => request<{ url: null }>(`groups/${id}/avatar`, json('DELETE')),
   deleteMine: () => request<{ message: string }>('me', json('DELETE')),
   admin: () => request<AdminOverview>('admin'),
   createAccessInvite: (uses: number) => request<{ code: string; usesLeft: number }>('admin/invites', json('POST', { uses })),

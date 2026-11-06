@@ -34,7 +34,7 @@ export function InviteView({ params }: { params: { code: string } }) {
           <div aria-hidden className="absolute inset-0 grid grid-cols-3 opacity-40">{['mirage', 'nuke', 'ancient'].map(m => <div key={m} className="bg-cover bg-center" style={{ backgroundImage: `url(/images/maps/art/${m}-sm.webp)` }} />)}</div>
           <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/90 to-background" />
           <div className="relative space-y-4 px-6 py-12 text-center md:py-16">
-            <div className="flex justify-center">{invite.group ? <GroupTile id={0} name={invite.group.name} className="h-16 w-16 text-xl" />
+            <div className="flex justify-center">{invite.group ? <GroupTile id={0} name={invite.group.name} src={invite.group.avatarUrl} className="h-16 w-16 text-xl" />
               : <UserAvatar src={invite.inviter.avatarUrl} name={invite.inviter.username} className="h-16 w-16" />}</div>
             <div>
               <p className="flex items-center justify-center gap-2 text-sm text-zinc-300">{invite.group && <UserAvatar src={invite.inviter.avatarUrl} name={invite.inviter.username} className="h-6 w-6" />}{invite.inviter.username} te convidou para</p>

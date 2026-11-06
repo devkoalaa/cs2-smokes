@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import { artBackground, formatDate, mapName, modeLabel, resultLabel } from '@/lib/match';
 import { rise } from '@/lib/motion';
+import { mediaUrl } from '@/lib/services/tracking.service';
 
 // Peças visuais do CS2 Hub (direção NextPlay): painéis grafite, pílulas coloridas,
 // arte dos mapas e entrada em sequência. Use estas em vez de montar o visual na página.
@@ -43,11 +44,11 @@ export function PageHeader({ title, subtitle, actions, eyebrow }: { title: React
 }
 
 /** Destaque com a arte do mapa ao fundo e o conteúdo por cima. */
-export function ArtHero({ map, children, height = 'min-h-64 md:min-h-80', className = '' }: { map?: string | null; children: React.ReactNode; height?: string; className?: string }) {
+export function ArtHero({ map, image, children, height = 'min-h-64 md:min-h-80', className = '' }: { map?: string | null; image?: string | null; children: React.ReactNode; height?: string; className?: string }) {
   // A arte fica atrás com vinheta (baixo, esquerda e bordas) para o texto sempre ter contraste;
   // o banner cresce com o conteúdo, então nada fica por cima da parte clara da imagem.
   return <div className={`relative overflow-hidden rounded-xl ring-1 ring-white/[0.06] ${className}`} style={rise(0)}>
-    <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: artBackground(map) }} />
+    <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: image ? `url("${mediaUrl(image)}")` : artBackground(map) }} />
     <div className="absolute inset-0 bg-gradient-to-t from-background via-background/75 to-background/15" />
     <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/30 to-transparent" />
     <div className="absolute inset-0 shadow-[inset_0_0_120px_rgba(0,0,0,0.65)]" />
@@ -94,6 +95,10 @@ export function MatchArtCard({ href, map, mode, playedAt, scoreFor, scoreAgainst
 const GROUP_COLORS = ['#e11d48', '#7c3aed', '#0ea5e9', '#10b981', '#f59e0b', '#ec4899', '#14b8a6'];
 export const groupColor = (id: number) => GROUP_COLORS[id % GROUP_COLORS.length];
 export const initials = (name: string) => name.split(/\s+/).filter(w => w.length > 2 || /\d/.test(w)).slice(0, 2).map(w => w[0]).join('').toUpperCase() || name.slice(0, 2).toUpperCase();
-export function GroupTile({ id, name, className = 'h-9 w-9 text-[11px]' }: { id: number; name: string; className?: string }) {
+/** Foto do grupo, ou as iniciais numa cor fixa por grupo quando não há foto. */
+export function GroupTile({ id, name, src, className = 'h-9 w-9 text-[11px]' }: { id: number; name: string; src?: string | null; className?: string }) {
+  const url = mediaUrl(src);
+  // eslint-disable-next-line @next/next/no-img-element
+  if (url) return <img src={url} alt="" className={`shrink-0 rounded-lg object-cover ${className}`} />;
   return <span className={`flex shrink-0 items-center justify-center rounded-lg font-black text-white ${className}`} style={{ background: groupColor(id) }}>{initials(name)}</span>;
 }

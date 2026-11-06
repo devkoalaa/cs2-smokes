@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
 import { artBackground, formatDate, mapName } from '@/lib/match';
 import { ArtHero, GroupTile, Panel } from '@/components/kit';
+import { BannerEditor } from '@/components/banner-editor';
 import { rise } from '@/lib/motion';
 import { groupsApi, Profile, trackingApi } from '@/lib/services/tracking.service';
 
@@ -21,20 +22,21 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [days, setDays] = useState(30);
   const [error, setError] = useState('');
+  const [version, setVersion] = useState(0); // recarrega depois de trocar o banner
 
   useEffect(() => {
     if (!isAuthenticated) return;
     let active = true;
     groupsApi.profile(params.steamId, days).then(p => { if (active) { setProfile(p); setError(''); } }).catch(e => { if (active) setError(e.message); });
     return () => { active = false; };
-  }, [isAuthenticated, params.steamId, days]);
+  }, [isAuthenticated, params.steamId, days, version]);
 
   const p = profile;
   return <>
       {isLoading ? <p role="status">Verificando sua sessão…</p> : !isAuthenticated ? <LoginPrompt text="Entre com a Steam para ver perfis." />
       : error && !p ? <Alert>{error === 'Perfil não encontrado.' ? 'Perfil não encontrado. Perfis só aparecem para quem está em algum grupo junto.' : error}</Alert>
       : !p ? <p role="status" className="text-muted-foreground">Carregando o perfil…</p> : <>
-        <ArtHero map={p.maps[0]?.map ?? 'de_mirage'} height="min-h-52 md:min-h-64">
+        <ArtHero map={p.user.banner.map ?? p.maps[0]?.map ?? 'de_mirage'} image={p.user.banner.url} height="min-h-52 md:min-h-64">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="flex min-w-0 items-center gap-4">
               <UserAvatar src={p.user.avatarUrl} name={p.user.username} className="h-16 w-16 ring-2 ring-white/20 md:h-20 md:w-20" />
@@ -45,7 +47,10 @@ export default function ProfilePage() {
                 <a href={`https://steamcommunity.com/profiles/${p.user.steamId}`} target="_blank" rel="noreferrer" className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-rose-300 hover:text-rose-200">Perfil na Steam <ExternalLink className="h-3.5 w-3.5" /></a>
               </div>
             </div>
-            <PeriodSelect value={days} onChange={setDays} />
+            <div className="flex flex-wrap gap-2">
+              {p.user.self && <BannerEditor banner={p.user.banner} favorite={p.maps[0]?.map ?? 'de_mirage'} onChanged={() => setVersion(v => v + 1)} />}
+              <PeriodSelect value={days} onChange={setDays} />
+            </div>
           </div>
         </ArtHero>
         {error && <Alert>{error}</Alert>}
@@ -69,7 +74,7 @@ export default function ProfilePage() {
         </>}
         {!!p.groups.length && <Panel className="p-4"><h2 className="font-bold">{p.user.self ? 'Seus grupos' : 'Grupos em comum'}</h2>
           <div className="mt-3 flex flex-wrap gap-2">{p.groups.map(g => <Link key={g.id} href={`/grupos/${g.id}`} className="inline-flex items-center gap-2 rounded-lg bg-black/20 py-1 pl-1 pr-3 text-sm ring-1 ring-white/[0.06] transition hover:ring-white/20">
-            <GroupTile id={g.id} name={g.name} className="h-7 w-7 text-[10px]" />{g.name}<span className="text-muted-foreground">{g.members}</span></Link>)}</div></Panel>}
+            <GroupTile id={g.id} name={g.name} src={g.avatarUrl} className="h-7 w-7 text-[10px]" />{g.name}<span className="text-muted-foreground">{g.members}</span></Link>)}</div></Panel>}
         {p.user.self && <OwnSettings importing={p.user.importing} />}
       </>}
     </>;

@@ -3,13 +3,14 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { Check, Copy, Crown, Pencil, RefreshCw } from 'lucide-react';
+import { Camera, Check, Copy, Crown, Loader2, Pencil, RefreshCw } from 'lucide-react';
 import { Alert, LoginPrompt, PeriodSelect, UserAvatar, useCopy } from '@/components/hub-ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatNumber } from '@/lib/match';
 import { GroupTile, MatchArtCard, Panel } from '@/components/kit';
+import { ImageUpload, notifyGroupsChanged } from '@/components/image-upload';
 import { rise } from '@/lib/motion';
 import { GroupDetail, groupsApi } from '@/lib/services/tracking.service';
 
@@ -41,7 +42,7 @@ export default function GroupPage() {
 
   async function rename(event: FormEvent) {
     event.preventDefault();
-    await run(() => groupsApi.rename(id, name.trim()), () => { setEditing(false); load(); });
+    await run(() => groupsApi.rename(id, name.trim()), () => { setEditing(false); load(); notifyGroupsChanged(); });
   }
 
   const ranked = group ? [...group.members].sort((a, b) => (b.stats.matches ? 1 : 0) - (a.stats.matches ? 1 : 0)
@@ -54,12 +55,20 @@ export default function GroupPage() {
       {isLoading ? <p role="status">Verificando sua sessão…</p> : !isAuthenticated ? <LoginPrompt text="Entre com a Steam para ver o grupo." />
       : error && !group ? <Alert>{error}</Alert> : !group ? <p role="status" className="text-muted-foreground">Carregando o grupo…</p> : <>
         <section className="flex flex-wrap items-center justify-between gap-4" style={rise(0)}>
-          <div className="flex min-w-0 items-center gap-4"><GroupTile id={group.id} name={group.name} className="h-16 w-16 text-xl" /><div className="min-w-0">
+          <div className="flex min-w-0 items-center gap-4"><div className="relative shrink-0">
+            <GroupTile id={group.id} name={group.name} src={group.avatarUrl} className="h-16 w-16 text-xl md:h-20 md:w-20" />
+            {group.owner && <ImageUpload label="Trocar a foto do grupo" upload={file => groupsApi.uploadGroupAvatar(id, file)}
+              onDone={() => { load(); notifyGroupsChanged(); }} onError={setError}
+              className="absolute -bottom-1.5 -right-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-background transition hover:brightness-110 disabled:opacity-70">
+              {busy => busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}</ImageUpload>}
+          </div><div className="min-w-0">
             {editing ? <form onSubmit={rename} className="flex gap-2"><Input aria-label="Nome do grupo" value={name} onChange={e => setName(e.target.value)} minLength={2} maxLength={40} autoFocus />
               <Button type="submit" size="sm" disabled={name.trim().length < 2}>Salvar</Button><Button type="button" size="sm" variant="ghost" onClick={() => setEditing(false)}>Cancelar</Button></form>
             : <h1 className="font-display text-4xl leading-none break-words md:text-5xl">{group.name}
                 {group.owner && <button type="button" aria-label="Renomear" onClick={() => setEditing(true)} className="ml-3 align-middle text-muted-foreground hover:text-foreground"><Pencil className="inline h-5 w-5" /></button>}</h1>}
-            <p className="text-sm text-muted-foreground mt-2">{group.members.length} de {group.limits.membersPerGroup} pessoas</p>
+            <p className="text-sm text-muted-foreground mt-2">{group.members.length} de {group.limits.membersPerGroup} pessoas
+              {group.owner && group.avatarUrl && <> · <button type="button" className="hover:text-foreground hover:underline"
+                onClick={() => run(() => groupsApi.removeGroupAvatar(id), () => { load(); notifyGroupsChanged(); })}>tirar a foto</button></>}</p>
           </div></div>
           <PeriodSelect value={days} onChange={setDays} />
         </section>

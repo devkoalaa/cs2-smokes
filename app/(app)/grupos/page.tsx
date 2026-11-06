@@ -42,7 +42,7 @@ export default function GroupsPage() {
       : <>
         <section className="grid gap-3 sm:grid-cols-2">
           {status.groups.map((g, i) => <Link key={g.id} href={`/grupos/${g.id}`} style={rise(i + 1)} className="group flex items-center gap-4 rounded-xl bg-card p-4 ring-1 ring-white/[0.06] transition hover:-translate-y-0.5 hover:ring-white/15">
-            <GroupTile id={g.id} name={g.name} className="h-12 w-12 text-sm" />
+            <GroupTile id={g.id} name={g.name} src={g.avatarUrl} className="h-12 w-12 text-sm" />
             <span className="min-w-0 flex-1"><span className="flex items-center gap-2 font-semibold truncate">{g.name}{g.owner && <Crown className="h-3.5 w-3.5 text-draw" aria-label="Você criou" />}</span>
               <span className="text-sm text-muted-foreground">{g.members} {g.members === 1 ? 'pessoa' : 'pessoas'}</span></span>
             <ChevronRight className="h-4 w-4 text-muted-foreground" /></Link>)}

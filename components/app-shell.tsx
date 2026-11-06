@@ -8,6 +8,7 @@ import { SteamLoginButton } from '@/components/auth/SteamLoginButton';
 import { Wordmark } from '@/components/brand-mark';
 import { GithubIcon } from '@/components/github-icon';
 import { GroupTile } from '@/components/kit';
+import { GROUPS_CHANGED } from '@/components/image-upload';
 import { useAuth } from '@/contexts/AuthContext';
 import { GroupSummary, trackingApi } from '@/lib/services/tracking.service';
 
@@ -23,7 +24,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isAuthenticated) { setGroups([]); return; }
-    trackingApi.status().then(s => setGroups(s.access ? s.groups : [])).catch(() => setGroups([]));
+    const load = () => trackingApi.status().then(s => setGroups(s.access ? s.groups : [])).catch(() => setGroups([]));
+    load();
+    // Foto ou nome do grupo trocados na página do grupo: atualiza a barra sem recarregar.
+    window.addEventListener(GROUPS_CHANGED, load);
+    return () => window.removeEventListener(GROUPS_CHANGED, load);
   }, [isAuthenticated, user?.steamId, pathname.startsWith('/grupos')]);
 
   const menu: Item[] = [
@@ -43,7 +48,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex">
       {isAuthenticated && <nav aria-label="Grupos" className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-14 shrink-0 flex-col items-center gap-2 border-r border-border bg-surface py-3 md:flex">
         {groups.map(g => <Link key={g.id} href={`/grupos/${g.id}`} title={g.name} aria-label={g.name}
-          className={`rounded-lg ring-offset-2 ring-offset-surface transition hover:scale-105 ${pathname === `/grupos/${g.id}` ? 'ring-2 ring-white/70' : ''}`}><GroupTile id={g.id} name={g.name} /></Link>)}
+          className={`rounded-lg ring-offset-2 ring-offset-surface transition hover:scale-105 ${pathname === `/grupos/${g.id}` ? 'ring-2 ring-white/70' : ''}`}><GroupTile id={g.id} name={g.name} src={g.avatarUrl} /></Link>)}
         <Link href="/grupos" title="Grupos" aria-label="Criar ou entrar num grupo" className="flex h-9 w-9 items-center justify-center rounded-lg border border-dashed border-white/15 text-muted-foreground transition hover:border-white/30 hover:text-foreground"><Plus className="h-4 w-4" /></Link>
       </nav>}
       <aside className="sticky top-14 hidden h-[calc(100vh-3.5rem)] w-52 shrink-0 flex-col border-r border-border bg-surface p-3 lg:flex">
