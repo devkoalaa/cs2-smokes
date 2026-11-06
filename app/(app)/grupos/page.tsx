@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDate } from '@/lib/match';
 import { AdminOverview, groupsApi, TrackingStatus, trackingApi } from '@/lib/services/tracking.service';
+import { GroupsSkeleton } from '@/components/skeletons';
 
 const inviteUrl = (code: string) => `${window.location.origin}/convite/${code}`;
 
@@ -34,8 +35,8 @@ export default function GroupsPage() {
 
   return <>
       <PageHeader title="Grupos" subtitle="No grupo, cada um vê o ranking, o perfil e as partidas que vocês jogaram juntos. Quem não está no grupo não vê nada disso." />
-      {isLoading ? <p role="status">Verificando sua sessão…</p> : !isAuthenticated ? <LoginPrompt text="Entre com a Steam para ver seus grupos." />
-      : error ? <Alert>{error}</Alert> : !status ? <p role="status" className="text-muted-foreground">Carregando…</p>
+      {isLoading ? <GroupsSkeleton /> : !isAuthenticated ? <LoginPrompt text="Entre com a Steam para ver seus grupos." />
+      : error ? <Alert>{error}</Alert> : !status ? <GroupsSkeleton />
       : !status.access ? <Panel className="space-y-2 p-8 text-center">
           <h2 className="font-display text-3xl">Beta fechado</h2>
           <p className="text-muted-foreground">Os grupos ficam liberados quando você entra pelo link de convite de alguém que já usa o CS2 Hub.</p></Panel>

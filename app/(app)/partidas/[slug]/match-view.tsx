@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AuthService } from '@/lib/auth';
 import { MatchDetail, trackingApi } from '@/lib/services/tracking.service';
 import { formatDate, mapName, matchPath, modeLabel, parseMatchSlug, resultColor } from '@/lib/match';
+import { MatchSkeleton } from '@/components/skeletons';
 
 export function MatchView({ slug }: { slug: string }) {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
@@ -85,10 +86,10 @@ export function MatchView({ slug }: { slug: string }) {
     <nav aria-label="Caminho" className="text-sm text-muted-foreground"><Link href="/partidas" className="hover:text-foreground">Partidas</Link>
       {match && <><span className="mx-1.5 text-zinc-600">/</span><span className="text-foreground">{title.replace(/^./, c => c.toUpperCase())}</span></>}</nav>
     {!parsed ? <Alert>Endereço de partida inválido.</Alert>
-    : authLoading ? <p role="status" className="text-muted-foreground">Verificando sua sessão…</p>
+    : authLoading ? <MatchSkeleton />
     : !isAuthenticated ? <LoginPrompt title="Entre para ver esta partida" text="O placar completo e o mapa de abates aparecem para quem jogou a partida." />
     : error ? <Alert>{error}</Alert>
-    : !match ? <p role="status" className="py-10 text-center text-muted-foreground">Carregando a partida…</p>
+    : !match ? <MatchSkeleton />
     : <>
       <ArtHero map={match.map} height="min-h-60 md:min-h-80">
         <div className="flex flex-wrap items-end justify-between gap-4">

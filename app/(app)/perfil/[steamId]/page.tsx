@@ -15,6 +15,7 @@ import { ArtHero, GroupTile, Panel } from '@/components/kit';
 import { BannerEditor } from '@/components/banner-editor';
 import { rise } from '@/lib/motion';
 import { groupsApi, Profile, trackingApi } from '@/lib/services/tracking.service';
+import { ProfileSkeleton } from '@/components/skeletons';
 
 export default function ProfilePage() {
   const params = useParams<{ steamId: string }>();
@@ -33,9 +34,9 @@ export default function ProfilePage() {
 
   const p = profile;
   return <>
-      {isLoading ? <p role="status">Verificando sua sessão…</p> : !isAuthenticated ? <LoginPrompt text="Entre com a Steam para ver perfis." />
+      {isLoading ? <ProfileSkeleton /> : !isAuthenticated ? <LoginPrompt text="Entre com a Steam para ver perfis." />
       : error && !p ? <Alert>{error === 'Perfil não encontrado.' ? 'Perfil não encontrado. Perfis só aparecem para quem está em algum grupo junto.' : error}</Alert>
-      : !p ? <p role="status" className="text-muted-foreground">Carregando o perfil…</p> : <>
+      : !p ? <ProfileSkeleton /> : <>
         <ArtHero map={p.user.banner.map ?? p.maps[0]?.map ?? 'de_mirage'} image={p.user.banner.url} height="min-h-52 md:min-h-64">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="flex min-w-0 items-center gap-4">

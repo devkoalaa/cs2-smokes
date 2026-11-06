@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { MatchList, TrackingStatus, trackingApi } from '@/lib/services/tracking.service';
 import { formatDate as date, formatNumber as number, mapName, matchPath, modeLabel } from '@/lib/match';
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { CardsSkeleton, MatchesSkeleton } from '@/components/skeletons';
 
 const adr = (p: { damage: number | null; rounds: number }) => number(p.damage == null || !p.rounds ? null : p.damage / p.rounds);
 const hs = (p: { headshots: number | null; kills: number }) => number(p.headshots == null || !p.kills ? null : p.headshots / p.kills * 100, '%');
@@ -91,7 +92,7 @@ export default function MatchesPage() {
       actions={!authLoading && isAuthenticated && status?.access !== false ? <>
         <Button variant="outline" onClick={() => void refresh()} disabled={loading}><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />Atualizar</Button>
         <Button variant={settings ? 'default' : 'outline'} onClick={() => setSettings(s => !s)}><Settings2 className="h-4 w-4" />Conexão</Button></> : undefined} />
-    {authLoading ? <p role="status" className="text-muted-foreground">Verificando sua sessão…</p>
+    {authLoading || (isAuthenticated && !status && !error) ? <MatchesSkeleton />
     : !isAuthenticated ? <LoginPrompt title="Seu histórico de partidas" text="Entre com a Steam para ver o placar completo, o mapa de abates e a evolução das suas partidas." />
     : status && !status.access ? <Panel className="space-y-2 p-8 text-center"><h2 className="font-display text-3xl">Beta fechado</h2>
         <p className="mx-auto max-w-lg text-muted-foreground">O histórico de partidas está liberado só por convite por enquanto. Para entrar, abra o link de convite que alguém do CS2 Hub te mandou.</p>
@@ -157,7 +158,7 @@ export default function MatchesPage() {
       {status?.access && !status.groups.length && !loading && <p className="text-sm text-muted-foreground">Quer comparar com os amigos? <Link href="/grupos" className="font-semibold text-primary hover:underline">Crie um grupo</Link> e mande o convite.</p>}
       <section className="space-y-4">
         <div className="flex items-center justify-between"><h2 className="text-lg font-bold">Histórico</h2><span className="text-sm text-muted-foreground">{loading ? 'Carregando…' : `${data?.total ?? 0} partidas`}</span></div>
-        {!data?.matches.length ? <Panel className="px-6 py-16 text-center"><Clock3 className="mx-auto mb-4 h-9 w-9 text-muted-foreground" /><h3 className="font-semibold">{loading ? 'Carregando partidas' : 'Nenhuma partida neste filtro'}</h3><p className="mt-2 text-sm text-muted-foreground">{loading ? '' : 'Tente outro período ou modalidade.'}</p></Panel>
+        {loading && !data?.matches.length ? <CardsSkeleton n={6} /> : !data?.matches.length ? <Panel className="px-6 py-16 text-center"><Clock3 className="mx-auto mb-4 h-9 w-9 text-muted-foreground" /><h3 className="font-semibold">{loading ? 'Carregando partidas' : 'Nenhuma partida neste filtro'}</h3><p className="mt-2 text-sm text-muted-foreground">{loading ? '' : 'Tente outro período ou modalidade.'}</p></Panel>
         : <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{data.matches.map((match, i) => <MatchArtCard key={match.id} i={i + 8} href={matchPath(match.id, match.shareKey)} map={match.map} mode={match.mode} playedAt={match.playedAt}
             scoreFor={match.player.scoreFor} scoreAgainst={match.player.scoreAgainst}>
             <p className="text-sm tabular-nums text-muted-foreground">{match.player.kills}/{match.player.deaths}/{match.player.assists} · ADR {adr(match.player)} · HS {hs(match.player)}</p>

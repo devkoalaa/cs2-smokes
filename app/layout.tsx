@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { AuthProvider } from '@/contexts/AuthContext'
-import { AuthLoading } from '@/components/auth/AuthLoading'
 import { ServiceWorker } from '@/components/service-worker'
 import { Toaster } from '@/components/ui/toaster'
 import { BRAND } from '@/lib/brand'
@@ -36,7 +35,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <AuthProvider>
           {children}
-          <AuthLoading />
           <Toaster />
         </AuthProvider>
         <ServiceWorker />

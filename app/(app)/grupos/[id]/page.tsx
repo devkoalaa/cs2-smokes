@@ -13,6 +13,7 @@ import { GroupTile, MatchArtCard, Panel } from '@/components/kit';
 import { ImageUpload, notifyGroupsChanged } from '@/components/image-upload';
 import { rise } from '@/lib/motion';
 import { GroupDetail, groupsApi } from '@/lib/services/tracking.service';
+import { GroupSkeleton } from '@/components/skeletons';
 
 type Together = GroupDetail['together'][number];
 
@@ -52,8 +53,8 @@ export default function GroupPage() {
 
   return <>
       <nav aria-label="Caminho" className="text-sm text-muted-foreground"><Link href="/grupos" className="hover:text-foreground">Grupos</Link>{group && <><span className="mx-1.5 text-zinc-600">/</span><span className="text-foreground">{group.name}</span></>}</nav>
-      {isLoading ? <p role="status">Verificando sua sessão…</p> : !isAuthenticated ? <LoginPrompt text="Entre com a Steam para ver o grupo." />
-      : error && !group ? <Alert>{error}</Alert> : !group ? <p role="status" className="text-muted-foreground">Carregando o grupo…</p> : <>
+      {isLoading ? <GroupSkeleton /> : !isAuthenticated ? <LoginPrompt text="Entre com a Steam para ver o grupo." />
+      : error && !group ? <Alert>{error}</Alert> : !group ? <GroupSkeleton /> : <>
         <section className="flex flex-wrap items-center justify-between gap-4" style={rise(0)}>
           <div className="flex min-w-0 items-center gap-4"><div className="relative shrink-0">
             <GroupTile id={group.id} name={group.name} src={group.avatarUrl} className="h-16 w-16 text-xl md:h-20 md:w-20" />

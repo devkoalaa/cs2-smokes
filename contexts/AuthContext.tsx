@@ -27,13 +27,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const currentUser = authService.getUser();
           if (currentUser) {
             setUser(currentUser);
-            // Optionally refresh profile from server
-            try {
-              await authService.getProfile();
-              setUser(authService.getUser());
-            } catch (error) {
-              console.warn('Failed to refresh profile:', error);
-            }
+            // Libera as telas na hora com a sessão salva; o perfil (nome e avatar da Steam)
+            // atualiza por trás. Antes a página esperava essa ida ao servidor para só então
+            // buscar os próprios dados.
+            setIsLoading(false);
+            authService.getProfile().then(() => setUser(authService.getUser())).catch(() => {});
           }
         }
       } catch (error) {
