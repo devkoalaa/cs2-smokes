@@ -75,7 +75,7 @@ export function MatchArtCard({ href, map, mode, playedAt, scoreFor, scoreAgainst
       <div className="absolute inset-x-0 top-0 -bottom-px bg-gradient-to-t from-card from-5% via-card/70 via-30% to-transparent to-80%" />
       <span className="absolute left-3 top-3 rounded-md bg-black/60 px-2 py-1 text-[11px] font-bold uppercase text-white backdrop-blur">{mode === 'wingman' ? '2×2' : '5×5'}</span>
     </div>
-    <div className="relative -mt-0.5 space-y-2 bg-card p-3.5 pt-1.5">
+    <div className="relative -mt-0.5 flex flex-1 flex-col gap-2 bg-card p-3.5 pt-1.5">
       <div className="flex flex-wrap items-center gap-1.5">
         {resultPill(scoreFor, scoreAgainst)}
         {premierDelta != null && <Pill kind="premier">{premierDelta > 0 ? '+' : ''}{premierDelta}</Pill>}
@@ -84,10 +84,10 @@ export function MatchArtCard({ href, map, mode, playedAt, scoreFor, scoreAgainst
       <p className="text-lg font-bold capitalize leading-tight">{mapName(map)} <span className="text-muted-foreground">·</span> <span className="tabular-nums">{scoreFor}:{scoreAgainst}</span>
         <span className="sr-only"> · {modeLabel(mode)}</span></p>
       {children}
-      {href && <span className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg shadow-rose-950/40 transition group-hover:brightness-110">{cta}<ChevronRight className="h-4 w-4" /></span>}
+      {href && <span className="mt-auto flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg shadow-rose-950/40 transition group-hover:brightness-110">{cta}<ChevronRight className="h-4 w-4" /></span>}
     </div>
   </>;
-  const cls = 'group block overflow-hidden rounded-xl bg-card ring-1 ring-white/[0.06] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50 hover:ring-white/15';
+  const cls = 'group flex h-full flex-col overflow-hidden rounded-xl bg-card ring-1 ring-white/[0.06] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50 hover:ring-white/15';
   return href ? <Link href={href} className={cls} style={rise(i)}>{body}</Link> : <div className={cls} style={rise(i)}>{body}</div>;
 }
 
