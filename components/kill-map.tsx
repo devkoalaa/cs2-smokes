@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { Kill, MatchDetail } from '@/lib/services/tracking.service';
 import { isLower, RADARS, toRadar, weaponName } from '@/lib/radar';
 
@@ -34,15 +34,25 @@ export function KillMap({ match, viewer }: { match: MatchDetail; viewer?: string
   useEffect(() => setSelected(null), [view, player, side, round, lower]);
   // Zoom fixo na área onde houve mortes nesta partida (não muda com os filtros),
   // para radares com muita margem, como o da Nuke, não deixarem os pontos minúsculos.
+  // Quadro do radar: a parte desenhada do mapa (quadrada) ou, se os abates ficam numa região
+  // menor, um zoom nela, sem sair da área do mapa.
   const box = useMemo(() => {
+    const [ax, ay, aw, ah] = radar?.area ?? [0, 0, 1024, 1024];
+    const full = Math.max(aw, ah);
+    const map = { x: ax + aw / 2 - full / 2, y: ay + ah / 2 - full / 2, size: full };
     const points = radar ? (kills ?? []).flatMap(k => [k.attackerPos, k.victimPos]).filter((p): p is number[] => !!p).map(p => toRadar(radar, p)) : [];
-    if (!points.length) return { x: 0, y: 0, size: 1024 };
+    if (!points.length) return map;
     const xs = points.map(p => p.x), ys = points.map(p => p.y);
-    const size = Math.min(1024, Math.max(420, Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) + 140);
-    const clamp = (v: number) => Math.min(Math.max(v, 0), 1024 - size);
-    return { x: clamp((Math.min(...xs) + Math.max(...xs) - size) / 2), y: clamp((Math.min(...ys) + Math.max(...ys) - size) / 2), size };
+    const size = Math.max(380, Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) + 120;
+    if (size > full * 0.8) return map; // zoom que ganharia pouco: mostra o mapa todo
+    const clamp = (v: number, start: number) => Math.min(Math.max(v, start), start + full - size);
+    return { x: clamp((Math.min(...xs) + Math.max(...xs) - size) / 2, map.x), y: clamp((Math.min(...ys) + Math.max(...ys) - size) / 2, map.y), size };
   }, [kills, radar]);
-  const u = box.size / 1024; // marcadores com o mesmo tamanho na tela, com ou sem zoom
+  // Margem em volta do recorte: com o zoom preso na borda da imagem, o radar encostava no quadro.
+  const pad = box.size * 0.04;
+  const frame = { x: box.x - pad, y: box.y - pad, size: box.size + 2 * pad };
+  const u = frame.size / 1024; // marcadores com o mesmo tamanho na tela, com ou sem zoom
+  const fade = 'fade' + useId().replace(/[^a-zA-Z0-9_-]/g, ''); // ids do degradê das bordas, únicos por radar na página
 
   const header = <div><h2 className="text-lg font-bold">Mapa de abates</h2>
     <p className="text-sm text-muted-foreground mt-1">{view === 'kills' ? 'Bolinha: onde estava quem matou. X: onde a vítima caiu.' : 'Bolinha: onde morreu. X: de onde veio o tiro.'} Toque num ponto para ver o lance.</p></div>;
@@ -85,8 +95,17 @@ export function KillMap({ match, viewer }: { match: MatchDetail; viewer?: string
             className={`rounded-md px-3 py-1 text-sm ${lower === !!i ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{label}</button>)}
         </div>}
         <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-black/40">
-          <svg viewBox={`${box.x} ${box.y} ${box.size} ${box.size}`} className="absolute inset-0 h-full w-full" role="img" aria-label={`Radar de ${match.map} com ${rows.length} pontos`}>
-            <image href={lower && radar.lower ? radar.lower.image : radar.image} x={0} y={0} width={1024} height={1024} />
+          <svg viewBox={`${frame.x} ${frame.y} ${frame.size} ${frame.size}`} className="absolute inset-0 h-full w-full" role="img" aria-label={`Radar de ${match.map} com ${rows.length} pontos`}>
+            {/* O zoom corta o desenho do mapa: as bordas esmaecem até o fundo em vez de um corte seco. */}
+            <defs>
+              {(['x', 'y'] as const).map(axis => <linearGradient key={axis} id={`${fade}${axis}`} x1="0" y1="0" x2={axis === 'x' ? 1 : 0} y2={axis === 'y' ? 1 : 0}>
+                <stop offset="0" stopColor="#fff" stopOpacity="0" /><stop offset="0.12" stopColor="#fff" /><stop offset="0.88" stopColor="#fff" /><stop offset="1" stopColor="#fff" stopOpacity="0" /></linearGradient>)}
+              {(['x', 'y'] as const).map(axis => <mask key={axis} id={`${fade}m${axis}`} maskUnits="userSpaceOnUse" x={frame.x} y={frame.y} width={frame.size} height={frame.size}>
+                <rect x={frame.x} y={frame.y} width={frame.size} height={frame.size} fill={`url(#${fade}${axis})`} /></mask>)}
+            </defs>
+            <g mask={`url(#${fade}mx)`}><g mask={`url(#${fade}my)`}>
+              <image href={lower && radar.lower ? radar.lower.image : radar.image} x={0} y={0} width={1024} height={1024} />
+            </g></g>
             {rows.map(k => {
               const a = toRadar(radar, k.main!), b = k.other && (!radar.lower || isLower(radar, k.other) === lower) ? toRadar(radar, k.other) : null;
               const on = selected === k.index, dim = selected !== null && !on;

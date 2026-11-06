@@ -2,18 +2,20 @@
 // (1024×1024, as visões gerais oficiais). pos_x/pos_y/scale vêm dos arquivos
 // de overview de cada mapa (radares de Vertigo e Anubis do repositório MurkyYT/cs2-map-icons);
 // conferidos com mortes reais em Mirage, Nuke, Inferno e Ancient.
-export interface Radar { image: string; x: number; y: number; scale: number; lower?: { image: string; belowZ: number } }
+// area: [x, y, largura, altura] da parte desenhada do radar (o resto da imagem é vazio),
+// medida com sharp.trim; no Vertigo, a união dos dois andares para o quadro não pular.
+export interface Radar { image: string; x: number; y: number; scale: number; area: [number, number, number, number]; lower?: { image: string; belowZ: number } }
 
 export const RADARS: Record<string, Radar> = {
-  de_mirage: { image: '/images/maps/map_mirage.webp', x: -3230, y: 1713, scale: 5 },
-  de_inferno: { image: '/images/maps/map_inferno.webp', x: -2087, y: 3870, scale: 4.9 },
-  de_ancient: { image: '/images/maps/map_ancient.webp', x: -2953, y: 2164, scale: 5 },
-  de_nuke: { image: '/images/maps/map_nuke.webp', x: -3453, y: 2887, scale: 7, lower: { image: '/images/maps/map_nuke_lower.webp', belowZ: -495 } },
-  de_dust2: { image: '/images/maps/map_dust2.webp', x: -2476, y: 3239, scale: 4.4 },
-  de_overpass: { image: '/images/maps/map_overpass.webp', x: -4831, y: 1781, scale: 5.2 },
-  de_train: { image: '/images/maps/map_train.webp', x: -2308, y: 2078, scale: 4.082077 },
-  de_vertigo: { image: '/images/maps/map_vertigo.webp', x: -3168, y: 1762, scale: 4, lower: { image: '/images/maps/map_vertigo_lower.webp', belowZ: 11700 } },
-  de_anubis: { image: '/images/maps/map_anubis.webp', x: -2796, y: 3328, scale: 5.22 },
+  de_mirage: { image: '/images/maps/map_mirage.webp', x: -3230, y: 1713, scale: 5, area: [102, 98, 886, 829] },
+  de_inferno: { image: '/images/maps/map_inferno.webp', x: -2087, y: 3870, scale: 4.9, area: [70, 52, 902, 897] },
+  de_ancient: { image: '/images/maps/map_ancient.webp', x: -2953, y: 2164, scale: 5, area: [10, 8, 1009, 1003] },
+  de_nuke: { image: '/images/maps/map_nuke.webp', x: -3453, y: 2887, scale: 7, area: [5, 0, 1019, 1024], lower: { image: '/images/maps/map_nuke_lower.webp', belowZ: -495 } },
+  de_dust2: { image: '/images/maps/map_dust2.webp', x: -2476, y: 3239, scale: 4.4, area: [54, 15, 920, 990] },
+  de_overpass: { image: '/images/maps/map_overpass.webp', x: -4831, y: 1781, scale: 5.2, area: [102, 15, 834, 1009] },
+  de_train: { image: '/images/maps/map_train.webp', x: -2308, y: 2078, scale: 4.082077, area: [5, 0, 1019, 1024] },
+  de_vertigo: { image: '/images/maps/map_vertigo.webp', x: -3168, y: 1762, scale: 4, area: [117, 145, 701, 751], lower: { image: '/images/maps/map_vertigo_lower.webp', belowZ: 11700 } },
+  de_anubis: { image: '/images/maps/map_anubis.webp', x: -2796, y: 3328, scale: 5.22, area: [153, 27, 733, 959] },
 };
 
 export const toRadar = (radar: Radar, [x, y]: number[]) => ({ x: (x - radar.x) / radar.scale, y: (radar.y - y) / radar.scale });

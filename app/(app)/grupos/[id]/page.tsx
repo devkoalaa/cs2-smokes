@@ -3,7 +3,7 @@
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { Camera, Check, Copy, Crown, Loader2, Pencil, RefreshCw } from 'lucide-react';
+import { Camera, Check, Copy, Crown, Loader2, Pencil, RefreshCw, Trash2 } from 'lucide-react';
 import { Alert, LoginPrompt, PeriodSelect, UserAvatar, useCopy } from '@/components/hub-ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -93,8 +93,8 @@ export default function GroupPage() {
                 : <span className="text-xs text-muted-foreground">Sem partidas no período</span>}
               </span>
             </Link>
-            {group.owner && m.id !== group.ownerId && <Button size="sm" variant="danger-ghost" className="mr-3" onClick={() => {
-              if (confirm(`Tirar ${m.username} do grupo?`)) run(() => groupsApi.removeMember(id, m.id)); }}>Tirar</Button>}
+            {group.owner && m.id !== group.ownerId && <Button size="icon" variant="danger-ghost" className="mr-3 shrink-0 text-red-500 hover:bg-red-500/10 hover:text-red-400" aria-label={`Tirar ${m.username} do grupo`} title="Tirar do grupo" onClick={() => {
+              if (confirm(`Tirar ${m.username} do grupo?`)) run(() => groupsApi.removeMember(id, m.id)); }}><Trash2 className="h-4 w-4" /></Button>}
           </li>)}</ul>
         </section>
 
