@@ -466,7 +466,7 @@ export function MapViewer({ mapId }: MapViewerProps) {
     <div className="space-y-6">
       {/* Header Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-        <Button variant="outline" onClick={() => router.back()} className="border-border hover:bg-accent">
+        <Button variant="outline" onClick={() => router.push("/smokes")} className="border-border hover:bg-accent">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar
         </Button>

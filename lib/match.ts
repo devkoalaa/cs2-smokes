@@ -53,3 +53,15 @@ export function hubRating(p: RatingRow, players: RatingRow[]) {
   const weights = available.reduce((sum, [, , weight]) => sum + weight, 0);
   return weights ? available.reduce((sum, [v, all, weight]) => sum + weight * v / all, 0) * players.length / weights : null;
 }
+
+// Arte oficial dos mapas (telas de carregamento do jogo) em public/images/maps/art.
+const ART = ['ancient', 'anubis', 'dust2', 'inferno', 'mirage', 'nuke', 'overpass', 'train', 'vertigo'];
+export function mapArt(map: string | null | undefined, small = false) {
+  const name = String(map ?? '').toLowerCase().replace(/^de_/, '').replace(/[^a-z0-9]/g, '');
+  return ART.includes(name) ? `/images/maps/art/${name}${small ? '-sm' : ''}.webp` : null;
+}
+/** Fundo CSS com a arte do mapa, ou um degradê da marca quando não houver arte. */
+export const artBackground = (map: string | null | undefined, small = false) => {
+  const url = mapArt(map, small);
+  return url ? `url(${url})` : 'linear-gradient(135deg, #2a1018, #131418)';
+};

@@ -1,131 +1,41 @@
 "use client"
 
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useMemo, useState } from "react"
 import { Search } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { useState, useMemo, Suspense } from "react"
-import { MapGridSkeleton } from "@/components/loading-skeleton"
-import { useMaps } from "@/hooks/useMaps"
-import { motion, AnimatePresence } from "framer-motion"
 import { MapCard } from "@/components/map-card"
+import { MapGridSkeleton } from "@/components/loading-skeleton"
+import { Alert } from "@/components/hub-ui"
+import { useMaps } from "@/hooks/useMaps"
 
-function MapGridContent() {
-  const router = useRouter()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [sortBy, setSortBy] = useState("name")
-  
-  const [hoveredMapId, setHoveredMapId] = useState<number | null>(null)
-  
+/** Grade de mapas. Com `limit`, mostra os mais populares sem os filtros (prévia da página inicial). */
+export function MapGrid({ limit }: { limit?: number }) {
   const { maps, loading, error } = useMaps()
+  const [search, setSearch] = useState("")
+  const [sort, setSort] = useState(limit ? "smokes" : "name")
 
-  const filteredAndSortedMaps = useMemo(() => {
-    if (!maps || maps.length === 0) return []
-    
-    let filtered = maps.filter((map) => {
-      const displayName = map.displayName || map.name
-      const matchesSearch = displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          (map.description && map.description.toLowerCase().includes(searchTerm.toLowerCase()))
-      return matchesSearch
-    })
+  const list = useMemo(() => {
+    const term = search.trim().toLowerCase()
+    const filtered = (maps ?? []).filter(m => !term || (m.displayName || m.name).toLowerCase().includes(term) || m.description?.toLowerCase().includes(term))
+    const sorted = filtered.sort((a, b) => sort === "smokes" ? (b.smokesCount ?? 0) - (a.smokesCount ?? 0) : (a.displayName || a.name).localeCompare(b.displayName || b.name))
+    return limit ? sorted.slice(0, limit) : sorted
+  }, [maps, search, sort, limit])
 
-    return filtered.sort((a, b) => {
-      const aName = a.displayName || a.name
-      const bName = b.displayName || b.name
-      switch (sortBy) {
-        case "name":
-          return aName.localeCompare(bName)
-        case "smokes":
-          return (b.smokesCount ?? 0) - (a.smokesCount ?? 0)
-        default:
-          return aName.localeCompare(bName)
-      }
-    })
-  }, [maps, searchTerm, sortBy])
-
-  const handleMapSelect = (mapId: number) => {
-    router.push(`/map/${mapId}`)
-  }
-
-  if (loading) {
-    return <MapGridSkeleton />
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-loss">Erro ao carregar mapas: {error}</p>
-      </div>
-    )
-  }
+  if (loading) return <MapGridSkeleton />
+  if (error) return <Alert>Não foi possível carregar os mapas. Tente de novo em instantes.</Alert>
 
   return (
-    <div className="space-y-6">
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            placeholder="Buscar mapas..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 border-border focus:ring-primary"
-          />
-        </div>
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-full sm:w-[180px] border-border">
-            <SelectValue placeholder="Ordenar por" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="name">Nome</SelectItem>
-            <SelectItem value="smokes">Número de Smokes</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Results count */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {filteredAndSortedMaps.length} mapa{filteredAndSortedMaps.length !== 1 ? 's' : ''} encontrado{filteredAndSortedMaps.length !== 1 ? 's' : ''}
-        </p>
-      </div>
-
-      {/* Maps Grid */}
-      <motion.div 
-        layout
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-      >
-        <AnimatePresence>
-          {filteredAndSortedMaps.map((map, index) => (
-            <MapCard
-              key={map.id}
-              map={map}
-              isHovered={hoveredMapId === map.id}
-              onMouseEnter={() => setHoveredMapId(map.id)}
-              onMouseLeave={() => setHoveredMapId(null)}
-              onClick={() => handleMapSelect(map.id)}
-            />
-          ))}
-        </AnimatePresence>
-      </motion.div>
-
-      {filteredAndSortedMaps.length === 0 && (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
-            <Search className="w-8 h-8 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">Nenhum mapa encontrado</h3>
-          <p className="text-muted-foreground">Tente ajustar os filtros de busca</p>
-        </div>
-      )}
+    <div className="space-y-4">
+      {!limit && <div className="flex flex-wrap gap-2">
+        <label className="flex min-w-60 flex-1 items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm">
+          <Search className="h-4 w-4 text-muted-foreground" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar mapa" aria-label="Buscar mapa" className="w-full bg-transparent outline-none placeholder:text-muted-foreground" />
+        </label>
+        <select aria-label="Ordenar mapas" value={sort} onChange={e => setSort(e.target.value)} className="rounded-lg border border-border bg-card px-3 py-2 text-sm">
+          <option value="name">Nome</option><option value="smokes">Mais granadas</option>
+        </select>
+      </div>}
+      {list.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{list.map((m, i) => <MapCard key={m.id} map={m} i={i} />)}</div>
+        : <p className="py-10 text-center text-sm text-muted-foreground">Nenhum mapa com esse nome.</p>}
     </div>
-  )
-}
-
-export function MapGrid() {
-  return (
-    <Suspense fallback={<MapGridSkeleton />}>
-      <MapGridContent />
-    </Suspense>
   )
 }

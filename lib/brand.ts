@@ -5,14 +5,15 @@ export const BRAND = {
   description: 'Smokes por mapa e o seu histórico de partidas de CS2, com placar completo, mapa de abates e ranking com os amigos.',
   tagline: 'Smokes por mapa e histórico de partidas de CS2.',
   url: 'https://cs2.devkoala.com',
-  primary: '#a855f7', // --primary
-  background: '#0a0a0a', // --background
+  primary: '#e11d48', // --primary
+  background: '#0e0f12', // --background
   foreground: '#fafafa',
   muted: '#a1a1aa',
   win: '#34d399', // --win
-  loss: '#f87171', // --loss
+  loss: '#fb7185', // --loss
   draw: '#fcd34d', // --draw
-  gradient: 'linear-gradient(135deg, #09090b 0%, #120c1c 55%, #24123d 100%)',
+  premier: '#7c3aed',
+  gradient: 'linear-gradient(160deg, #0e0f12 0%, #1a0b10 55%, #4c0519 100%)',
 } as const;
 
 // Símbolo: hexágono com mira e ponto central (originais em public/brand/). viewBox recortado

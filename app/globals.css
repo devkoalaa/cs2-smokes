@@ -10,47 +10,51 @@ html, body {
 }
 
 :root {
-  /* CS2 Hub: tema escuro único. Superfícies em cinza neutro, roxo da marca nas ações. */
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.269 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.269 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.627 0.265 303.9); /* roxo da marca (#a855f7) */
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.696 0.17 162.48); /* verde de destaque */
-  --secondary-foreground: oklch(0.145 0 0);
-  --muted: oklch(0.439 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.627 0.265 303.9);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.205 0 0);
-  --ring: oklch(0.627 0.265 303.9);
+  /* CS2 Hub: grafite com vermelho carmim nas ações (direção NextPlay). */
+  --background: #0e0f12;
+  --surface: #131418; /* casca do app: barras e menus */
+  --foreground: #f4f4f5;
+  --card: #1b1c21;
+  --card-foreground: #f4f4f5;
+  --popover: #1b1c21;
+  --popover-foreground: #f4f4f5;
+  --primary: #e11d48; /* vermelho carmim da marca */
+  --primary-foreground: #ffffff;
+  --secondary: #10b981;
+  --secondary-foreground: #052e1f;
+  --muted: #26272d;
+  --muted-foreground: #a1a1aa;
+  --accent: #26272d; /* hover de botões fantasmas */
+  --accent-foreground: #ffffff;
+  --destructive: #e11d48;
+  --destructive-foreground: #ffffff;
+  --border: rgb(255 255 255 / 0.07);
+  --input: #16171b;
+  --ring: #e11d48;
   /* Resultado de partida e números bons/ruins (Rating, saldo). */
-  --win: oklch(0.765 0.177 163.223);
-  --loss: oklch(0.704 0.191 22.216);
-  --draw: oklch(0.879 0.169 91.605);
+  --win: #34d399;
+  --loss: #fb7185;
+  --draw: #fcd34d;
+  /* Pontos de Premier e destaque. */
+  --premier: #7c3aed;
+  --highlight: #f59e0b;
   /* CT e TR no mapa de abates. */
-  --ct: oklch(0.707 0.165 254.624);
-  --tr: oklch(0.837 0.128 66.29);
-  --chart-1: oklch(0.769 0.188 70.08);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.627 0.265 303.9);
-  --chart-4: oklch(0.645 0.246 16.439);
-  --chart-5: oklch(0.488 0.243 264.376);
-  --radius: 0.5rem;
+  --ct: #38bdf8;
+  --tr: #fbbf24;
+  --chart-1: #e11d48;
+  --chart-2: #10b981;
+  --chart-3: #7c3aed;
+  --chart-4: #f59e0b;
+  --chart-5: #38bdf8;
+  --radius: 0.75rem;
 }
 
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  /* Fonte dos títulos (NewAmsterdam, carregada pelo next/font no layout): classe font-display. */
-  --font-display: var(--font-brand), sans-serif;
-  --font-new-amsterdam: var(--font-brand), sans-serif;
+  --color-surface: var(--surface);
+  --color-premier: var(--premier);
+  --color-highlight: var(--highlight);
   --color-win: var(--win);
   --color-loss: var(--loss);
   --color-draw: var(--draw);
@@ -183,4 +187,19 @@ input[type="number"].hide-number-input-arrows::-webkit-inner-spin-button {
 input[type="number"].hide-number-input-arrows {
   -moz-appearance: textfield;
   appearance: textfield;
+}
+/* Títulos: Geist bem pesada (a NewAmsterdam fica só para quem ainda usar font-new-amsterdam). */
+@utility font-display {
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+}
+
+/* Entrada em sequência: style={rise(i)} em lib/motion.ts. */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 1ms !important; animation-delay: 0ms !important; transition-duration: 1ms !important; }
 }

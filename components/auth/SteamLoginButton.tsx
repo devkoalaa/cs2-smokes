@@ -14,7 +14,6 @@ import { LogOut, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 
 export function SteamLoginButton() {
   const { user, isAuthenticated, login, logout, isLoading } = useAuth();
@@ -36,8 +35,8 @@ export function SteamLoginButton() {
     return (
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-10 w-10 rounded-full cursor-pointer hidden md:flex">
-            <Avatar className="h-10 w-10">
+          <Button variant="ghost" className="relative h-9 w-9 cursor-pointer rounded-lg p-0">
+            <Avatar className="h-9 w-9 rounded-lg">
               <AvatarImage src={user.avatarUrl} alt={user.username} />
               <AvatarFallback>
                 {user.username.charAt(0).toUpperCase()}
@@ -72,20 +71,9 @@ export function SteamLoginButton() {
   }
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-    >
-      <Button onClick={login} className="bg-[#171a21] hover:bg-[#2a475e] text-white">
-        <Image
-          src="/images/steam-icon.svg"
-          alt="Steam"
-          width={30}
-          height={30}
-          className="mr-2"
-        />
-        Entrar com Steam
-      </Button>
-    </motion.div>
+    <Button onClick={login} className="gap-2 bg-white text-black shadow-lg hover:bg-zinc-200">
+      <Image src="/images/steam-icon.svg" alt="" width={20} height={20} className="invert" />
+      Entrar com Steam
+    </Button>
   );
 }

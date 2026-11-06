@@ -77,14 +77,15 @@ export function MatchScoreboard({ match, viewer }: { match: MatchDetail; viewer?
           onClick={() => choose(!!i)} className={`rounded-md px-4 py-1.5 text-sm font-medium ${aim === !!i ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>{label}</button>)}
       </div>
       <label className="lg:hidden flex items-center gap-2 text-sm text-muted-foreground">Ordenar por
-        <select className="bg-card border border-border rounded-md px-2 py-1.5 text-foreground" value={sort.index}
+        <select className="bg-input border border-border rounded-lg px-2 py-1.5 text-foreground" value={sort.index}
           onChange={e => { const i = Number(e.target.value); setSort({ index: i, ascending: !!columns[i].low }); }}>
           {columns.map((c, i) => <option key={c.label} value={i}>{c.name}</option>)}
         </select></label>
     </div>
     {aim && <p className="text-sm text-muted-foreground">Médias por duelo. O número pequeno é quantos duelos entraram na conta (em Precisão, quantos tiros).</p>}
     {!match.analysis && <p role="status" className="text-sm text-muted-foreground">Esta demo não tem os dados detalhados; só o placar básico.</p>}
-    {[0, 1].map(team => {
+    {/* Seu time primeiro. */}
+    {(match.players.find(p => p.steamId === viewer)?.team === 1 ? [1, 0] : [0, 1]).map(team => {
       const players = match.players.filter(p => p.team === team).sort((a,b) => {
         const x = column.value(a,stats(a)), y = column.value(b,stats(b));
         if (x == null || y == null) return Number(x == null) - Number(y == null);
@@ -94,8 +95,8 @@ export function MatchScoreboard({ match, viewer }: { match: MatchDetail; viewer?
       if (!first) return null;
       const win = first.scoreFor > first.scoreAgainst, draw = first.scoreFor === first.scoreAgainst;
       const mine = players.some(p => p.steamId === viewer);
-      return <section key={team} className="rounded-xl border border-border overflow-hidden">
-        <header className="flex flex-wrap items-center gap-x-3 gap-y-2 bg-card px-4 py-3">
+      return <section key={team} className="overflow-hidden rounded-xl bg-card ring-1 ring-white/[0.06]">
+        <header className="flex flex-wrap items-center gap-x-3 gap-y-2 bg-black/20 px-4 py-3">
           <strong className="text-2xl tabular-nums">{first.scoreFor}</strong><h3 className="font-semibold">{mine ? 'Seu time' : `Time ${team+1}`}</h3>
           <span className={`text-xs ${draw ? 'text-muted-foreground' : win ? 'text-win' : 'text-loss'}`}>{draw ? 'Empate' : win ? 'Vitória' : 'Derrota'}</span>
           <div className="ml-auto flex flex-wrap gap-2 text-xs">{match.analysis?.segments.map((s,i) => <span key={i} title={(s.sideA === 3) !== !!team ? 'Rounds vencidos de CT' : 'Rounds vencidos de TR'} className="rounded border border-border px-2 py-1">
@@ -107,12 +108,12 @@ export function MatchScoreboard({ match, viewer }: { match: MatchDetail; viewer?
             <dt className="text-[11px] text-muted-foreground truncate">{c.name}</dt><dd className="text-sm font-semibold">{c === kda ? `${p.kills}/${p.deaths}/${p.assists}` : cell(c, p)}{c.label === 'ADR' && p.damage != null && <small className="block whitespace-nowrap text-[11px] font-normal text-muted-foreground">{p.damage.toLocaleString('pt-BR')} dano</small>}</dd></div>)}</dl>
         </li>)}</ul>
         <div className="hidden lg:block overflow-x-auto"><table className="w-full text-sm tabular-nums">
-          <thead className="text-xs text-muted-foreground"><tr><th scope="col" className="sticky left-0 bg-background p-3 text-left">Jogador</th>
+          <thead className="text-xs text-muted-foreground"><tr><th scope="col" className="sticky left-0 bg-card p-3 text-left">Jogador</th>
             {columns.map((c,i) => <th scope="col" key={c.label} aria-sort={sort.index !== i ? 'none' : sort.ascending ? 'ascending' : 'descending'}>
               <button title={c.description} onClick={() => setSort({ index:i, ascending:sort.index === i ? !sort.ascending : !!c.low })}
                 className="whitespace-nowrap px-2 py-3">{c.label}{sort.index === i ? (sort.ascending ? ' ↑' : ' ↓') : ''}</button></th>)}</tr></thead>
           <tbody>{players.map(p => <tr key={p.steamId} className="border-t border-border">
-            <th scope="row" className={`sticky left-0 bg-background px-3 py-2.5 text-left font-medium ${p.steamId === viewer ? 'text-primary' : ''}`}><span className="block max-w-40 truncate" title={p.name}>{p.name}</span></th>
+            <th scope="row" className={`sticky left-0 bg-card px-3 py-2.5 text-left font-medium ${p.steamId === viewer ? 'text-primary' : ''}`}><span className="block max-w-40 truncate" title={p.name}>{p.name}</span></th>
             {columns.map((c,i) => <td key={c.label} className={`px-2 py-2 text-center whitespace-nowrap ${i === sort.index ? 'bg-muted/50 font-semibold' : ''}`}>{cell(c, p)}</td>)}
           </tr>)}</tbody>
         </table></div></section>;

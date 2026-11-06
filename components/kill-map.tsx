@@ -6,7 +6,7 @@ type View = 'kills' | 'deaths';
 const SIDE_COLOR = { CT: 'var(--color-ct)', T: 'var(--color-tr)' } as const;
 const SIDE_LABEL = { CT: 'CT', T: 'TR' } as const;
 const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
-const select = 'bg-card border border-border rounded-md px-2 py-1.5 text-sm w-full';
+const select = 'bg-input border border-border rounded-lg px-2 py-1.5 text-sm w-full';
 
 // Onde cada abate aconteceu, sobre o radar do mapa. Em "Abates" o ponto é onde
 // estava quem matou e o X é onde a vítima caiu; em "Mortes", o contrário.
@@ -44,11 +44,11 @@ export function KillMap({ match, viewer }: { match: MatchDetail; viewer?: string
   }, [kills, radar]);
   const u = box.size / 1024; // marcadores com o mesmo tamanho na tela, com ou sem zoom
 
-  const header = <div><h2 className="text-xl font-semibold">Mapa de abates</h2>
+  const header = <div><h2 className="text-lg font-bold">Mapa de abates</h2>
     <p className="text-sm text-muted-foreground mt-1">{view === 'kills' ? 'Bolinha: onde estava quem matou. X: onde a vítima caiu.' : 'Bolinha: onde morreu. X: de onde veio o tiro.'} Toque num ponto para ver o lance.</p></div>;
-  if (!kills?.length) return <section className="rounded-xl border border-border p-4 md:p-5">{header}
+  if (!kills?.length) return <section className="rounded-xl bg-card p-4 ring-1 ring-white/[0.06] md:p-5">{header}
     <p className="text-sm text-muted-foreground mt-4">Esta partida foi importada antes de o site guardar as posições, e a demo já não está mais disponível na Valve.</p></section>;
-  if (!radar) return <section className="rounded-xl border border-border p-4 md:p-5">{header}
+  if (!radar) return <section className="rounded-xl bg-card p-4 ring-1 ring-white/[0.06] md:p-5">{header}
     <p className="text-sm text-muted-foreground mt-4 capitalize">Ainda não temos o radar de {match.map.replace(/^de_/, '')}.</p></section>;
 
   const rounds = Math.max(...kills.map(k => k.round));
@@ -60,7 +60,7 @@ export function KillMap({ match, viewer }: { match: MatchDetail; viewer?: string
   };
   const hs = rows.filter(k => k.headshot).length;
 
-  return <section className="rounded-xl border border-border p-4 md:p-5 space-y-4">
+  return <section className="space-y-4 rounded-xl bg-card p-4 ring-1 ring-white/[0.06] md:p-5">
     {header}
     <div className="grid gap-5 lg:grid-cols-[minmax(0,620px)_1fr]">
       <div className="space-y-3 min-w-0">

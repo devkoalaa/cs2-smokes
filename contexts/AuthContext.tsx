@@ -77,7 +77,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value: AuthContextType = {
     user,
-    isAuthenticated: authService.isAuthenticated(),
+    // Só depois de carregar o usuário (efeito acima): no servidor não há localStorage, e ler
+    // direto aqui fazia o HTML do servidor e o do navegador divergirem (erro de hidratação).
+    isAuthenticated: !!user && authService.isAuthenticated(),
     isLoading,
     login,
     logout,

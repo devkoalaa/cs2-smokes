@@ -1,107 +1,32 @@
-"use client"
+import Link from "next/link"
+import { ChevronRight } from "lucide-react"
+import { Pill } from "@/components/kit"
+import { artBackground } from "@/lib/match"
+import { rise } from "@/lib/motion"
+import type { Map } from "@/lib/services/maps.service"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Map } from "@/lib/services/maps.service"
-import { motion } from "framer-motion"
-import { MapPin, Play } from "lucide-react"
-
-interface MapCardProps {
-  map: Map
-  isHovered: boolean
-  onMouseEnter: () => void
-  onMouseLeave: () => void
-  onClick: () => void
-}
-
-export function MapCard({ map, isHovered, onMouseEnter, onMouseLeave, onClick }: MapCardProps) {
-  const smokesCount = map.smokesCount ?? 0
-  const isEmpty = smokesCount === 0
-
+/** Card de mapa com a arte oficial: leva à página de granadas do mapa. */
+export function MapCard({ map, i = 0 }: { map: Map; i?: number }) {
+  const count = map.smokesCount ?? 0
+  const name = map.displayName || map.name
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        scale: isHovered ? 1.05 : 1,
-        filter: "none",
-        zIndex: isHovered ? 50 : 1
-      }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.3 }}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onClick={onClick}
-      className="h-full cursor-pointer"
-    >
-      <Card
-        className={`group relative h-full overflow-hidden border-border bg-card/50 backdrop-blur-sm transition-all duration-500 p-0 gap-0
-          ${isHovered ? 'shadow-2xl shadow-primary/20 border-primary' : 'hover:border-primary/50'}
-        `}
-      >
-        <div className="relative h-full flex flex-col">
-          {/* Image Section */}
-          <div className="relative overflow-hidden h-52">
-            <motion.div
-              className={`absolute inset-0 bg-cover bg-center ${isEmpty ? "grayscale-[60%] opacity-70" : ""}`}
-              // Duas camadas: se a miniatura externa (Imgur) não carregar, aparece o radar, que é do próprio site.
-              style={{ backgroundImage: [map.thumbnail, map.radar, "/placeholder.svg"].filter(Boolean).map(u => `url(${u})`).join(", ") }}
-              animate={{
-                scale: isHovered ? 1.15 : 1,
-                rotate: isHovered ? 1 : 0
-              }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-            />
-
-            {/* Top Badges */}
-            <div className="absolute top-3 right-3 z-10 flex gap-2">
-              <Badge className={`backdrop-blur-md border shadow-sm ${
-                isEmpty ? "bg-background/80 text-muted-foreground border-border/50" : "bg-primary text-primary-foreground border-primary"
-              }`}>
-                {isEmpty ? "Sem granadas" : `${smokesCount} granada${smokesCount !== 1 ? "s" : ""}`}
-              </Badge>
-            </div>
-
-            {/* Large Background Icon */}
-            <div className={`absolute -bottom-4 -right-4 text-primary/5 transition-all duration-500 transform
-              ${isHovered ? 'opacity-100 scale-110 -rotate-12' : 'opacity-0'}
-            `}>
-              <MapPin className="w-32 h-32" />
-            </div>
-          </div>
-
-          {/* Content Section */}
-          <CardContent className="flex-1 p-6 relative z-10 flex flex-col border-t border-border/50 bg-card/50">
-            <div className="mb-3">
-              <h3 className={`text-2xl font-bold tracking-tight transition-colors duration-300 ${isHovered ? 'text-primary' : ''}`}>
-                {map.displayName || map.name}
-              </h3>
-            </div>
-
-            <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2 mb-6 flex-1">
-              {map.description || 'Explore as melhores smokes, granadas e estratégias táticas para dominar este mapa.'}
-            </p>
-
-            <div className="flex items-center justify-between mt-auto pt-4 border-t border-border/50">
-              {/* Status só quando informa algo: mapa fora do pool. */}
-              <span className="text-xs text-muted-foreground">{map.isActive ? '' : 'Fora do pool'}</span>
-
-              <Button
-                size="sm"
-                className="relative overflow-hidden group/btn bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-300 shadow-lg shadow-primary/20"
-              >
-                <span className="relative z-10 flex items-center font-medium">
-                  {isEmpty ? "Adicionar" : "Ver granadas"}
-                  <Play className={`ml-2 w-3 h-3 transition-transform ${isHovered ? 'translate-x-1 scale-110' : ''}`} />
-                </span>
-              </Button>
-            </div>
-          </CardContent>
+    <Link href={`/map/${map.id}`} style={rise(i)}
+      className="group block overflow-hidden rounded-xl bg-card ring-1 ring-white/[0.06] transition duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50 hover:ring-white/15">
+      <div className="relative h-40 overflow-hidden">
+        <div className={`absolute inset-0 bg-cover bg-center transition duration-500 group-hover:scale-105 ${count ? "" : "grayscale-[40%]"}`} style={{ backgroundImage: artBackground(name, true) }} />
+        <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+        <div className="absolute right-3 top-3 flex gap-1.5">
+          {!map.isActive && <Pill kind="dark">Fora do pool</Pill>}
+          <Pill kind={count ? "primary" : "dark"}>{count ? `${count} granada${count === 1 ? "" : "s"}` : "Sem granadas"}</Pill>
         </div>
-      </Card>
-    </motion.div>
+      </div>
+      <div className="space-y-2 p-4 pt-1">
+        <p className="text-xl font-bold">{name}</p>
+        <p className="line-clamp-2 min-h-10 text-sm text-muted-foreground">{map.description || "Smokes, flashes e molotovs deste mapa."}</p>
+        <span className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg shadow-rose-950/40 transition group-hover:brightness-110">
+          {count ? "Ver granadas" : "Adicionar a primeira"}<ChevronRight className="h-4 w-4" />
+        </span>
+      </div>
+    </Link>
   )
 }

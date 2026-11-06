@@ -1,18 +1,12 @@
 import type { Metadata, Viewport } from 'next'
-import localFont from 'next/font/local'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { AuthProvider } from '@/contexts/AuthContext'
-import { MobileSidebarProvider } from '@/contexts/MobileSidebarContext'
 import { AuthLoading } from '@/components/auth/AuthLoading'
-import { GlobalMobileSidebar } from '@/components/global-mobile-sidebar'
 import { ServiceWorker } from '@/components/service-worker'
 import { Toaster } from '@/components/ui/toaster'
 import { BRAND } from '@/lib/brand'
 import './globals.css'
-
-// Fonte dos títulos, pré-carregada (evita o texto "pular" quando ela chega).
-const brandFont = localFont({ src: '../public/fonts/NewAmsterdam-Regular.ttf', variable: '--font-brand', display: 'swap' })
 
 export const metadata: Metadata = {
   metadataBase: new URL(BRAND.url),
@@ -39,14 +33,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} ${brandFont.variable}`}>
+      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
         <AuthProvider>
-          <MobileSidebarProvider>
-            {children}
-            <AuthLoading />
-            <GlobalMobileSidebar />
-            <Toaster />
-          </MobileSidebarProvider>
+          {children}
+          <AuthLoading />
+          <Toaster />
         </AuthProvider>
         <ServiceWorker />
       </body>

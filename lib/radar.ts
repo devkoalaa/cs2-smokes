@@ -1,7 +1,7 @@
 // Converte coordenadas do jogo para pixels dos radares de /public/images/maps
 // (1024×1024, as visões gerais oficiais). pos_x/pos_y/scale vêm dos arquivos
-// de overview de cada mapa; conferidos com mortes reais em Mirage, Nuke,
-// Inferno e Ancient.
+// de overview de cada mapa (radares de Vertigo e Anubis do repositório MurkyYT/cs2-map-icons);
+// conferidos com mortes reais em Mirage, Nuke, Inferno e Ancient.
 export interface Radar { image: string; x: number; y: number; scale: number; lower?: { image: string; belowZ: number } }
 
 export const RADARS: Record<string, Radar> = {
@@ -12,6 +12,8 @@ export const RADARS: Record<string, Radar> = {
   de_dust2: { image: '/images/maps/map_dust2.webp', x: -2476, y: 3239, scale: 4.4 },
   de_overpass: { image: '/images/maps/map_overpass.webp', x: -4831, y: 1781, scale: 5.2 },
   de_train: { image: '/images/maps/map_train.webp', x: -2308, y: 2078, scale: 4.082077 },
+  de_vertigo: { image: '/images/maps/map_vertigo.webp', x: -3168, y: 1762, scale: 4, lower: { image: '/images/maps/map_vertigo_lower.webp', belowZ: 11700 } },
+  de_anubis: { image: '/images/maps/map_anubis.webp', x: -2796, y: 3328, scale: 5.22 },
 };
 
 export const toRadar = (radar: Radar, [x, y]: number[]) => ({ x: (x - radar.x) / radar.scale, y: (radar.y - y) / radar.scale });

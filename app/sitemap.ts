@@ -8,6 +8,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const maps = await MapsService.getInstance().getAllMaps().catch(() => []);
   return [
     { url: BRAND.url, changeFrequency: 'daily', priority: 1 },
+    { url: `${BRAND.url}/smokes`, changeFrequency: 'weekly', priority: 0.9 },
     ...maps.filter(m => m.isActive !== false).map(m => ({ url: `${BRAND.url}/map/${m.id}`, changeFrequency: 'weekly' as const, priority: 0.8 })),
     { url: `${BRAND.url}/privacidade`, changeFrequency: 'yearly', priority: 0.2 },
   ];

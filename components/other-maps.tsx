@@ -1,53 +1,22 @@
 "use client"
 
+import Link from "next/link"
+import { ChevronRight } from "lucide-react"
 import { MapCard } from "@/components/map-card"
-import { Button } from "@/components/ui/button"
 import { useMaps } from "@/hooks/useMaps"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
 
-interface OtherMapsProps {
-  currentMapId: number
-}
-
-export function OtherMaps({ currentMapId }: OtherMapsProps) {
-  const router = useRouter()
+/** Outros mapas (os que têm mais granadas), no fim da página de um mapa. */
+export function OtherMaps({ currentMapId }: { currentMapId: number }) {
   const { maps, loading } = useMaps()
-  const [hoveredMapId, setHoveredMapId] = useState<number | null>(null)
-
-  if (loading || !maps) {
-    return null
-  }
-
-  const otherMaps = maps
-    .filter(map => map.id !== currentMapId)
-    .slice(0, 3)
-
-  if (otherMaps.length === 0) {
-    return null
-  }
-
+  const others = (maps ?? []).filter(m => m.id !== currentMapId).sort((a, b) => (b.smokesCount ?? 0) - (a.smokesCount ?? 0)).slice(0, 3)
+  if (loading || !others.length) return null
   return (
-    <div className="space-y-6 mt-12">
+    <section className="space-y-4 pt-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-4xl leading-none">Outros mapas</h2>
-        <Button variant="ghost" onClick={() => router.push('/')}>
-          Ver todos
-        </Button>
+        <h2 className="text-lg font-bold">Outros mapas</h2>
+        <Link href="/smokes" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">Ver todos<ChevronRight className="h-4 w-4" /></Link>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {otherMaps.map((map) => (
-          <div key={map.id} className="h-80">
-            <MapCard
-              map={map}
-              isHovered={hoveredMapId === map.id}
-              onMouseEnter={() => setHoveredMapId(map.id)}
-              onMouseLeave={() => setHoveredMapId(null)}
-              onClick={() => router.push(`/map/${map.id}`)}
-            />
-          </div>
-        ))}
-      </div>
-    </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{others.map((m, i) => <MapCard key={m.id} map={m} i={i} />)}</div>
+    </section>
   )
 }
