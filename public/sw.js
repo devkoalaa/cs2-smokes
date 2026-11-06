@@ -1,7 +1,7 @@
 // Service worker do CS2 Hub. Guarda só arquivos estáticos (código, fontes, imagens)
 // para o app instalado abrir rápido, e mostra /offline sem conexão. Nunca guarda
 // /api nem páginas com dados de alguém.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const STATIC = `cs2hub-static-${VERSION}`;
 const PAGES = `cs2hub-pages-${VERSION}`;
 const OFFLINE = '/offline';

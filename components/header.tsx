@@ -42,7 +42,7 @@ export function Header() {
                   }
                 }}
               >
-                <BrandGlyph className="w-6 h-6 text-primary-foreground" />
+                <BrandGlyph className="w-7 h-7 text-primary-foreground" />
               </motion.div>
               <motion.div
                 className="absolute inset-0 bg-primary/50 rounded-lg blur-md"

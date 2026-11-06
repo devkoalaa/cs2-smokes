@@ -104,7 +104,7 @@ export function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
         <div className="flex items-center justify-between p-6 border-b border-border bg-sidebar">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-lg">
-              <BrandGlyph className="w-6 h-6 text-primary-foreground" />
+              <BrandGlyph className="w-7 h-7 text-primary-foreground" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-card-foreground font-display">

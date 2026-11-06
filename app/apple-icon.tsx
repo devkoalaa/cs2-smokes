@@ -5,5 +5,5 @@ export const contentType = 'image/png';
 
 // Quadrado cheio: o iOS arredonda sozinho.
 export default function AppleIcon() {
-  return brandIcon(180, { scale: 0.58 });
+  return brandIcon(180, { scale: 0.66 });
 }

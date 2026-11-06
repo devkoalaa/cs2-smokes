@@ -4,7 +4,7 @@ import { brandIcon } from '@/lib/brand-image';
 const ICONS: Record<string, () => Response> = {
   'icon-192.png': () => brandIcon(192),
   'icon-512.png': () => brandIcon(512),
-  'maskable-512.png': () => brandIcon(512, { scale: 0.46 }),
+  'maskable-512.png': () => brandIcon(512, { scale: 0.52 }),
 };
 
 export const dynamic = 'force-static';

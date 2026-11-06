@@ -4,5 +4,5 @@ export const size = { width: 64, height: 64 };
 export const contentType = 'image/png';
 
 export default function Icon() {
-  return brandIcon(64, { scale: 0.66, radius: 14 });
+  return brandIcon(64, { scale: 0.78, radius: 14 });
 }
