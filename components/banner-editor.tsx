@@ -49,7 +49,7 @@ export function BannerEditor({ banner, favorite, onChanged }: { banner: Banner; 
     </button>;
 
   return <Dialog open={open} onOpenChange={setOpen}>
-    <DialogTrigger asChild><Button variant="outline" className="bg-surface/80 backdrop-blur"><ImagePlus className="h-4 w-4" />Banner</Button></DialogTrigger>
+    <DialogTrigger asChild><Button variant="outline" className="h-9 rounded-lg border-border bg-card dark:border-border dark:bg-card"><ImagePlus className="h-4 w-4" />Banner</Button></DialogTrigger>
     <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-3xl">
       <DialogHeader>
         <DialogTitle>Banner do perfil</DialogTitle>

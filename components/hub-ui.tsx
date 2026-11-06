@@ -13,7 +13,7 @@ import type { MatchCard, PeriodStats, PlayerLine } from '@/lib/services/tracking
 export const PERIODS = [{ value: 7, label: 'Últimos 7 dias' }, { value: 30, label: 'Últimos 30 dias' }, { value: 90, label: 'Últimos 90 dias' }, { value: 0, label: 'Todo o histórico' }];
 
 export function PeriodSelect({ value, onChange }: { value: number; onChange: (days: number) => void }) {
-  return <select aria-label="Período" className="rounded-lg border border-border bg-card px-3 py-2 text-sm" value={value} onChange={e => onChange(Number(e.target.value))}>
+  return <select aria-label="Período" className="h-9 rounded-lg border border-border bg-card px-3 text-sm" value={value} onChange={e => onChange(Number(e.target.value))}>
     {PERIODS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
   </select>;
 }
